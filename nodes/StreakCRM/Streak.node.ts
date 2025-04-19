@@ -36,6 +36,7 @@ export class Streak implements INodeType {
 				type: 'options',
 				default: 'getCurrentUser',
 				options: [
+					// User operations
 					{
 						name: 'Get Current User',
 						value: 'getCurrentUser',
@@ -45,6 +46,48 @@ export class Streak implements INodeType {
 						name: 'Get User',
 						value: 'getUser',
 						description: 'Get information about a specific user by their key',
+					},
+					// Team operations
+					{
+						name: 'Get My Teams',
+						value: 'getMyTeams',
+						description: 'List all teams the authenticated user belongs to',
+					},
+					{
+						name: 'Get Team',
+						value: 'getTeam',
+						description: 'Get information about a specific team',
+					},
+					// Pipeline operations
+					{
+						name: 'List All Pipelines',
+						value: 'listAllPipelines',
+						description: 'Lists all pipelines the user has access to',
+					},
+					{
+						name: 'Get Pipeline',
+						value: 'getPipeline',
+						description: 'Gets a specific pipeline by its key',
+					},
+					{
+						name: 'Create Pipeline',
+						value: 'createPipeline',
+						description: 'Creates a new pipeline',
+					},
+					{
+						name: 'Update Pipeline',
+						value: 'updatePipeline',
+						description: 'Updates an existing pipeline',
+					},
+					{
+						name: 'Delete Pipeline',
+						value: 'deletePipeline',
+						description: 'Deletes a pipeline',
+					},
+					{
+						name: 'Move Boxes (Batch)',
+						value: 'moveBoxesBatch',
+						description: 'Moves multiple boxes to a different pipeline',
 					}
 				],
 			},
@@ -60,6 +103,93 @@ export class Streak implements INodeType {
 					show: {
 						operation: [
 							'getUser',
+						],
+					},
+				},
+			},
+			// Team Key (only for getTeam operation)
+			{
+				displayName: 'Team Key',
+				name: 'teamKey',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The key of the team to get information about',
+				displayOptions: {
+					show: {
+						operation: [
+							'getTeam',
+						],
+					},
+				},
+			},
+			// Pipeline Key (for pipeline operations)
+			{
+				displayName: 'Pipeline Key',
+				name: 'pipelineKey',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The key of the pipeline',
+				displayOptions: {
+					show: {
+						operation: [
+							'getPipeline',
+							'updatePipeline',
+							'deletePipeline',
+							'moveBoxesBatch',
+						],
+					},
+				},
+			},
+			// Pipeline Name (for create/update pipeline)
+			{
+				displayName: 'Pipeline Name',
+				name: 'pipelineName',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The name of the pipeline',
+				displayOptions: {
+					show: {
+						operation: [
+							'createPipeline',
+							'updatePipeline',
+						],
+					},
+				},
+			},
+			// Box Keys (for moveBoxesBatch)
+			{
+				displayName: 'Box Keys',
+				name: 'boxKeys',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: '',
+				required: true,
+				description: 'The keys of the boxes to move (comma-separated)',
+				displayOptions: {
+					show: {
+						operation: [
+							'moveBoxesBatch',
+						],
+					},
+				},
+			},
+			// Target Pipeline Key (for moveBoxesBatch)
+			{
+				displayName: 'Target Pipeline Key',
+				name: 'targetPipelineKey',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The key of the target pipeline to move boxes to',
+				displayOptions: {
+					show: {
+						operation: [
+							'moveBoxesBatch',
 						],
 					},
 				},
@@ -116,6 +246,182 @@ export class Streak implements INodeType {
 						auth: {
 							username: apiKey,
 							password: '',
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'getMyTeams') {
+					// Get My Teams operation
+					responseData = await this.helpers.httpRequest({
+						method: 'GET',
+						url: 'https://api.streak.com/api/v1/teams',
+						headers: {
+							'Accept': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'getTeam') {
+					// Get Team operation
+					const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
+					
+					if (!teamKey) {
+						throw new NodeOperationError(this.getNode(), 'Team Key is required for this operation', { itemIndex });
+					}
+					
+					responseData = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `https://api.streak.com/api/v1/teams/${teamKey}`,
+						headers: {
+							'Accept': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'listAllPipelines') {
+					// List All Pipelines operation
+					responseData = await this.helpers.httpRequest({
+						method: 'GET',
+						url: 'https://api.streak.com/api/v1/pipelines',
+						headers: {
+							'Accept': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'getPipeline') {
+					// Get Pipeline operation
+					const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+					
+					if (!pipelineKey) {
+						throw new NodeOperationError(this.getNode(), 'Pipeline Key is required for this operation', { itemIndex });
+					}
+					
+					responseData = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `https://api.streak.com/api/v1/pipelines/${pipelineKey}`,
+						headers: {
+							'Accept': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'createPipeline') {
+					// Create Pipeline operation
+					const pipelineName = this.getNodeParameter('pipelineName', itemIndex) as string;
+					
+					if (!pipelineName) {
+						throw new NodeOperationError(this.getNode(), 'Pipeline Name is required for this operation', { itemIndex });
+					}
+					
+					responseData = await this.helpers.httpRequest({
+						method: 'PUT',
+						url: 'https://api.streak.com/api/v1/pipelines',
+						headers: {
+							'Accept': 'application/json',
+							'Content-Type': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						body: {
+							name: pipelineName,
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'updatePipeline') {
+					// Update Pipeline operation
+					const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+					const pipelineName = this.getNodeParameter('pipelineName', itemIndex) as string;
+					
+					if (!pipelineKey) {
+						throw new NodeOperationError(this.getNode(), 'Pipeline Key is required for this operation', { itemIndex });
+					}
+					
+					if (!pipelineName) {
+						throw new NodeOperationError(this.getNode(), 'Pipeline Name is required for this operation', { itemIndex });
+					}
+					
+					responseData = await this.helpers.httpRequest({
+						method: 'POST',
+						url: `https://api.streak.com/api/v1/pipelines/${pipelineKey}`,
+						headers: {
+							'Accept': 'application/json',
+							'Content-Type': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						body: {
+							name: pipelineName,
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'deletePipeline') {
+					// Delete Pipeline operation
+					const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+					
+					if (!pipelineKey) {
+						throw new NodeOperationError(this.getNode(), 'Pipeline Key is required for this operation', { itemIndex });
+					}
+					
+					responseData = await this.helpers.httpRequest({
+						method: 'DELETE',
+						url: `https://api.streak.com/api/v1/pipelines/${pipelineKey}`,
+						headers: {
+							'Accept': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						json: true,
+					}) as JsonObject;
+				} else if (operation === 'moveBoxesBatch') {
+					// Move Boxes (Batch) operation
+					const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+					const boxKeysInput = this.getNodeParameter('boxKeys', itemIndex) as string[];
+					const targetPipelineKey = this.getNodeParameter('targetPipelineKey', itemIndex) as string;
+					
+					if (!pipelineKey) {
+						throw new NodeOperationError(this.getNode(), 'Source Pipeline Key is required for this operation', { itemIndex });
+					}
+					
+					if (!boxKeysInput || !boxKeysInput.length) {
+						throw new NodeOperationError(this.getNode(), 'Box Keys are required for this operation', { itemIndex });
+					}
+					
+					if (!targetPipelineKey) {
+						throw new NodeOperationError(this.getNode(), 'Target Pipeline Key is required for this operation', { itemIndex });
+					}
+					
+					responseData = await this.helpers.httpRequest({
+						method: 'POST',
+						url: `https://api.streak.com/api/v1/pipelines/${pipelineKey}/moveBoxes`,
+						headers: {
+							'Accept': 'application/json',
+							'Content-Type': 'application/json',
+						},
+						auth: {
+							username: apiKey,
+							password: '',
+						},
+						body: {
+							targetPipelineKey,
+							boxKeys: boxKeysInput,
 						},
 						json: true,
 					}) as JsonObject;
