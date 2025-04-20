@@ -1,46 +1,149 @@
-![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
+# n8n-nodes-streak-crm
 
-# n8n-nodes-starter
+This is an n8n community node that lets you use [Streak CRM](https://streak.com) in your n8n workflows.
 
-This repo contains example nodes to help you get started building your own custom integrations for [n8n](n8n.io). It includes the node linter and other dependencies.
+Streak CRM is a powerful customer relationship management (CRM) tool integrated directly into Gmail that helps teams track leads, manage sales pipelines, and streamline customer communications.
 
-To make your custom node available to the community, you must create it as an npm package, and [submit it to the npm registry](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry).
+[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-## Prerequisites
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials)  
+[Compatibility](#compatibility)  
+[Usage](#usage)  
+[Resources](#resources)  
+[Version History](#version-history)
 
-You need the following installed on your development machine:
+## Installation
 
-* [git](https://git-scm.com/downloads)
-* Node.js and pnpm. Minimum version Node 18. You can find instructions on how to install both using nvm (Node Version Manager) for Linux, Mac, and WSL [here](https://github.com/nvm-sh/nvm). For Windows users, refer to Microsoft's guide to [Install NodeJS on Windows](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-windows).
-* Install n8n with:
-  ```
-  pnpm install n8n -g
-  ```
-* Recommended: follow n8n's guide to [set up your development environment](https://docs.n8n.io/integrations/creating-nodes/build/node-development-environment/).
+Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-## Using this starter
+```bash
+npm install n8n-nodes-streak-crm
+```
 
-These are the basic steps for working with the starter. For detailed guidance on creating and publishing nodes, refer to the [documentation](https://docs.n8n.io/integrations/creating-nodes/).
+Or if you use n8n Desktop, you can go to **Settings > Community nodes > Install** and provide the package name `n8n-nodes-streak-crm`.
 
-1. [Generate a new repository](https://github.com/n8n-io/n8n-nodes-starter/generate) from this template repository.
-2. Clone your new repo:
-   ```
-   git clone https://github.com/<your organization>/<your-repo-name>.git
-   ```
-3. Run `pnpm i` to install dependencies.
-4. Open the project in your editor.
-5. Browse the examples in `/nodes` and `/credentials`. Modify the examples, or replace them with your own nodes.
-6. Update the `package.json` to match your details.
-7. Run `pnpm lint` to check for errors or `pnpm lintfix` to automatically fix errors when possible.
-8. Test your node locally. Refer to [Run your node locally](https://docs.n8n.io/integrations/creating-nodes/test/run-node-locally/) for guidance.
-9. Replace this README with documentation for your node. Use the [README_TEMPLATE](README_TEMPLATE.md) to get started.
-10. Update the LICENSE file to use your details.
-11. [Publish](https://docs.npmjs.com/packages-and-modules/contributing-packages-to-the-registry) your package to npm.
+## Operations
 
-## More information
+This node supports a comprehensive set of operations across various Streak CRM resources:
 
-Refer to our [documentation on creating nodes](https://docs.n8n.io/integrations/creating-nodes/) for detailed information on building your own nodes.
+### User Operations
+- **Get Current User** - Retrieve the details of the current authenticated user
+- **Get User** - Retrieve details of a specific user by key
+
+### Team Operations
+- **Get My Teams** - Retrieve all teams the current user belongs to
+- **Get Team** - Retrieve details of a specific team by key
+
+### Pipeline Operations
+- **List All Pipelines** - Get all available pipelines
+- **Get Pipeline** - Retrieve a specific pipeline by key
+- **Create Pipeline** - Create a new pipeline with customizable properties
+- **Update Pipeline** - Update properties of an existing pipeline
+- **Delete Pipeline** - Remove a pipeline
+- **Move Boxes Between Pipelines** - Move multiple boxes (deals) between pipelines in batch
+
+### Box Operations
+- **List Boxes in Pipeline** - Get all boxes (deals) in a specific pipeline
+- **Get Box** - Retrieve a specific box by key
+- **Get Multiple Boxes** - Retrieve multiple boxes at once
+- **Create Box** - Create a new box in a pipeline
+- **Update Box** - Update properties of an existing box
+- **Delete Box** - Remove a box
+- **Get Box Timeline** - Retrieve the timeline of events for a box
+
+### Stage Operations
+- **List Stages** - Get all stages in a pipeline
+- **Get Stage** - Retrieve a specific stage by key
+- **Create Stage** - Create a new stage in a pipeline
+- **Update Stage** - Update properties of an existing stage
+- **Delete Stage** - Remove a stage from a pipeline
+
+### Field Operations
+- **List Fields** - Get all fields in a pipeline
+- **Get Field** - Retrieve a specific field by key
+- **Create Field** - Create a new field in a pipeline
+- **Update Field** - Update properties of an existing field
+- **Delete Field** - Remove a field from a pipeline
+- **List Field Values** - Get all field values for a box
+- **Get Field Value** - Retrieve a specific field value
+- **Update Field Value** - Update a field value for a box
+
+### Contact Operations
+- **Get Contact** - Retrieve a specific contact by key
+- **Create Contact** - Create a new contact
+- **Update Contact** - Update properties of an existing contact
+- **Delete Contact** - Remove a contact
+
+### Organization Operations
+- **Get Organization** - Retrieve a specific organization by key
+- **Create Organization** - Create a new organization
+- **Check Existing Organizations** - Search for existing organizations by name or domain
+- **Update Organization** - Update properties of an existing organization
+- **Delete Organization** - Remove an organization
+
+### Task Operations
+- **Get Task** - Retrieve a specific task by key
+- **Get Tasks in Box** - Get all tasks associated with a box
+- **Create Task** - Create a new task for a box
+- **Update Task** - Update properties of an existing task
+- **Delete Task** - Remove a task
+
+## Credentials
+
+To use this node, you need an API key from Streak CRM.
+
+### How to get your API key:
+
+1. Log in to your Streak account at [streak.com](https://streak.com)
+2. Go to **Settings** > **API** 
+3. Copy your API key
+
+In n8n, create a new credential of type **Streak CRM API** and enter your API key.
+
+## Compatibility
+
+This node was developed and tested with n8n version 1.0.0 and Streak API v1.
+
+## Usage
+
+### Example: Creating a new pipeline and adding a box (deal)
+
+This is a simple workflow to create a pipeline and then add a box to it:
+
+1. **Streak CRM node** with operation **Create Pipeline**
+   - Set name: `New Sales Pipeline`
+   - Optional: Add description, team key, and other properties
+
+2. **Streak CRM node** with operation **Create Box**
+   - Use the pipeline key from the previous node
+   - Set name: `Potential Client`
+   - Optional: Add stage key and other properties
+
+### Example: Managing contacts and linking them to boxes
+
+1. **Streak CRM node** with operation **Create Contact**
+   - Set email: `client@example.com`
+   - Add fields for name, organization, etc.
+
+2. **Streak CRM node** with operation **Update Box**
+   - Use an existing box key
+   - Link the contact by updating field values
+
+## Resources
+
+* [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
+* [Streak API Documentation](https://streak.readme.io/reference/about-the-streak-api)
+* [Streak User Guide](https://streak.com/support/articles)
+
+## Version History
+
+### 1.0.0
+- Initial release with comprehensive support for Users, Teams, Pipelines, Boxes, Stages, Fields, Contacts, Organizations, and Tasks
+- Support for pagination in list operations
+- Detailed error handling
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-starter/blob/master/LICENSE.md)
+[MIT](LICENSE.md)
