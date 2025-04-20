@@ -1,19 +1,24 @@
 {
   "name": "n8n-nodes-streak-crm",
-  "version": "0.1.0",
-  "description": "",
+  "version": "1.0.0",
+  "description": "n8n node to connect with Streak CRM API and automate CRM workflows",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "streak",
+    "crm",
+    "streak-crm",
+    "gmail-crm",
+    "pipeline"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/nukleas/n8n-nodes-streak-crm",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Nader Heidari",
+    "email": "your-email@example.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-streak-crm.git"
+    "url": "https://github.com/nukleas/n8n-nodes-streak-crm.git"
   },
   "engines": {
     "node": ">=18.10",
@@ -39,7 +44,7 @@
       "dist/credentials/StreakApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/StreakCRM/Streak.node.js"
+      "dist/nodes/Streak/Streak.node.js"
     ]
   },
   "devDependencies": {

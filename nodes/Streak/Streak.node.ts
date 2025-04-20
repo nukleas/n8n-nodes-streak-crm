@@ -5,7 +5,7 @@ import type {
 	INodeTypeDescription,
 	IDataObject,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 // Import operation handlers
 import { handleUserOperations } from './operations/userOperations';
@@ -25,7 +25,7 @@ export class Streak implements INodeType {
 		group: ['transform'],
 		version: 1,
 		description: 'Streak CRM Node',
-		icon: 'file:streak.png',
+		icon: 'file:streak.svg',
 		defaults: {
 			name: 'Streak',
 		},
@@ -36,45 +36,21 @@ export class Streak implements INodeType {
 				required: true,
 			},
 		],
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main'],
+		outputs: ['main'],
 		properties: [
 			// Resource Selection
 			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				default: 'user',
 				options: [
-					{
-						name: 'User',
-						value: 'user',
-						description: 'Operate on Streak users',
-					},
-					{
-						name: 'Team',
-						value: 'team',
-						description: 'Operate on Streak teams',
-					},
-					{
-						name: 'Pipeline',
-						value: 'pipeline',
-						description: 'Operate on Streak pipelines',
-					},
 					{
 						name: 'Box',
 						value: 'box',
 						description: 'Operate on Streak boxes (deals/opportunities)',
-					},
-					{
-						name: 'Stage',
-						value: 'stage',
-						description: 'Operate on Streak pipeline stages',
-					},
-					{
-						name: 'Field',
-						value: 'field',
-						description: 'Operate on Streak fields and field values',
 					},
 					{
 						name: 'Contact',
@@ -82,14 +58,39 @@ export class Streak implements INodeType {
 						description: 'Operate on Streak contacts',
 					},
 					{
+						name: 'Field',
+						value: 'field',
+						description: 'Operate on Streak fields and field values',
+					},
+					{
 						name: 'Organization',
 						value: 'organization',
 						description: 'Operate on Streak organizations',
 					},
 					{
+						name: 'Pipeline',
+						value: 'pipeline',
+						description: 'Operate on Streak pipelines',
+					},
+					{
+						name: 'Stage',
+						value: 'stage',
+						description: 'Operate on Streak pipeline stages',
+					},
+					{
 						name: 'Task',
 						value: 'task',
 						description: 'Operate on Streak tasks',
+					},
+					{
+						name: 'Team',
+						value: 'team',
+						description: 'Operate on Streak teams',
+					},
+					{
+						name: 'User',
+						value: 'user',
+						description: 'Operate on Streak users',
 					},
 				],
 			},
@@ -99,6 +100,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['user'],
@@ -126,6 +128,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['team'],
@@ -153,6 +156,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['pipeline'],
@@ -161,28 +165,10 @@ export class Streak implements INodeType {
 				default: 'listAllPipelines',
 				options: [
 					{
-						name: 'List All Pipelines',
-						value: 'listAllPipelines',
-						description: 'Lists all pipelines the user has access to',
-						action: 'List all pipelines',
-					},
-					{
-						name: 'Get Pipeline',
-						value: 'getPipeline',
-						description: 'Gets a specific pipeline by its key',
-						action: 'Get a pipeline',
-					},
-					{
 						name: 'Create Pipeline',
 						value: 'createPipeline',
 						description: 'Creates a new pipeline',
 						action: 'Create a pipeline',
-					},
-					{
-						name: 'Update Pipeline',
-						value: 'updatePipeline',
-						description: 'Updates an existing pipeline',
-						action: 'Update a pipeline',
 					},
 					{
 						name: 'Delete Pipeline',
@@ -191,10 +177,28 @@ export class Streak implements INodeType {
 						action: 'Delete a pipeline',
 					},
 					{
+						name: 'Get Pipeline',
+						value: 'getPipeline',
+						description: 'Gets a specific pipeline by its key',
+						action: 'Get a pipeline',
+					},
+					{
+						name: 'List All Pipelines',
+						value: 'listAllPipelines',
+						description: 'Lists all pipelines the user has access to',
+						action: 'List all pipelines',
+					},
+					{
 						name: 'Move Boxes (Batch)',
 						value: 'moveBoxesBatch',
 						description: 'Moves multiple boxes to a different pipeline',
 						action: 'Move boxes between pipelines',
+					},
+					{
+						name: 'Update Pipeline',
+						value: 'updatePipeline',
+						description: 'Updates an existing pipeline',
+						action: 'Update a pipeline',
 					},
 				],
 			},
@@ -311,18 +315,25 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['box'],
 					},
 				},
-				default: 'listBoxes',
+				default: 'listBoxesInPipeline',
 				options: [
 					{
-						name: 'List Boxes in Pipeline',
-						value: 'listBoxes',
-						description: 'Lists all boxes in a specific pipeline',
-						action: 'List boxes in a pipeline',
+						name: 'Create Box',
+						value: 'createBox',
+						description: 'Creates a new box in a pipeline',
+						action: 'Create a box',
+					},
+					{
+						name: 'Delete Box',
+						value: 'deleteBox',
+						description: 'Deletes a box',
+						action: 'Delete a box',
 					},
 					{
 						name: 'Get Box',
@@ -333,32 +344,26 @@ export class Streak implements INodeType {
 					{
 						name: 'Get Multiple Boxes',
 						value: 'getMultipleBoxes',
-						description: 'Gets information for multiple boxes in a single request',
+						description: 'Gets multiple boxes by their keys',
 						action: 'Get multiple boxes',
 					},
 					{
-						name: 'Create Box',
-						value: 'createBox',
-						description: 'Creates a new box in a specific pipeline',
-						action: 'Create a box',
+						name: 'Get Timeline',
+						value: 'getTimeline',
+						description: 'Gets the timeline of events for a box',
+						action: 'Get timeline',
+					},
+					{
+						name: 'List Boxes in Pipeline',
+						value: 'listBoxesInPipeline',
+						description: 'Lists all boxes in a pipeline',
+						action: 'List boxes in pipeline',
 					},
 					{
 						name: 'Update Box',
 						value: 'updateBox',
 						description: 'Updates an existing box',
 						action: 'Update a box',
-					},
-					{
-						name: 'Delete Box',
-						value: 'deleteBox',
-						description: 'Deletes a box',
-						action: 'Delete a box',
-					},
-					{
-						name: 'Get Timeline',
-						value: 'getTimeline',
-						description: 'Gets the timeline for a specific box',
-						action: 'Get a box timeline',
 					},
 				],
 			},
@@ -444,7 +449,6 @@ export class Streak implements INodeType {
 				name: 'stageKey',
 				type: 'string',
 				default: '',
-				required: false,
 				description: 'The key of the stage to place the box in (optional)',
 				displayOptions: {
 					show: {
@@ -535,6 +539,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['stage'],
@@ -543,10 +548,16 @@ export class Streak implements INodeType {
 				default: 'listStages',
 				options: [
 					{
-						name: 'List Stages',
-						value: 'listStages',
-						description: 'Lists all stages in a pipeline',
-						action: 'List stages in a pipeline',
+						name: 'Create Stage',
+						value: 'createStage',
+						description: 'Creates a new stage in a pipeline',
+						action: 'Create a stage',
+					},
+					{
+						name: 'Delete Stage',
+						value: 'deleteStage',
+						description: 'Deletes a stage',
+						action: 'Delete a stage',
 					},
 					{
 						name: 'Get Stage',
@@ -555,22 +566,16 @@ export class Streak implements INodeType {
 						action: 'Get a stage',
 					},
 					{
-						name: 'Create Stage',
-						value: 'createStage',
-						description: 'Creates a new stage in a pipeline',
-						action: 'Create a stage',
+						name: 'List Stages',
+						value: 'listStages',
+						description: 'Lists all stages in a pipeline',
+						action: 'List stages',
 					},
 					{
 						name: 'Update Stage',
 						value: 'updateStage',
 						description: 'Updates an existing stage',
 						action: 'Update a stage',
-					},
-					{
-						name: 'Delete Stage',
-						value: 'deleteStage',
-						description: 'Deletes a stage',
-						action: 'Delete a stage',
 					},
 				],
 			},
@@ -650,7 +655,7 @@ export class Streak implements INodeType {
 					{
 						displayName: 'Color',
 						name: 'color',
-						type: 'string',
+						type: 'color',
 						default: '',
 						description: 'Color code for the stage (e.g., #FF0000)',
 					},
@@ -681,7 +686,7 @@ export class Streak implements INodeType {
 					{
 						displayName: 'Color',
 						name: 'color',
-						type: 'string',
+						type: 'color',
 						default: '',
 						description: 'New color for the stage (e.g., #00FF00)',
 					},
@@ -693,6 +698,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['field'],
@@ -701,28 +707,10 @@ export class Streak implements INodeType {
 				default: 'listFields',
 				options: [
 					{
-						name: 'List Fields',
-						value: 'listFields',
-						description: 'Lists all fields in a pipeline',
-						action: 'List fields in a pipeline',
-					},
-					{
-						name: 'Get Field',
-						value: 'getField',
-						description: 'Gets a specific field by its key',
-						action: 'Get a field',
-					},
-					{
 						name: 'Create Field',
 						value: 'createField',
 						description: 'Creates a new field in a pipeline',
 						action: 'Create a field',
-					},
-					{
-						name: 'Update Field',
-						value: 'updateField',
-						description: 'Updates an existing field',
-						action: 'Update a field',
 					},
 					{
 						name: 'Delete Field',
@@ -731,16 +719,34 @@ export class Streak implements INodeType {
 						action: 'Delete a field',
 					},
 					{
-						name: 'List Field Values',
-						value: 'listFieldValues',
-						description: 'Lists all field values for a box',
-						action: 'List field values for a box',
+						name: 'Get Field',
+						value: 'getField',
+						description: 'Gets a specific field by its key',
+						action: 'Get a field',
 					},
 					{
 						name: 'Get Field Value',
 						value: 'getFieldValue',
 						description: 'Gets a specific field value for a box',
 						action: 'Get a field value',
+					},
+					{
+						name: 'List Field Values',
+						value: 'listFieldValues',
+						description: 'Lists all field values for a box',
+						action: 'List field values for a box',
+					},
+					{
+						name: 'List Fields',
+						value: 'listFields',
+						description: 'Lists all fields in a pipeline',
+						action: 'List fields in a pipeline',
+					},
+					{
+						name: 'Update Field',
+						value: 'updateField',
+						description: 'Updates an existing field',
+						action: 'Update a field',
 					},
 					{
 						name: 'Update Field Value',
@@ -838,19 +844,14 @@ export class Streak implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'Text',
-						value: 'TEXT',
-						description: 'Single line text field',
+						name: 'Checkbox',
+						value: 'CHECKBOX',
+						description: 'Checkbox field (boolean)',
 					},
 					{
-						name: 'Paragraph Text',
-						value: 'TEXT_PARAGRAPH',
-						description: 'Multi-line text field',
-					},
-					{
-						name: 'Number',
-						value: 'NUMBER',
-						description: 'Numeric field',
+						name: 'Contact',
+						value: 'CONTACT',
+						description: 'Contact field',
 					},
 					{
 						name: 'Date',
@@ -863,19 +864,24 @@ export class Streak implements INodeType {
 						description: 'Dropdown selection field',
 					},
 					{
-						name: 'Checkbox',
-						value: 'CHECKBOX',
-						description: 'Checkbox field (boolean)',
-					},
-					{
-						name: 'Contact',
-						value: 'CONTACT',
-						description: 'Contact field',
-					},
-					{
 						name: 'File',
 						value: 'FILE',
 						description: 'File attachment field',
+					},
+					{
+						name: 'Number',
+						value: 'NUMBER',
+						description: 'Numeric field',
+					},
+					{
+						name: 'Paragraph Text',
+						value: 'TEXT_PARAGRAPH',
+						description: 'Multi-line text field',
+					},
+					{
+						name: 'Text',
+						value: 'TEXT',
+						description: 'Single line text field',
 					},
 				],
 				default: 'TEXT',
@@ -997,6 +1003,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['contact'],
@@ -1056,6 +1063,7 @@ export class Streak implements INodeType {
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				required: true,
 				description: 'The email address of the contact',
@@ -1147,6 +1155,7 @@ export class Streak implements INodeType {
 						displayName: 'Email',
 						name: 'email',
 						type: 'string',
+						placeholder: 'name@email.com',
 						default: '',
 						description: 'New email address for the contact',
 					},
@@ -1203,6 +1212,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['organization'],
@@ -1211,10 +1221,10 @@ export class Streak implements INodeType {
 				default: 'getOrganization',
 				options: [
 					{
-						name: 'Get Organization',
-						value: 'getOrganization',
-						description: 'Gets a specific organization',
-						action: 'Get an organization',
+						name: 'Check Existing Organizations',
+						value: 'checkExistingOrganizations',
+						description: 'Checks for existing organizations by name or domain',
+						action: 'Check existing organizations',
 					},
 					{
 						name: 'Create Organization',
@@ -1223,22 +1233,22 @@ export class Streak implements INodeType {
 						action: 'Create an organization',
 					},
 					{
-						name: 'Check Existing Organizations',
-						value: 'checkExistingOrganizations',
-						description: 'Checks for existing organizations by name or domain',
-						action: 'Check existing organizations',
+						name: 'Delete Organization',
+						value: 'deleteOrganization',
+						description: 'Deletes an organization',
+						action: 'Delete an organization',
+					},
+					{
+						name: 'Get Organization',
+						value: 'getOrganization',
+						description: 'Gets a specific organization',
+						action: 'Get an organization',
 					},
 					{
 						name: 'Update Organization',
 						value: 'updateOrganization',
 						description: 'Updates an existing organization',
 						action: 'Update an organization',
-					},
-					{
-						name: 'Delete Organization',
-						value: 'deleteOrganization',
-						description: 'Deletes an organization',
-						action: 'Delete an organization',
 					},
 				],
 			},
@@ -1390,6 +1400,7 @@ export class Streak implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: ['task'],
@@ -1397,6 +1408,18 @@ export class Streak implements INodeType {
 				},
 				default: 'getTask',
 				options: [
+					{
+						name: 'Create Task',
+						value: 'createTask',
+						description: 'Creates a new task for a box',
+						action: 'Create a task',
+					},
+					{
+						name: 'Delete Task',
+						value: 'deleteTask',
+						description: 'Deletes a task',
+						action: 'Delete a task',
+					},
 					{
 						name: 'Get Task',
 						value: 'getTask',
@@ -1410,22 +1433,10 @@ export class Streak implements INodeType {
 						action: 'Get tasks in box',
 					},
 					{
-						name: 'Create Task',
-						value: 'createTask',
-						description: 'Creates a new task for a box',
-						action: 'Create a task',
-					},
-					{
 						name: 'Update Task',
 						value: 'updateTask',
 						description: 'Updates an existing task',
 						action: 'Update a task',
-					},
-					{
-						name: 'Delete Task',
-						value: 'deleteTask',
-						description: 'Deletes a task',
-						action: 'Delete a task',
 					},
 				],
 			},
