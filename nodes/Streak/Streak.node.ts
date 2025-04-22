@@ -4,8 +4,13 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 	IDataObject,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
+
+// Import the Streak API service
+import { StreakApiService } from './services/StreakApiService';
 
 // Import operation handlers
 import { handleUserOperations } from './operations/userOperations';
@@ -19,6 +24,34 @@ import { handleOrganizationOperations } from './operations/organizationOperation
 import { handleTaskOperations } from './operations/taskOperations';
 
 export class Streak implements INodeType {
+	// Define methods required by n8n for resource locators and dynamic data loading
+	methods = {
+		loadOptions: {
+			// Load all pipelines for dropdown selection
+			async getPipelineOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				try {
+					// Get API credentials
+					const credentials = await this.getCredentials('streakApi');
+					if (!credentials?.apiKey) {
+						throw new NodeOperationError(this.getNode(), 'No API key provided');
+					}
+					const apiKey = credentials.apiKey as string;
+
+					// Use the StreakApiService to get pipelines
+					const pipelines = await StreakApiService.getPipelines(this, apiKey);
+
+					// Map the response data to the format expected by n8n
+					return pipelines.map(pipeline => ({
+						name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key})`,
+						value: pipeline.key,
+					}));
+				} catch (error) {
+					// Just return an empty array on error - the UI will handle this gracefully
+					return [];
+				}
+			},
+		},
+	};
 	description: INodeTypeDescription = {
 		displayName: 'Streak',
 		name: 'streak',
@@ -94,7 +127,7 @@ export class Streak implements INodeType {
 					},
 				],
 			},
-			
+
 			// User Operations
 			{
 				displayName: 'Operation',
@@ -122,7 +155,7 @@ export class Streak implements INodeType {
 					},
 				],
 			},
-			
+
 			// Team Operations
 			{
 				displayName: 'Operation',
@@ -150,7 +183,7 @@ export class Streak implements INodeType {
 					},
 				],
 			},
-			
+
 			// Pipeline Operations
 			{
 				displayName: 'Operation',
@@ -202,7 +235,7 @@ export class Streak implements INodeType {
 					},
 				],
 			},
-			
+
 			// User Key (only for getUser operation)
 			{
 				displayName: 'User Key',
@@ -218,7 +251,7 @@ export class Streak implements INodeType {
 					},
 				},
 			},
-			
+
 			// Team Key (only for getTeam operation)
 			{
 				displayName: 'Team Key',
@@ -234,15 +267,18 @@ export class Streak implements INodeType {
 					},
 				},
 			},
-			
+
 			// Pipeline Key (for pipeline operations)
 			{
-				displayName: 'Pipeline Key',
+				displayName: 'Pipeline Name or ID',
 				name: 'pipelineKey',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getPipelineOptions',
+				},
 				default: '',
 				required: true,
-				description: 'The key of the pipeline',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				displayOptions: {
 					show: {
 						resource: ['pipeline'],
@@ -255,7 +291,7 @@ export class Streak implements INodeType {
 					},
 				},
 			},
-			
+
 			// Pipeline Name (for create/update pipeline)
 			{
 				displayName: 'Pipeline Name',
@@ -274,7 +310,7 @@ export class Streak implements INodeType {
 					},
 				},
 			},
-			
+
 			// Box Keys (for moveBoxesBatch)
 			{
 				displayName: 'Box Keys',
@@ -282,10 +318,11 @@ export class Streak implements INodeType {
 				type: 'string',
 				typeOptions: {
 					multipleValues: true,
+					multipleValueButtonText: 'Add Box Key',
 				},
-				default: '',
+				default: [],
 				required: true,
-				description: 'The keys of the boxes to move (comma-separated)',
+				description: 'The keys of the boxes to move',
 				displayOptions: {
 					show: {
 						resource: ['pipeline'],
@@ -293,15 +330,18 @@ export class Streak implements INodeType {
 					},
 				},
 			},
-			
-			// Target Pipeline Key (for moveBoxesBatch)
+
+			// Target Pipeline Key (for moveBoxesBatch operation)
 			{
-				displayName: 'Target Pipeline Key',
+				displayName: 'Target Pipeline Name or ID',
 				name: 'targetPipelineKey',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getPipelineOptions',
+				},
 				default: '',
 				required: true,
-				description: 'The key of the target pipeline to move boxes to',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				displayOptions: {
 					show: {
 						resource: ['pipeline'],
@@ -309,7 +349,7 @@ export class Streak implements INodeType {
 					},
 				},
 			},
-			
+
 			// Box Operations
 			{
 				displayName: 'Operation',
@@ -1636,7 +1676,7 @@ export class Streak implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		
+
 		// Get API key from credentials
 		const apiKey = (await this.getCredentials('streakApi'))?.apiKey as string;
 

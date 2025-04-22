@@ -26,7 +26,16 @@ Or if you use n8n Desktop, you can go to **Settings > Community nodes > Install*
 
 ## Operations
 
-This node supports a comprehensive set of operations across various Streak CRM resources:
+This node supports a comprehensive set of operations across various Streak CRM resources.
+
+### Architecture Improvements
+
+The node now features a dedicated `StreakApiService` class that centralizes all API interactions, providing:
+
+- Consistent error handling across all operations
+- Strong TypeScript typing for better code reliability
+- Improved performance with optimized request handling
+- Better developer experience for future enhancements
 
 ### User Operations
 - **Get Current User** - Retrieve the details of the current authenticated user
@@ -139,7 +148,14 @@ This is a simple workflow to create a pipeline and then add a box to it:
 
 ## Version History
 
-### 1.0.0
+### 1.0.3
+- Added a comprehensive StreakApiService class to centralize API interactions
+- Improved pipeline selection with dynamic dropdown loading
+- Fixed Box Keys field handling in Move Boxes operation
+- Enhanced error handling and API request consistency
+- Added TypeScript interfaces for better type safety
+
+### 1.0.2
 - Initial release with comprehensive support for Users, Teams, Pipelines, Boxes, Stages, Fields, Contacts, Organizations, and Tasks
 - Support for pagination in list operations
 - Detailed error handling
