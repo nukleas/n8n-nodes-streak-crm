@@ -1,7 +1,7 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { validateParameters } from './utils';
-import { StreakApiService } from '../services/StreakApiService';
+import { StreakApiService } from '../services';
 
 /**
  * Handle pipeline-related operations for the Streak API
@@ -15,21 +15,21 @@ export async function handlePipelineOperations(
 	// Handle pipeline operations
 	if (operation === 'listAllPipelines') {
 		// List All Pipelines operation
-		return await StreakApiService.getPipelines(this, apiKey);
+		return await StreakApiService.pipeline().getPipelines(this, apiKey);
 	} else if (operation === 'getPipeline') {
 		// Get Pipeline operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		return await StreakApiService.getPipeline(this, apiKey, pipelineKey);
+		return await StreakApiService.pipeline().getPipeline(this, apiKey, pipelineKey);
 	} else if (operation === 'createPipeline') {
 		// Create Pipeline operation
 		const pipelineName = this.getNodeParameter('pipelineName', itemIndex) as string;
 
 		validateParameters.call(this, { pipelineName }, ['pipelineName'], itemIndex);
 
-		return await StreakApiService.createPipeline(this, apiKey, pipelineName);
+		return await StreakApiService.pipeline().createPipeline(this, apiKey, pipelineName);
 	} else if (operation === 'updatePipeline') {
 		// Update Pipeline operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -42,14 +42,14 @@ export async function handlePipelineOperations(
 			itemIndex,
 		);
 
-		return await StreakApiService.updatePipeline(this, apiKey, pipelineKey, pipelineName);
+		return await StreakApiService.pipeline().updatePipeline(this, apiKey, pipelineKey, pipelineName);
 	} else if (operation === 'deletePipeline') {
 		// Delete Pipeline operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		return await StreakApiService.deletePipeline(this, apiKey, pipelineKey);
+		return await StreakApiService.pipeline().deletePipeline(this, apiKey, pipelineKey);
 	} else if (operation === 'moveBoxesBatch') {
 		// Move Boxes (Batch) operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -77,7 +77,7 @@ export async function handlePipelineOperations(
 			itemIndex,
 		);
 
-		return await StreakApiService.moveBoxesBatch(
+		return await StreakApiService.pipeline().moveBoxesBatch(
 			this,
 			apiKey,
 			pipelineKey,

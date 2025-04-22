@@ -10,7 +10,7 @@ import type {
 import { NodeOperationError } from 'n8n-workflow';
 
 // Import the Streak API service
-import { StreakApiService } from './services/StreakApiService';
+import { StreakApiService } from './services';
 
 // Import operation handlers
 import { handleUserOperations } from './operations/userOperations';
@@ -38,7 +38,7 @@ export class Streak implements INodeType {
 					const apiKey = credentials.apiKey as string;
 
 					// Use the StreakApiService to get pipelines
-					const pipelines = await StreakApiService.getPipelines(this, apiKey);
+					const pipelines = await StreakApiService.pipeline().getPipelines(this, apiKey);
 
 					// Map the response data to the format expected by n8n
 					return pipelines.map(pipeline => ({

@@ -30,12 +30,15 @@ This node supports a comprehensive set of operations across various Streak CRM r
 
 ### Architecture Improvements
 
-The node now features a dedicated `StreakApiService` class that centralizes all API interactions, providing:
+The node features a modular architecture with resource-specific service classes, providing:
 
-- Consistent error handling across all operations
-- Strong TypeScript typing for better code reliability
-- Improved performance with optimized request handling
-- Better developer experience for future enhancements
+- **Modular Service Architecture** - Specialized services for each resource type (Pipelines, Boxes, Organizations)
+- **Enhanced Type Safety** - Dedicated TypeScript interfaces for each resource type
+- **Centralized API Handling** - Common base service for consistent request processing
+- **Improved Maintainability** - Reduced code duplication and better organization
+- **Facade Pattern** - Simple access to all services through a unified API
+- **Consistent Error Handling** - Standardized approach to error management across all services
+- **Better Developer Experience** - Clear separation of concerns for easier enhancements
 
 ### User Operations
 - **Get Current User** - Retrieve the details of the current authenticated user
@@ -147,6 +150,14 @@ This is a simple workflow to create a pipeline and then add a box to it:
 * [Streak User Guide](https://streak.com/support/articles)
 
 ## Version History
+
+### 1.0.4
+- Implemented modular service architecture with dedicated service classes for different resource types
+- Added specialized services for Pipelines, Boxes, and Organizations resources
+- Created a central service facade for easier access to all resource services
+- Improved type definitions with dedicated interface files
+- Enhanced code organization with better directory structure
+- Updated all operations to use the new modular service architecture
 
 ### 1.0.3
 - Added a comprehensive StreakApiService class to centralize API interactions

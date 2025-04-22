@@ -1,6 +1,7 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { validateParameters } from './utils';
+import { StreakApiService } from '../services';
 
 /**
  * Handle box-related operations for the Streak API
@@ -20,55 +21,21 @@ export async function handleBoxOperations(
 		
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 		
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/pipelines/${pipelineKey}/boxes`,
-				apiKey,
-				returnAll,
-				itemIndex,
-				limit,
-			);
-		} else {
-			return await makeStreakRequest.call(
-				this,
-				'GET',
-				`/pipelines/${pipelineKey}/boxes`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-			);
-		}
+		return await StreakApiService.box().listBoxes(this, apiKey, pipelineKey, returnAll, limit);
 	} else if (operation === 'getBox') {
 		// Get Box operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
 		
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/boxes/${boxKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await StreakApiService.box().getBox(this, apiKey, boxKey);
 	} else if (operation === 'getMultipleBoxes') {
 		// Get Multiple Boxes operation
 		const boxKeys = this.getNodeParameter('boxKeys', itemIndex) as string[];
 		
 		validateParameters.call(this, { boxKeys }, ['boxKeys'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			'/boxes/batchGet',
-			apiKey,
-			itemIndex,
-			{
-				boxKeys,
-			},
-		);
+		return await StreakApiService.box().getMultipleBoxes(this, apiKey, boxKeys);
 	} else if (operation === 'createBox') {
 		// Create Box operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -78,30 +45,7 @@ export async function handleBoxOperations(
 		
 		validateParameters.call(this, { pipelineKey, boxName }, ['pipelineKey', 'boxName'], itemIndex);
 		
-		const body: IDataObject = {
-			name: boxName,
-		};
-		
-		if (stageKey) {
-			body.stageKey = stageKey;
-		}
-		
-		if (additionalFields.notes) {
-			body.notes = additionalFields.notes;
-		}
-		
-		if (additionalFields.assignedToTeamKeyOrUserKey) {
-			body.assignedToTeamKeyOrUserKey = additionalFields.assignedToTeamKeyOrUserKey;
-		}
-		
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/pipelines/${pipelineKey}/boxes`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await StreakApiService.box().createBox(this, apiKey, pipelineKey, boxName, stageKey, additionalFields);
 	} else if (operation === 'updateBox') {
 		// Update Box operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
@@ -117,45 +61,14 @@ export async function handleBoxOperations(
 			);
 		}
 		
-		const body: IDataObject = {};
-		
-		if (updateFields.name) {
-			body.name = updateFields.name;
-		}
-		
-		if (updateFields.notes) {
-			body.notes = updateFields.notes;
-		}
-		
-		if (updateFields.stageKey) {
-			body.stageKey = updateFields.stageKey;
-		}
-		
-		if (updateFields.assignedToTeamKeyOrUserKey) {
-			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
-		}
-		
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/boxes/${boxKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await StreakApiService.box().updateBox(this, apiKey, boxKey, updateFields);
 	} else if (operation === 'deleteBox') {
 		// Delete Box operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
 		
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/boxes/${boxKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await StreakApiService.box().deleteBox(this, apiKey, boxKey);
 	} else if (operation === 'getTimeline') {
 		// Get Timeline operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
@@ -164,26 +77,7 @@ export async function handleBoxOperations(
 		
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 		
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/boxes/${boxKey}/timeline`,
-				apiKey,
-				returnAll,
-				itemIndex,
-				limit,
-			);
-		} else {
-			return await makeStreakRequest.call(
-				this,
-				'GET',
-				`/boxes/${boxKey}/timeline`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-			);
-		}
+		return await StreakApiService.box().getBoxTimeline(this, apiKey, boxKey, returnAll, limit);
 	}
 
 	throw new NodeOperationError(this.getNode(), `The box operation "${operation}" is not supported!`, { itemIndex });
