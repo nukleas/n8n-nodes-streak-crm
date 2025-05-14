@@ -1,7 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { makeStreakRequest, validateParameters, handlePagination } from './utils';
-import { LoggerProxy as Logger } from 'n8n-workflow';
 /**
  * Handle box-related operations for the Streak API
  */
@@ -85,7 +84,6 @@ export async function handleBoxOperations(
 			body.assignedToTeamKeyOrUserKey = additionalFields.assignedToTeamKeyOrUserKey;
 		}
 
-		Logger.debug(`Creating box with fields: ${JSON.stringify(body)}`);
 		return await makeStreakRequest.call(
 			this,
 			'POST',
@@ -126,8 +124,6 @@ export async function handleBoxOperations(
 		if (updateFields.assignedToTeamKeyOrUserKey) {
 			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
 		}
-
-		Logger.debug(`Updating box ${boxKey} with fields: ${JSON.stringify(body)}`);
 		return await makeStreakRequest.call(this, 'POST', `/boxes/${boxKey}`, apiKey, itemIndex, body);
 	} else if (operation === 'deleteBox') {
 		// Delete Box operation
