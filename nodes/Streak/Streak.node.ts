@@ -361,7 +361,7 @@ export class Streak implements INodeType {
 						resource: ['box'],
 					},
 				},
-				default: 'listBoxesInPipeline',
+				default: 'listBoxes',
 				options: [
 					{
 						name: 'Create Box',
@@ -395,9 +395,9 @@ export class Streak implements INodeType {
 					},
 					{
 						name: 'List Boxes in Pipeline',
-						value: 'listBoxesInPipeline',
-						description: 'Lists all boxes in a pipeline',
-						action: 'List boxes in pipeline',
+						value: 'listBoxes',
+						description: 'Get all boxes (deals) in a pipeline',
+						action: 'Get all boxes in a pipeline',
 					},
 					{
 						name: 'Update Box',
@@ -448,7 +448,6 @@ export class Streak implements INodeType {
 				},
 			},
 
-			// Pipeline Key (for box operations)
 			{
 				displayName: 'Pipeline Key',
 				name: 'pipelineKey',
