@@ -1,4 +1,10 @@
-import { IExecuteFunctions, IDataObject, NodeOperationError, IHttpRequestMethods, JsonObject } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	IDataObject,
+	NodeOperationError,
+	IHttpRequestMethods,
+	JsonObject,
+} from 'n8n-workflow';
 
 /**
  * Helper function to make a request to the Streak API with proper error handling
@@ -15,16 +21,16 @@ export async function makeStreakRequest(
 	try {
 		// Build request options with proper content-type only when needed
 		const headers: IDataObject = {
-			'Accept': 'application/json',
+			Accept: 'application/json',
 		};
-		
+
 		if (['POST', 'PUT', 'PATCH'].includes(method)) {
 			headers['Content-Type'] = 'application/json';
 		}
-		
-		return await this.helpers.httpRequest({
+
+		return (await this.helpers.httpRequest({
 			method,
-			url: `https://api.streak.com/api/v1${endpoint}`,
+			url: `https://api.streak.com/api/v2${endpoint}`,
 			headers,
 			auth: {
 				username: apiKey,
@@ -33,7 +39,7 @@ export async function makeStreakRequest(
 			qs: query,
 			body,
 			json: true,
-		}) as JsonObject;
+		})) as JsonObject;
 	} catch (error) {
 		throw new NodeOperationError(
 			this.getNode(),
