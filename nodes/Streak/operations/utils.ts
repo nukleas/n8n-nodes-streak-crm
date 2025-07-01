@@ -17,20 +17,20 @@ export async function makeStreakRequest(
 	itemIndex = 0,
 	body?: IDataObject,
 	query?: IDataObject,
+	apiVersion: 'v1' | 'v2' = 'v1',
 ): Promise<IDataObject | IDataObject[]> {
 	try {
 		// Build request options with proper content-type only when needed
 		const headers: IDataObject = {
 			Accept: 'application/json',
 		};
-
+		const url = `https://api.streak.com/api/${apiVersion}${endpoint}`;
 		if (['POST', 'PUT', 'PATCH'].includes(method)) {
 			headers['Content-Type'] = 'application/json';
 		}
-
 		return (await this.helpers.httpRequest({
 			method,
-			url: `https://api.streak.com/api/v2${endpoint}`,
+			url: url,
 			headers,
 			auth: {
 				username: apiKey,
