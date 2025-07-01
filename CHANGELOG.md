@@ -5,6 +5,9 @@ All notable changes to the n8n-nodes-streak-crm project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-12-30
+### Fixed
+- **CRITICAL**: Fixed API endpoint version in `utils.ts` from v2 to v1 to resolve 400 errors
 ## [1.0.3] - 2025-04-22
 
 ### Added
