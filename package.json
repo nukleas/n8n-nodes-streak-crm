@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-streak-crm",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "n8n node to connect with Streak CRM API and automate CRM workflows",
   "keywords": [
     "n8n-community-node-package"
