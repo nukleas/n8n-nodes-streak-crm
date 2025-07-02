@@ -17,6 +17,7 @@ export async function makeStreakRequest(
 	itemIndex = 0,
 	body?: IDataObject,
 	query?: IDataObject,
+	apiVersion: 'v1' | 'v2' = 'v1',
 ): Promise<IDataObject | IDataObject[]> {
 	try {
 		// Build request options with proper content-type based on endpoint

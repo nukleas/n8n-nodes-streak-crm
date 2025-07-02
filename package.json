@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-streak-crm",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "n8n node to connect with Streak CRM API and automate CRM workflows",
   "keywords": [
     "n8n-community-node-package"
@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
+    "@types/node": "^22.15.18",
     "@typescript-eslint/parser": "^7.15.0",
     "eslint": "^8.56.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",

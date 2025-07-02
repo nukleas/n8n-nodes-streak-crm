@@ -1,6 +1,7 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
+import { validateParameters } from './utils';
+import { FieldsService } from '../services/Fields';
 
 /**
  * Handle field-related operations for the Streak API
@@ -18,13 +19,8 @@ export async function handleFieldOperations(
 		
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/pipelines/${pipelineKey}/fields`,
-			apiKey,
-			itemIndex,
-		);
+		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		return await fieldsService.query();
 	} else if (operation === 'getField') {
 		// Get Field operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -32,13 +28,8 @@ export async function handleFieldOperations(
 		
 		validateParameters.call(this, { pipelineKey, fieldKey }, ['pipelineKey', 'fieldKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/pipelines/${pipelineKey}/fields/${fieldKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		return await fieldsService.get(fieldKey);
 	} else if (operation === 'createField') {
 		// Create Field operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -48,32 +39,26 @@ export async function handleFieldOperations(
 		
 		validateParameters.call(this, { pipelineKey, fieldName, fieldType }, ['pipelineKey', 'fieldName', 'fieldType'], itemIndex);
 		
-		const body: IDataObject = {
+		const fieldParams: IDataObject = {
 			name: fieldName,
 			type: fieldType,
 		};
 		
 		if (additionalFields.description) {
-			body.description = additionalFields.description;
+			fieldParams.description = additionalFields.description;
 		}
 		
 		if (additionalFields.keyName) {
-			body.keyName = additionalFields.keyName;
+			fieldParams.keyName = additionalFields.keyName;
 		}
 		
 		// Handle field-type specific properties
 		if (fieldType === 'DROPDOWN_ENUMERATION' && additionalFields.enumValues) {
-			body.enumValues = additionalFields.enumValues;
+			fieldParams.enumValues = additionalFields.enumValues;
 		}
 		
-		return await makeStreakRequest.call(
-			this,
-			'PUT',
-			`/pipelines/${pipelineKey}/fields`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		return await fieldsService.create(fieldParams);
 	} else if (operation === 'updateField') {
 		// Update Field operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -90,28 +75,8 @@ export async function handleFieldOperations(
 			);
 		}
 		
-		const body: IDataObject = {};
-		
-		if (updateFields.name) {
-			body.name = updateFields.name;
-		}
-		
-		if (updateFields.description) {
-			body.description = updateFields.description;
-		}
-		
-		if (updateFields.enumValues) {
-			body.enumValues = updateFields.enumValues;
-		}
-		
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/pipelines/${pipelineKey}/fields/${fieldKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		return await fieldsService.update(fieldKey, updateFields);
 	} else if (operation === 'deleteField') {
 		// Delete Field operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -119,26 +84,17 @@ export async function handleFieldOperations(
 		
 		validateParameters.call(this, { pipelineKey, fieldKey }, ['pipelineKey', 'fieldKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/pipelines/${pipelineKey}/fields/${fieldKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		await fieldsService.delete(fieldKey);
+		return { success: true };
 	} else if (operation === 'listFieldValues') {
 		// List Field Values operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
 		
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/boxes/${boxKey}/fields`,
-			apiKey,
-			itemIndex,
-		);
+		const fieldsService = new FieldsService(apiKey, '');
+		return await fieldsService.getBoxFieldValues(boxKey);
 	} else if (operation === 'getFieldValue') {
 		// Get Field Value operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
@@ -146,13 +102,8 @@ export async function handleFieldOperations(
 		
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
 		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/boxes/${boxKey}/fields/${fieldKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const fieldsService = new FieldsService(apiKey, '');
+		return await fieldsService.getBoxFieldValue(boxKey, fieldKey);
 	} else if (operation === 'updateFieldValue') {
 		// Update Field Value operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
@@ -161,18 +112,8 @@ export async function handleFieldOperations(
 		
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
 		
-		const body: IDataObject = {
-			value: fieldValue,
-		};
-		
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/boxes/${boxKey}/fields/${fieldKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		const fieldsService = new FieldsService(apiKey, '');
+		return await fieldsService.updateBoxFieldValue(boxKey, fieldKey, fieldValue);
 	}
 
 	throw new NodeOperationError(this.getNode(), `The field operation "${operation}" is not supported!`, { itemIndex });
