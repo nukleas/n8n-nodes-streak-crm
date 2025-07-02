@@ -91,6 +91,8 @@ export async function handleBoxOperations(
 			apiKey,
 			itemIndex,
 			body,
+			undefined,
+			'v2',
 		);
 	} else if (operation === 'updateBox') {
 		// Update Box operation

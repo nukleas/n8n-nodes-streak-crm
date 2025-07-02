@@ -13,7 +13,7 @@ export async function handleTaskOperations(
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle task operations
 	if (operation === 'getTask') {
-		// Get Task operation
+		// Get Task operation - uses v2 API
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
 		
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
@@ -24,9 +24,12 @@ export async function handleTaskOperations(
 			`/tasks/${taskKey}`,
 			apiKey,
 			itemIndex,
+			undefined,
+			undefined,
+			'v2',
 		);
 	} else if (operation === 'getTasksInBox') {
-		// Get Tasks in Box operation
+		// Get Tasks in Box operation - uses v2 API
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
@@ -42,6 +45,7 @@ export async function handleTaskOperations(
 				itemIndex,
 				100,
 				{},
+				'v2',
 			);
 		} else {
 			const response = await makeStreakRequest.call(
@@ -52,6 +56,7 @@ export async function handleTaskOperations(
 				itemIndex,
 				{},
 				{ limit: limit.toString() },
+				'v2',
 			);
 			
 			if (response && typeof response === 'object' && 'tasks' in response && Array.isArray(response.tasks)) {
@@ -61,7 +66,7 @@ export async function handleTaskOperations(
 			return [];
 		}
 	} else if (operation === 'createTask') {
-		// Create Task operation
+		// Create Task operation - uses v2 API
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
 		const text = this.getNodeParameter('text', itemIndex) as string;
 		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
@@ -95,9 +100,11 @@ export async function handleTaskOperations(
 			apiKey,
 			itemIndex,
 			body,
+			undefined,
+			'v2',
 		);
 	} else if (operation === 'updateTask') {
-		// Update Task operation
+		// Update Task operation - uses v2 API
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
 		
@@ -140,9 +147,11 @@ export async function handleTaskOperations(
 			apiKey,
 			itemIndex,
 			body,
+			undefined,
+			'v2',
 		);
 	} else if (operation === 'deleteTask') {
-		// Delete Task operation
+		// Delete Task operation - uses v2 API
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
 		
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
@@ -153,6 +162,9 @@ export async function handleTaskOperations(
 			`/tasks/${taskKey}`,
 			apiKey,
 			itemIndex,
+			undefined,
+			undefined,
+			'v2',
 		);
 	}
 

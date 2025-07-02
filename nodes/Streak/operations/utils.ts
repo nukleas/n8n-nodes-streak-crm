@@ -19,27 +19,68 @@ export async function makeStreakRequest(
 	query?: IDataObject,
 ): Promise<IDataObject | IDataObject[]> {
 	try {
-		// Build request options with proper content-type only when needed
+		// Build request options with proper content-type based on endpoint
 		const headers: IDataObject = {
 			Accept: 'application/json',
 		};
 
-		if (['POST', 'PUT', 'PATCH'].includes(method)) {
-			headers['Content-Type'] = 'application/json';
+		const url = `https://api.streak.com/api/${apiVersion}${endpoint}`;
+		
+		// Determine content type based on endpoint and method
+		let useFormEncoded = false;
+		let requestBody: any = body;
+		
+		if (['POST', 'PUT', 'PATCH'].includes(method) && body) {
+			// Check if this endpoint requires URL-encoded form data
+			const urlEncodedEndpoints = [
+				'/pipelines', // Create pipeline (PUT)
+				'/stages', // Create stage (PUT)  
+				'/fields', // Create field (PUT)
+				// Note: v2 contacts (/teams/{key}/contacts/) and organizations (/teams/{key}/organizations) use JSON
+			];
+			
+			// Check if endpoint matches any URL-encoded patterns
+			useFormEncoded = urlEncodedEndpoints.some(pattern => 
+				endpoint.includes(pattern) && method === 'PUT'
+			);
+			
+			if (useFormEncoded) {
+				// Use URL-encoded form data
+				headers['Content-Type'] = 'application/x-www-form-urlencoded';
+				// Convert JSON object to URL-encoded string
+				requestBody = new URLSearchParams(body as Record<string, string>).toString();
+			} else {
+				// Use JSON
+				headers['Content-Type'] = 'application/json';
+				requestBody = body;
+			}
 		}
 
-		return (await this.helpers.httpRequest({
+		const requestOptions = {
 			method,
-			url: `https://api.streak.com/api/v2${endpoint}`,
+			url: url,
 			headers,
 			auth: {
 				username: apiKey,
 				password: '',
 			},
 			qs: query,
-			body,
-			json: true,
-		})) as JsonObject;
+			body: requestBody,
+			json: !useFormEncoded, // Only auto-parse JSON if we're not sending form data
+		};
+
+		const response = await this.helpers.httpRequest(requestOptions);
+		
+		// If we sent form data, we might need to parse JSON response manually
+		if (useFormEncoded && typeof response === 'string') {
+			try {
+				return JSON.parse(response) as JsonObject;
+			} catch {
+				return response as unknown as JsonObject;
+			}
+		}
+		
+		return response as JsonObject;
 	} catch (error) {
 		throw new NodeOperationError(
 			this.getNode(),
@@ -80,6 +121,7 @@ export async function handlePagination(
 	itemIndex = 0,
 	limit = 100,
 	additionalParams: IDataObject = {},
+	apiVersion: 'v1' | 'v2' = 'v1',
 ): Promise<IDataObject[]> {
 	let responseData: IDataObject[] = [];
 
@@ -103,6 +145,7 @@ export async function handlePagination(
 				itemIndex,
 				undefined,
 				query,
+				apiVersion,
 			);
 
 			const results = Array.isArray(response) ? response : [response];
@@ -131,6 +174,7 @@ export async function handlePagination(
 			itemIndex,
 			undefined,
 			query,
+			apiVersion,
 		);
 
 		responseData = Array.isArray(response) ? response : [response];
