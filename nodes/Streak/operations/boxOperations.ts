@@ -61,9 +61,20 @@ export async function handleBoxOperations(
 
 		validateParameters.call(this, { boxKeys }, ['boxKeys'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'POST', '/boxes/batchGet', apiKey, itemIndex, {
-			boxKeys,
-		});
+		// Since Streak API doesn't have a batch get endpoint, make individual requests
+		const boxes: IDataObject[] = [];
+		for (const boxKey of boxKeys) {
+			try {
+				const box = await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}`, apiKey, itemIndex);
+				// makeStreakRequest returns IDataObject | IDataObject[], but individual box requests return IDataObject
+				boxes.push(box as IDataObject);
+			} catch (error) {
+				// Skip boxes that can't be retrieved but don't fail the entire operation
+				console.warn(`Failed to retrieve box ${boxKey}:`, error.message);
+			}
+		}
+
+		return boxes;
 	} else if (operation === 'createBox') {
 		// Create Box operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };

@@ -475,10 +475,11 @@ export class Streak implements INodeType {
 				type: 'string',
 				typeOptions: {
 					multipleValues: true,
+					multipleValueButtonText: 'Add Box Key',
 				},
-				default: '',
+				default: [],
 				required: true,
-				description: 'The keys of the boxes to get (comma-separated)',
+				description: 'The keys of the boxes to get',
 				displayOptions: {
 					show: {
 						resource: ['box'],
