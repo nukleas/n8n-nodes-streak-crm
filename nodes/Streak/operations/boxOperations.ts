@@ -35,7 +35,7 @@ export async function handleBoxOperations(
 				returnAll,
 				itemIndex,
 				limit,
-				stageKeyFilter ? { stageKey: stageKeyFilter } : undefined,
+				queryParams,
 			);
 		} else {
 			return await makeStreakRequest.call(
@@ -61,19 +61,21 @@ export async function handleBoxOperations(
 
 		validateParameters.call(this, { boxKeys }, ['boxKeys'], itemIndex);
 
-		// Since Streak API doesn't have a batch get endpoint, make individual requests
+		// Make individual requests since Streak API doesn't have a true batch endpoint for specific box keys
 		const boxes: IDataObject[] = [];
 		for (const boxKey of boxKeys) {
 			try {
-				const box = await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}`, apiKey, itemIndex);
-				// makeStreakRequest returns IDataObject | IDataObject[], but individual box requests return IDataObject
-				boxes.push(box as IDataObject);
+				const response = await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}`, apiKey, itemIndex);
+				// Normalize response to ensure it's an array of IDataObject
+				const normalizedResponse = Array.isArray(response) ? response : [response];
+				boxes.push(...normalizedResponse);
 			} catch (error) {
-				// Skip boxes that can't be retrieved but don't fail the entire operation
-				console.warn(`Failed to retrieve box ${boxKey}:`, error.message);
+				// Use n8n logger for consistent logging
+				this.logger?.warn(`Failed to retrieve box ${boxKey}`, { error: error.message });
 			}
 		}
 
+		// Ensure we always return an array
 		return boxes;
 	} else if (operation === 'createBox') {
 		// Create Box operation
