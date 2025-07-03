@@ -13,7 +13,8 @@ export async function handleBoxOperations(
 	// Handle box operations
 	if (operation === 'listBoxes') {
 		// List Boxes in Pipeline operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
+		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const stageKeyFilter = this.getNodeParameter('stageKeyFilter', itemIndex, '') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
@@ -65,7 +66,8 @@ export async function handleBoxOperations(
 		});
 	} else if (operation === 'createBox') {
 		// Create Box operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
+		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const boxName = this.getNodeParameter('boxName', itemIndex) as string;
 		const stageKey = this.getNodeParameter('stageKey', itemIndex, '') as string;
 		const additionalFields = this.getNodeParameter(
