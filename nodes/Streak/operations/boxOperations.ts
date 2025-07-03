@@ -14,10 +14,17 @@ export async function handleBoxOperations(
 	if (operation === 'listBoxes') {
 		// List Boxes in Pipeline operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const stageKeyFilter = this.getNodeParameter('stageKeyFilter', itemIndex, '') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
+
+		// Build query parameters
+		const queryParams: IDataObject = { limit };
+		if (stageKeyFilter) {
+			queryParams.stageKey = stageKeyFilter;
+		}
 
 		if (returnAll) {
 			return await handlePagination.call(
@@ -27,6 +34,7 @@ export async function handleBoxOperations(
 				returnAll,
 				itemIndex,
 				limit,
+				stageKeyFilter ? { stageKey: stageKeyFilter } : undefined,
 			);
 		} else {
 			return await makeStreakRequest.call(
@@ -36,7 +44,7 @@ export async function handleBoxOperations(
 				apiKey,
 				itemIndex,
 				undefined,
-				{ limit },
+				queryParams,
 			);
 		}
 	} else if (operation === 'getBox') {

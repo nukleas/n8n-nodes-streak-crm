@@ -466,6 +466,21 @@ export class Streak implements INodeType {
 				},
 			},
 
+			// Stage Key (for listBoxes filtering)
+			{
+				displayName: 'Stage Key',
+				name: 'stageKeyFilter',
+				type: 'string',
+				default: '',
+				description: 'Filter boxes by stage key (optional)',
+				displayOptions: {
+					show: {
+						resource: ['box'],
+						operation: ['listBoxes'],
+					},
+				},
+			},
+
 			// Box Name (for createBox)
 			{
 				displayName: 'Box Name',
