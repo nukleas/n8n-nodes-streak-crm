@@ -6,6 +6,7 @@ import type {
 	IDataObject,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
+	INodeListSearchResult,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 
@@ -48,6 +49,44 @@ export class Streak implements INodeType {
 				} catch (error) {
 					// Just return an empty array on error - the UI will handle this gracefully
 					return [];
+				}
+			},
+		},
+		listSearch: {
+			// Search method for resourceLocator lists
+			async getPipelineOptions(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				try {
+					// Get API credentials
+					const credentials = await this.getCredentials('streakApi');
+					if (!credentials?.apiKey) {
+						throw new NodeOperationError(this.getNode(), 'No API key provided');
+					}
+					const apiKey = credentials.apiKey as string;
+
+					// Use the StreakApiService to get pipelines
+					const pipelines = await StreakApiService.getPipelines(this, apiKey);
+
+					// Filter pipelines if filter is provided
+					let filteredPipelines = pipelines;
+					if (filter) {
+						const filterLower = filter.toLowerCase();
+						filteredPipelines = pipelines.filter(pipeline => 
+							(pipeline.name || '').toLowerCase().includes(filterLower) ||
+							pipeline.key.toLowerCase().includes(filterLower)
+						);
+					}
+
+					// Map the response data to the format expected by n8n resourceLocator
+					const results = filteredPipelines.map(pipeline => ({
+						name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key})`,
+						value: pipeline.key,
+						url: `https://www.streak.com/pipeline/${pipeline.key}`,
+					}));
+
+					return { results };
+				} catch (error) {
+					// Return empty results on error
+					return { results: [] };
 				}
 			},
 		},
@@ -436,10 +475,11 @@ export class Streak implements INodeType {
 				type: 'string',
 				typeOptions: {
 					multipleValues: true,
+					multipleValueButtonText: 'Add Box Key',
 				},
-				default: '',
+				default: [],
 				required: true,
-				description: 'The keys of the boxes to get (comma-separated)',
+				description: 'The keys of the boxes to get',
 				displayOptions: {
 					show: {
 						resource: ['box'],
@@ -449,12 +489,28 @@ export class Streak implements INodeType {
 			},
 
 			{
-				displayName: 'Pipeline Key',
+				displayName: 'Pipeline',
 				name: 'pipelineKey',
-				type: 'string',
-				default: '',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
 				required: true,
-				description: 'The key of the pipeline',
+				description: 'The pipeline to get boxes from',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getPipelineOptions',
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'agxzfm1haWw...',
+					},
+				],
 				displayOptions: {
 					show: {
 						resource: ['box'],
@@ -462,6 +518,21 @@ export class Streak implements INodeType {
 							'listBoxes',
 							'createBox',
 						],
+					},
+				},
+			},
+
+			// Stage Key (for listBoxes filtering)
+			{
+				displayName: 'Stage Key',
+				name: 'stageKeyFilter',
+				type: 'string',
+				default: '',
+				description: 'Filter boxes by stage key (optional)',
+				displayOptions: {
+					show: {
+						resource: ['box'],
+						operation: ['listBoxes'],
 					},
 				},
 			},

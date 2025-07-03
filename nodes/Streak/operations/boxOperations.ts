@@ -13,11 +13,19 @@ export async function handleBoxOperations(
 	// Handle box operations
 	if (operation === 'listBoxes') {
 		// List Boxes in Pipeline operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
+		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const stageKeyFilter = this.getNodeParameter('stageKeyFilter', itemIndex, '') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
+
+		// Build query parameters
+		const queryParams: IDataObject = { limit };
+		if (stageKeyFilter) {
+			queryParams.stageKey = stageKeyFilter;
+		}
 
 		if (returnAll) {
 			return await handlePagination.call(
@@ -27,6 +35,7 @@ export async function handleBoxOperations(
 				returnAll,
 				itemIndex,
 				limit,
+				queryParams,
 			);
 		} else {
 			return await makeStreakRequest.call(
@@ -36,7 +45,7 @@ export async function handleBoxOperations(
 				apiKey,
 				itemIndex,
 				undefined,
-				{ limit },
+				queryParams,
 			);
 		}
 	} else if (operation === 'getBox') {
@@ -52,12 +61,26 @@ export async function handleBoxOperations(
 
 		validateParameters.call(this, { boxKeys }, ['boxKeys'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'POST', '/boxes/batchGet', apiKey, itemIndex, {
-			boxKeys,
-		});
+		// Make individual requests since Streak API doesn't have a true batch endpoint for specific box keys
+		const boxes: IDataObject[] = [];
+		for (const boxKey of boxKeys) {
+			try {
+				const response = await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}`, apiKey, itemIndex);
+				// Normalize response to ensure it's an array of IDataObject
+				const normalizedResponse = Array.isArray(response) ? response : [response];
+				boxes.push(...normalizedResponse);
+			} catch (error) {
+				// Use n8n logger for consistent logging
+				this.logger?.warn(`Failed to retrieve box ${boxKey}`, { error: error.message });
+			}
+		}
+
+		// Ensure we always return an array
+		return boxes;
 	} else if (operation === 'createBox') {
 		// Create Box operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
+		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const boxName = this.getNodeParameter('boxName', itemIndex) as string;
 		const stageKey = this.getNodeParameter('stageKey', itemIndex, '') as string;
 		const additionalFields = this.getNodeParameter(
