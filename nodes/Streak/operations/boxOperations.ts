@@ -93,6 +93,7 @@ export async function handleBoxOperations(
 
 		const body: IDataObject = {
 			name: boxName,
+			pipelineKey: pipelineKey, // Some APIs require this in the body as well
 		};
 
 		if (stageKey) {
@@ -114,6 +115,8 @@ export async function handleBoxOperations(
 			apiKey,
 			itemIndex,
 			body,
+			undefined,
+			'v2',
 		);
 	} else if (operation === 'updateBox') {
 		// Update Box operation
