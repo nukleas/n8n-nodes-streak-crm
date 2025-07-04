@@ -27,10 +27,11 @@ export async function handleContactOperations(
 		);
 	} else if (operation === 'createContact') {
 		// Create Contact operation
+		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
 		const contactEmail = this.getNodeParameter('email', itemIndex) as string;
 		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
 		
-		validateParameters.call(this, { contactEmail }, ['contactEmail'], itemIndex);
+		validateParameters.call(this, { teamKey, contactEmail }, ['teamKey', 'contactEmail'], itemIndex);
 		
 		const body: IDataObject = {
 			email: contactEmail,
@@ -63,7 +64,7 @@ export async function handleContactOperations(
 		return await makeStreakRequest.call(
 			this,
 			'POST',
-			'/contacts',
+			`/teams/${teamKey}/contacts`,
 			apiKey,
 			itemIndex,
 			body,
