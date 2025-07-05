@@ -95,12 +95,10 @@ export async function makeStreakRequest(
 	query?: IDataObject,
 	apiVersion?: 'v1' | 'v2',
 ): Promise<IDataObject | IDataObject[]> {
-	const url = `https://api.streak.com/api/${apiVersion}${endpoint}`;
-	
 	try {
 		// Auto-determine API version if not provided
 		const version = apiVersion || getApiVersionForEndpoint(endpoint);
-		
+		const url = `https://api.streak.com/api/${version}${endpoint}`;
 		// Build request options with proper content-type only when needed
 		const headers: IDataObject = {
 			Accept: 'application/json',
