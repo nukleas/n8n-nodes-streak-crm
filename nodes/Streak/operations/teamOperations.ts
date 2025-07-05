@@ -17,7 +17,7 @@ export async function handleTeamOperations(
 		return await makeStreakRequest.call(
 			this,
 			'GET',
-			'/teams',
+			'/users/me/teams',
 			apiKey,
 			itemIndex,
 		);

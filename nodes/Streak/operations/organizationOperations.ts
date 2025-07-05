@@ -27,10 +27,11 @@ export async function handleOrganizationOperations(
 		);
 	} else if (operation === 'createOrganization') {
 		// Create Organization operation
+		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
 		const name = this.getNodeParameter('name', itemIndex) as string;
 		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
 		
-		validateParameters.call(this, { name }, ['name'], itemIndex);
+		validateParameters.call(this, { teamKey, name }, ['teamKey', 'name'], itemIndex);
 		
 		const body: IDataObject = {
 			name,
@@ -47,14 +48,17 @@ export async function handleOrganizationOperations(
 		return await makeStreakRequest.call(
 			this,
 			'POST',
-			'/organizations',
+			`/teams/${teamKey}/organizations`,
 			apiKey,
 			itemIndex,
 			body,
 		);
 	} else if (operation === 'checkExistingOrganizations') {
 		// Check Existing Organizations operation
+		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
 		const checkFields = this.getNodeParameter('checkFields', itemIndex) as IDataObject;
+		
+		validateParameters.call(this, { teamKey }, ['teamKey'], itemIndex);
 		
 		if (!checkFields.domain && !checkFields.name) {
 			throw new NodeOperationError(
@@ -77,7 +81,7 @@ export async function handleOrganizationOperations(
 		return await makeStreakRequest.call(
 			this,
 			'POST',
-			'/organizations/check',
+			`/teams/${teamKey}/organizations?getIfExisting=true`,
 			apiKey,
 			itemIndex,
 			body,

@@ -7,6 +7,82 @@ import {
 } from 'n8n-workflow';
 
 /**
+ * Mapping of endpoint patterns to their correct API versions
+ * This ensures we use the correct API version for each endpoint
+ */
+const ENDPOINT_API_VERSIONS: Record<string, 'v1' | 'v2'> = {
+	// v1 endpoints
+	'/users/me': 'v1',
+	'/users/': 'v1',
+	'/pipelines': 'v1',
+	'/pipelines/': 'v1',
+	'/boxes': 'v1',
+	'/boxes/': 'v1',
+	'/stages': 'v1',
+	'/stages/': 'v1',
+	'/fields': 'v1',
+	'/fields/': 'v1',
+	'/search': 'v1',
+	'/files': 'v1',
+	'/files/': 'v1',
+	'/threads': 'v1',
+	'/threads/': 'v1',
+	'/snippets': 'v1',
+	'/snippets/': 'v1',
+	'/newsfeed': 'v1',
+	
+	// v2 endpoints
+	'/users/me/teams': 'v2',
+	'/teams': 'v2',
+	'/teams/': 'v2',
+	'/contacts': 'v2',
+	'/contacts/': 'v2',
+	'/organizations': 'v2',
+	'/organizations/': 'v2',
+	'/tasks': 'v2',
+	'/tasks/': 'v2',
+	'/webhooks': 'v2',
+	'/webhooks/': 'v2',
+	'/comments': 'v2',
+	'/comments/': 'v2',
+	'/meetings': 'v2',
+	'/meetings/': 'v2',
+	'/timeline': 'v2',
+	'/boxes/batch': 'v2',
+	'/pipelines/*/boxes/batch': 'v2',
+	'/pipelines/*/boxes': 'v2', // Create box uses v2
+	'/teams/*/contacts': 'v2', // Create contact uses v2
+	'/teams/*/organizations': 'v2', // Create organization uses v2
+};
+
+/**
+ * Determine the correct API version for an endpoint
+ */
+export function getApiVersionForEndpoint(endpoint: string): 'v1' | 'v2' {
+	// Check for exact matches first
+	if (ENDPOINT_API_VERSIONS[endpoint]) {
+		return ENDPOINT_API_VERSIONS[endpoint];
+	}
+	
+	// Check for pattern matches
+	for (const [pattern, version] of Object.entries(ENDPOINT_API_VERSIONS)) {
+		if (pattern.includes('*')) {
+			// Convert pattern to regex
+			const regexPattern = pattern.replace(/\*/g, '[^/]+');
+			const regex = new RegExp(`^${regexPattern}`);
+			if (regex.test(endpoint)) {
+				return version;
+			}
+		} else if (endpoint.startsWith(pattern)) {
+			return version;
+		}
+	}
+	
+	// Default to v1 for unknown endpoints
+	return 'v1';
+}
+
+/**
  * Helper function to make a request to the Streak API with proper error handling
  */
 export async function makeStreakRequest(
@@ -17,14 +93,17 @@ export async function makeStreakRequest(
 	itemIndex = 0,
 	body?: IDataObject,
 	query?: IDataObject,
-	apiVersion: 'v1' | 'v2' = 'v1',
+	apiVersion?: 'v1' | 'v2',
 ): Promise<IDataObject | IDataObject[]> {
 	try {
+		// Auto-determine API version if not provided
+		const version = apiVersion || getApiVersionForEndpoint(endpoint);
+		
 		// Build request options with proper content-type only when needed
 		const headers: IDataObject = {
 			Accept: 'application/json',
 		};
-		const url = `https://api.streak.com/api/${apiVersion}${endpoint}`;
+		const url = `https://api.streak.com/api/${version}${endpoint}`;
 		if (['POST', 'PUT', 'PATCH'].includes(method)) {
 			headers['Content-Type'] = 'application/json';
 		}
