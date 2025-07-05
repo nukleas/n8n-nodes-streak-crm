@@ -1,4 +1,5 @@
 import { IDataObject, IExecuteFunctions, IHttpRequestMethods, ILoadOptionsFunctions, NodeApiError } from 'n8n-workflow';
+import { getApiVersionForEndpoint } from '../operations/utils';
 
 /**
  * Interface for Pipeline data returned from Streak API
@@ -45,9 +46,9 @@ export interface IStreakBox {
  */
 export class StreakApiService {
 	/**
-	 * Base URL for the Streak API
+	 * Base URL for the Streak API (version will be determined per endpoint)
 	 */
-	private static readonly BASE_URL = 'https://api.streak.com/api/v1';
+	private static readonly BASE_URL = 'https://api.streak.com/api';
 
 	/**
 	 * Fetch all pipelines from the Streak API
@@ -143,7 +144,7 @@ export class StreakApiService {
 		return this.makeRequest(
 			context,
 			'POST',
-			`/pipelines/${pipelineKey}/moveBoxes`,
+			`/pipelines/${pipelineKey}/boxes/batch`,
 			apiKey,
 			{
 				targetPipelineKey,
@@ -216,6 +217,7 @@ export class StreakApiService {
 	 * @param apiKey - Streak API key for authentication
 	 * @param body - Optional request body for methods like POST, PUT
 	 * @param query - Optional query parameters
+	 * @param apiVersion - Optional API version override
 	 * @returns Response data from the API
 	 */
 	private static async makeRequest(
@@ -225,8 +227,12 @@ export class StreakApiService {
 		apiKey: string,
 		body?: IDataObject,
 		query?: IDataObject,
+		apiVersion?: 'v1' | 'v2',
 	): Promise<IDataObject | IDataObject[]> {
 		try {
+			// Auto-determine API version if not provided
+			const version = apiVersion || getApiVersionForEndpoint(endpoint);
+			
 			const headers: Record<string, string> = {
 				'Accept': 'application/json',
 			};
@@ -238,7 +244,7 @@ export class StreakApiService {
 
 			const options = {
 				method,
-				url: `${this.BASE_URL}${endpoint}`,
+				url: `${this.BASE_URL}/${version}${endpoint}`,
 				headers,
 				auth: {
 					username: apiKey,

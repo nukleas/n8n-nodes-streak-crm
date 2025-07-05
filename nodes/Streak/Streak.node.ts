@@ -1185,6 +1185,22 @@ export class Streak implements INodeType {
 				},
 			},
 
+			// Team Key (for createContact)
+			{
+				displayName: 'Team Key',
+				name: 'teamKey',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The key of the team to create the contact in',
+				displayOptions: {
+					show: {
+						resource: ['contact'],
+						operation: ['createContact'],
+					},
+				},
+			},
+
 			// Additional Fields (for createContact)
 			{
 				displayName: 'Additional Fields',
@@ -1395,6 +1411,38 @@ export class Streak implements INodeType {
 					show: {
 						resource: ['organization'],
 						operation: ['createOrganization'],
+					},
+				},
+			},
+
+			// Team Key (for createOrganization)
+			{
+				displayName: 'Team Key',
+				name: 'teamKey',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The key of the team to create the organization in',
+				displayOptions: {
+					show: {
+						resource: ['organization'],
+						operation: ['createOrganization'],
+					},
+				},
+			},
+
+			// Team Key (for checkExistingOrganizations)
+			{
+				displayName: 'Team Key',
+				name: 'teamKey',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'The key of the team to check for existing organizations in',
+				displayOptions: {
+					show: {
+						resource: ['organization'],
+						operation: ['checkExistingOrganizations'],
 					},
 				},
 			},
