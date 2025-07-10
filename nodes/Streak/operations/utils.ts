@@ -11,26 +11,6 @@ import {
  * This ensures we use the correct API version for each endpoint
  */
 const ENDPOINT_API_VERSIONS: Record<string, 'v1' | 'v2'> = {
-	// v1 endpoints
-	'/users/me': 'v1',
-	'/users/': 'v1',
-	'/pipelines': 'v1',
-	'/pipelines/': 'v1',
-	'/boxes': 'v1',
-	'/boxes/': 'v1',
-	'/stages': 'v1',
-	'/stages/': 'v1',
-	'/fields': 'v1',
-	'/fields/': 'v1',
-	'/search': 'v1',
-	'/files': 'v1',
-	'/files/': 'v1',
-	'/threads': 'v1',
-	'/threads/': 'v1',
-	'/snippets': 'v1',
-	'/snippets/': 'v1',
-	'/newsfeed': 'v1',
-	
 	// v2 endpoints
 	'/users/me/teams': 'v2',
 	'/teams': 'v2',
