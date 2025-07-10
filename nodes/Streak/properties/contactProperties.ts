@@ -61,15 +61,48 @@ export const contactProperties: INodeProperties[] = [
 		},
 	},
 
-	// Email (for createContact)
+	// Email Addresses (for createContact)
 	{
-		displayName: 'Email',
-		name: 'email',
+		displayName: 'Email Addresses',
+		name: 'emailAddresses',
 		type: 'string',
+		typeOptions: {
+			multipleValues: true,
+			multipleValueButtonText: 'Add Email',
+		},
 		placeholder: 'name@email.com',
+		default: [],
+		description: 'Email addresses for the contact (at least one email or name is required)',
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['createContact'],
+			},
+		},
+	},
+
+	// Given Name (for createContact)
+	{
+		displayName: 'Given Name',
+		name: 'givenName',
+		type: 'string',
 		default: '',
-		required: true,
-		description: 'The email address of the contact',
+		description: 'First name of the contact (at least one name or email is required)',
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['createContact'],
+			},
+		},
+	},
+
+	// Family Name (for createContact)
+	{
+		displayName: 'Family Name',
+		name: 'familyName',
+		type: 'string',
+		default: '',
+		description: 'Last name of the contact',
 		displayOptions: {
 			show: {
 				resource: ['contact'],
@@ -112,49 +145,68 @@ export const contactProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'First Name',
-				name: 'firstName',
-				type: 'string',
-				default: '',
-				description: 'The first name of the contact',
-			},
-			{
-				displayName: 'Last Name',
-				name: 'lastName',
-				type: 'string',
-				default: '',
-				description: 'The last name of the contact',
-			},
-			{
-				displayName: 'Full Name',
-				name: 'fullName',
-				type: 'string',
-				default: '',
-				description: 'The full name of the contact',
-			},
-			{
-				displayName: 'Phone Numbers',
-				name: 'phones',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: '',
-				description: 'Phone numbers for the contact',
-			},
-			{
-				displayName: 'Organization',
-				name: 'organization',
-				type: 'string',
-				default: '',
-				description: 'The organization the contact belongs to',
-			},
-			{
 				displayName: 'Title',
 				name: 'title',
 				type: 'string',
 				default: '',
-				description: 'The job title of the contact',
+				description: 'Job title of the contact',
+			},
+			{
+				displayName: 'Phone Numbers',
+				name: 'phoneNumbers',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					multipleValueButtonText: 'Add Phone',
+				},
+				default: [],
+				description: 'Phone numbers for the contact',
+			},
+			{
+				displayName: 'Addresses',
+				name: 'addresses',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					multipleValueButtonText: 'Add Address',
+				},
+				default: [],
+				description: 'Addresses for the contact',
+			},
+			{
+				displayName: 'Other',
+				name: 'other',
+				type: 'string',
+				default: '',
+				description: 'Other information about the contact',
+			},
+			{
+				displayName: 'Twitter Handle',
+				name: 'twitterHandle',
+				type: 'string',
+				default: '',
+				description: 'Twitter handle of the contact',
+			},
+			{
+				displayName: 'Facebook Handle',
+				name: 'facebookHandle',
+				type: 'string',
+				default: '',
+				description: 'Facebook handle of the contact',
+			},
+			{
+				displayName: 'LinkedIn Handle',
+				name: 'linkedinHandle',
+				type: 'string',
+				default: '',
+				description: 'LinkedIn handle of the contact',
+			},
+			{
+				displayName: 'Photo URL',
+				name: 'photoUrl',
+				type: 'string',
+				default: '',
+				description: 'URL to photo of the contact',
 			},
 		],
 	},
@@ -174,50 +226,30 @@ export const contactProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Email',
-				name: 'email',
+				displayName: 'Email Addresses',
+				name: 'emailAddresses',
 				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					multipleValueButtonText: 'Add Email',
+				},
 				placeholder: 'name@email.com',
-				default: '',
-				description: 'New email address for the contact',
+				default: [],
+				description: 'New email addresses for the contact',
 			},
 			{
-				displayName: 'First Name',
-				name: 'firstName',
+				displayName: 'Given Name',
+				name: 'givenName',
 				type: 'string',
 				default: '',
 				description: 'New first name for the contact',
 			},
 			{
-				displayName: 'Last Name',
-				name: 'lastName',
+				displayName: 'Family Name',
+				name: 'familyName',
 				type: 'string',
 				default: '',
 				description: 'New last name for the contact',
-			},
-			{
-				displayName: 'Full Name',
-				name: 'fullName',
-				type: 'string',
-				default: '',
-				description: 'New full name for the contact',
-			},
-			{
-				displayName: 'Phone Numbers',
-				name: 'phones',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: '',
-				description: 'New phone numbers for the contact',
-			},
-			{
-				displayName: 'Organization',
-				name: 'organization',
-				type: 'string',
-				default: '',
-				description: 'New organization for the contact',
 			},
 			{
 				displayName: 'Title',
@@ -225,6 +257,63 @@ export const contactProperties: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'New job title for the contact',
+			},
+			{
+				displayName: 'Phone Numbers',
+				name: 'phoneNumbers',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					multipleValueButtonText: 'Add Phone',
+				},
+				default: [],
+				description: 'New phone numbers for the contact',
+			},
+			{
+				displayName: 'Addresses',
+				name: 'addresses',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+					multipleValueButtonText: 'Add Address',
+				},
+				default: [],
+				description: 'New addresses for the contact',
+			},
+			{
+				displayName: 'Other',
+				name: 'other',
+				type: 'string',
+				default: '',
+				description: 'New other information for the contact',
+			},
+			{
+				displayName: 'Twitter Handle',
+				name: 'twitterHandle',
+				type: 'string',
+				default: '',
+				description: 'New Twitter handle for the contact',
+			},
+			{
+				displayName: 'Facebook Handle',
+				name: 'facebookHandle',
+				type: 'string',
+				default: '',
+				description: 'New Facebook handle for the contact',
+			},
+			{
+				displayName: 'LinkedIn Handle',
+				name: 'linkedinHandle',
+				type: 'string',
+				default: '',
+				description: 'New LinkedIn handle for the contact',
+			},
+			{
+				displayName: 'Photo URL',
+				name: 'photoUrl',
+				type: 'string',
+				default: '',
+				description: 'New photo URL for the contact',
 			},
 		],
 	},

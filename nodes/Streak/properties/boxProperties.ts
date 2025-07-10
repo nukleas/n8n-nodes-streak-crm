@@ -272,11 +272,27 @@ export const boxProperties: INodeProperties[] = [
 				description: 'New notes for the box',
 			},
 			{
-				displayName: 'Stage Key',
+				displayName: 'Stage',
 				name: 'stageKey',
-				type: 'string',
-				default: '',
-				description: 'New stage key for the box (use expressions to get from stage dropdown)',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				description: 'The stage to move the box to',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getStageOptions',
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'agxzfm1haWw...',
+					},
+				],
 			},
 			{
 				displayName: 'Assigned To (Team/User Key)',

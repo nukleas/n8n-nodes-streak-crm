@@ -87,14 +87,50 @@ export const fieldProperties: INodeProperties[] = [
 		},
 	},
 
-	// Box Key (for field value operations)
+	// Pipeline Key (required for box dependency)
 	{
-		displayName: 'Box Key',
-		name: 'boxKey',
+		displayName: 'Pipeline Key',
+		name: 'pipelineKey',
 		type: 'string',
 		default: '',
 		required: true,
-		description: 'The key of the box',
+		description: 'The key of the pipeline containing the box',
+		displayOptions: {
+			show: {
+				resource: ['field'],
+				operation: [
+					'listFieldValues',
+					'getFieldValue',
+					'updateFieldValue',
+				],
+			},
+		},
+	},
+
+	// Box Key (for field value operations)
+	{
+		displayName: 'Box',
+		name: 'boxKey',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		required: true,
+		description: 'The box to operate on',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getBoxOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['field'],

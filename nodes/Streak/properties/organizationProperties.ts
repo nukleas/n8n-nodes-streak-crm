@@ -1,5 +1,26 @@
 import type { INodeProperties } from 'n8n-workflow';
 
+// Helper function to create team key property for different operations
+function createTeamKeyProperty(operations: string[]): INodeProperties {
+	return {
+		displayName: 'Team Name or ID',
+		name: 'teamKey',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getTeamOptions',
+		},
+		default: '',
+		required: true,
+		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+		displayOptions: {
+			show: {
+				resource: ['organization'],
+				operation: operations,
+			},
+		},
+	};
+}
+
 export const organizationProperties: INodeProperties[] = [
 	// Organization Operations
 	{
@@ -84,42 +105,10 @@ export const organizationProperties: INodeProperties[] = [
 	},
 
 	// Team Key (for createOrganization)
-	{
-		displayName: 'Team Name or ID',
-		name: 'teamKey',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'getTeamOptions',
-		},
-		default: '',
-		required: true,
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
-		displayOptions: {
-			show: {
-				resource: ['organization'],
-				operation: ['createOrganization'],
-			},
-		},
-	},
+	createTeamKeyProperty(['createOrganization']),
 
 	// Team Key (for checkExistingOrganizations)
-	{
-		displayName: 'Team Name or ID',
-		name: 'teamKey',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'getTeamOptions',
-		},
-		default: '',
-		required: true,
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
-		displayOptions: {
-			show: {
-				resource: ['organization'],
-				operation: ['checkExistingOrganizations'],
-			},
-		},
-	},
+	createTeamKeyProperty(['checkExistingOrganizations']),
 
 	// Check Fields (for checkExistingOrganizations)
 	{

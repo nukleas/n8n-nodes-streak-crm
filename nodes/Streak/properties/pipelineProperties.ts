@@ -55,15 +55,28 @@ export const pipelineProperties: INodeProperties[] = [
 
 	// Pipeline Key (for pipeline operations)
 	{
-		displayName: 'Pipeline Name or ID',
+		displayName: 'Pipeline',
 		name: 'pipelineKey',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'getPipelineOptions',
-		},
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+		description: 'The pipeline to operate on',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['pipeline'],
@@ -77,7 +90,7 @@ export const pipelineProperties: INodeProperties[] = [
 		},
 	},
 
-	// Pipeline Name (for create/update pipeline)
+	// Pipeline Name (for createPipeline only)
 	{
 		displayName: 'Pipeline Name',
 		name: 'pipelineName',
@@ -88,10 +101,7 @@ export const pipelineProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['pipeline'],
-				operation: [
-					'createPipeline',
-					'updatePipeline',
-				],
+				operation: ['createPipeline'],
 			},
 		},
 	},
@@ -118,20 +128,81 @@ export const pipelineProperties: INodeProperties[] = [
 
 	// Target Pipeline Key (for moveBoxesBatch operation)
 	{
-		displayName: 'Target Pipeline Name or ID',
+		displayName: 'Pipeline Name or ID',
 		name: 'targetPipelineKey',
-		type: 'options',
-		typeOptions: {
-			loadOptionsMethod: 'getPipelineOptions',
-		},
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
 		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['pipeline'],
 				operation: ['moveBoxesBatch'],
 			},
 		},
+	},
+
+	// Update Fields (for updatePipeline)
+	{
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['pipeline'],
+				operation: ['updatePipeline'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				description: 'New name for the pipeline',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'New description for the pipeline',
+			},
+			{
+				displayName: 'Organization Wide',
+				name: 'orgWide',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the pipeline should be organization-wide',
+			},
+			{
+				displayName: 'Team Key',
+				name: 'teamKey',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamOptions',
+				},
+				default: '',
+				description: 'Team to assign the pipeline to',
+			},
+		],
 	},
 ];

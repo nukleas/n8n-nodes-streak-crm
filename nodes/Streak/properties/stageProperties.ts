@@ -49,12 +49,28 @@ export const stageProperties: INodeProperties[] = [
 
 	// Pipeline Key (for stage operations)
 	{
-		displayName: 'Pipeline Key',
+		displayName: 'Pipeline',
 		name: 'pipelineKey',
-		type: 'string',
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'The key of the pipeline that contains the stages',
+		description: 'The pipeline that contains the stages',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['stage'],
