@@ -28,6 +28,15 @@ export interface IStreakStage {
 }
 
 /**
+ * Interface for Team data returned from Streak API
+ */
+export interface IStreakTeam {
+	key: string;
+	name: string;
+	[key: string]: any;
+}
+
+/**
  * Interface for Box (Deal) data returned from Streak API
  */
 export interface IStreakBox {
@@ -61,6 +70,19 @@ export class StreakApiService {
 		apiKey: string,
 	): Promise<IStreakPipeline[]> {
 		return this.makeRequest(context, 'GET', '/pipelines', apiKey) as Promise<IStreakPipeline[]>;
+	}
+
+	/**
+	 * Fetch all teams from the Streak API
+	 * @param context - The n8n execution or load options context
+	 * @param apiKey - Streak API key for authentication
+	 * @returns Array of team objects or raw response
+	 */
+	public static async getTeams(
+		context: IExecuteFunctions | ILoadOptionsFunctions,
+		apiKey: string,
+	): Promise<IDataObject | IDataObject[]> {
+		return this.makeRequest(context, 'GET', '/users/me/teams', apiKey);
 	}
 
 	/**
@@ -158,19 +180,23 @@ export class StreakApiService {
 	 * @param context - The n8n execution or load options context
 	 * @param apiKey - Streak API key for authentication
 	 * @param pipelineKey - Pipeline key to get stages for
-	 * @returns Array of stage objects for the pipeline
+	 * @returns Array of stage objects or raw response
 	 */
 	public static async getStages(
 		context: IExecuteFunctions | ILoadOptionsFunctions,
 		apiKey: string,
 		pipelineKey: string,
-	): Promise<IStreakStage[]> {
-		return this.makeRequest(
+	): Promise<IDataObject | IDataObject[]> {
+		const endpoint = `/pipelines/${pipelineKey}/stages`;
+		
+		const result = await this.makeRequest(
 			context,
 			'GET',
-			`/pipelines/${pipelineKey}/stages`,
+			endpoint,
 			apiKey,
-		) as Promise<IStreakStage[]>;
+		);
+		
+		return result;
 	}
 
 	/**

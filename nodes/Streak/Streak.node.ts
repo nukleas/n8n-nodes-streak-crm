@@ -42,12 +42,142 @@ export class Streak implements INodeType {
 					const pipelines = await StreakApiService.getPipelines(this, apiKey);
 
 					// Map the response data to the format expected by n8n
-					return pipelines.map(pipeline => ({
-						name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key})`,
-						value: pipeline.key,
-					}));
+					return pipelines
+						.filter(pipeline => pipeline && pipeline.key) // Filter out invalid pipelines
+						.map(pipeline => ({
+							name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key || 'no-key'})`,
+							value: pipeline.key || '',
+						}));
 				} catch (error) {
 					// Just return an empty array on error - the UI will handle this gracefully
+					return [];
+				}
+			},
+
+			// Load all teams for dropdown selection
+			async getTeamOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				try {
+					// Get API credentials
+					const credentials = await this.getCredentials('streakApi');
+					if (!credentials?.apiKey) {
+						throw new NodeOperationError(this.getNode(), 'No API key provided');
+					}
+					const apiKey = credentials.apiKey as string;
+
+					// Use the StreakApiService to get teams
+					const response = await StreakApiService.getTeams(this, apiKey);
+
+					// Handle the v2 API response structure: [{results: [...]}]
+					let teams: any[] = [];
+					if (Array.isArray(response)) {
+						// v2 API returns array of objects with 'results' property
+						for (const item of response) {
+							if (item && item.results && Array.isArray(item.results)) {
+								teams.push(...item.results);
+							}
+						}
+					} else if (response && typeof response === 'object') {
+						// Fallback: check if it's a direct results object
+						if (response.results && Array.isArray(response.results)) {
+							teams = response.results;
+						} else {
+							// Single team object
+							teams = [response];
+						}
+					}
+
+					// Map the response data to the format expected by n8n
+					return teams
+						.filter(team => team && team.key) // Filter out invalid teams
+						.map(team => ({
+							name: `${team.name || 'Unnamed Team'} (${team.key || 'no-key'})`,
+							value: team.key || '',
+						}));
+				} catch (error) {
+					// Return empty array to avoid breaking the UI
+					return [];
+				}
+			},
+
+			// Load stages for a specific pipeline (pipeline-dependent)
+			async getStageOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				try {
+					// Get API credentials
+					const credentials = await this.getCredentials('streakApi');
+					if (!credentials?.apiKey) {
+						throw new NodeOperationError(this.getNode(), 'No API key provided');
+					}
+					const apiKey = credentials.apiKey as string;
+
+					// Get the pipeline key from the current node parameters
+					// Handle both resourceLocator format and direct string format
+					let pipelineKey: string;
+					const pipelineParam = this.getCurrentNodeParameter('pipelineKey');
+					
+					if (typeof pipelineParam === 'string') {
+						pipelineKey = pipelineParam;
+					} else if (pipelineParam && typeof pipelineParam === 'object') {
+						// ResourceLocator format: { mode: 'list'|'id', value: 'actual_key' }
+						pipelineKey = (pipelineParam as any).value || (pipelineParam as any).id;
+					} else {
+						return [];
+					}
+
+					if (!pipelineKey) {
+						return [];
+					}
+
+					// Use the StreakApiService to get stages for the pipeline
+					const response = await StreakApiService.getStages(this, apiKey, pipelineKey);
+
+					// Handle different response structures
+					let stages: any[] = [];
+					if (Array.isArray(response)) {
+						// Check if it's an array of objects where stages are properties
+						if (response.length > 0 && typeof response[0] === 'object') {
+							const firstItem = response[0];
+							// Check if this looks like a stages object (keys are stage IDs)
+							const keys = Object.keys(firstItem);
+							if (keys.length > 0 && firstItem[keys[0]] && typeof firstItem[keys[0]] === 'object' && (firstItem[keys[0]] as any).key) {
+								// Convert object format to array format
+								stages = keys.map(key => firstItem[key] as any);
+							} else {
+								// It's a regular array
+								stages = response;
+							}
+						} else {
+							stages = response;
+						}
+					} else if (response && typeof response === 'object') {
+						// Check if stages are nested under a property
+						if (response.results && Array.isArray(response.results)) {
+							stages = response.results;
+						} else if (response.data && Array.isArray(response.data)) {
+							stages = response.data;
+						} else if (response.stages && Array.isArray(response.stages)) {
+							stages = response.stages;
+						} else {
+							// Check if this is a stages object (keys are stage IDs)
+							const keys = Object.keys(response);
+							if (keys.length > 0 && response[keys[0]] && typeof response[keys[0]] === 'object' && (response[keys[0]] as any).key) {
+								// Convert object format to array format
+								stages = keys.map(key => response[key] as any);
+							} else {
+								// If it's a single stage object, wrap it in an array
+								stages = [response];
+							}
+						}
+					}
+
+					// Map the response data to the format expected by n8n
+					return stages
+						.filter(stage => stage && stage.key) // Filter out invalid stages
+						.map(stage => ({
+							name: `${stage.name || 'Unnamed Stage'} (${stage.key || 'no-key'})`,
+							value: stage.key || '',
+						}));
+				} catch (error) {
+					// Return empty array to avoid breaking the UI
 					return [];
 				}
 			},
@@ -71,17 +201,117 @@ export class Streak implements INodeType {
 					if (filter) {
 						const filterLower = filter.toLowerCase();
 						filteredPipelines = pipelines.filter(pipeline => 
-							(pipeline.name || '').toLowerCase().includes(filterLower) ||
-							pipeline.key.toLowerCase().includes(filterLower)
+							pipeline && pipeline.key && (
+								(pipeline.name || '').toLowerCase().includes(filterLower) ||
+								pipeline.key.toLowerCase().includes(filterLower)
+							)
 						);
 					}
 
 					// Map the response data to the format expected by n8n resourceLocator
-					const results = filteredPipelines.map(pipeline => ({
-						name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key})`,
-						value: pipeline.key,
-						url: `https://www.streak.com/pipeline/${pipeline.key}`,
-					}));
+					const results = filteredPipelines
+						.filter(pipeline => pipeline && pipeline.key) // Filter out invalid pipelines
+						.map(pipeline => ({
+							name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key || 'no-key'})`,
+							value: pipeline.key || '',
+							url: `https://www.streak.com/pipeline/${pipeline.key || 'no-key'}`,
+						}));
+
+					return { results };
+				} catch (error) {
+					// Return empty results on error
+					return { results: [] };
+				}
+			},
+
+			// Search method for stage resourceLocator lists (pipeline-dependent)
+			async getStageOptions(this: ILoadOptionsFunctions, filter?: string): Promise<INodeListSearchResult> {
+				try {
+					// Get API credentials
+					const credentials = await this.getCredentials('streakApi');
+					if (!credentials?.apiKey) {
+						throw new NodeOperationError(this.getNode(), 'No API key provided');
+					}
+					const apiKey = credentials.apiKey as string;
+
+					// Get the pipeline key from the current node parameters
+					let pipelineKey: string;
+					const pipelineParam = this.getCurrentNodeParameter('pipelineKey');
+					
+					if (typeof pipelineParam === 'string') {
+						pipelineKey = pipelineParam;
+					} else if (pipelineParam && typeof pipelineParam === 'object') {
+						// ResourceLocator format: { mode: 'list'|'id', value: 'actual_key' }
+						pipelineKey = (pipelineParam as any).value || (pipelineParam as any).id;
+					} else {
+						return { results: [] };
+					}
+
+					if (!pipelineKey) {
+						return { results: [] };
+					}
+
+					// Use the StreakApiService to get stages for the pipeline
+					const response = await StreakApiService.getStages(this, apiKey, pipelineKey);
+
+					// Handle different response structures
+					let stages: any[] = [];
+					if (Array.isArray(response)) {
+						// Check if it's an array of objects where stages are properties
+						if (response.length > 0 && typeof response[0] === 'object') {
+							const firstItem = response[0];
+							// Check if this looks like a stages object (keys are stage IDs)
+							const keys = Object.keys(firstItem);
+							if (keys.length > 0 && firstItem[keys[0]] && typeof firstItem[keys[0]] === 'object' && (firstItem[keys[0]] as any).key) {
+								// Convert object format to array format
+								stages = keys.map(key => firstItem[key] as any);
+							} else {
+								// It's a regular array
+								stages = response;
+							}
+						} else {
+							stages = response;
+						}
+					} else if (response && typeof response === 'object') {
+						if (response.results && Array.isArray(response.results)) {
+							stages = response.results;
+						} else if (response.data && Array.isArray(response.data)) {
+							stages = response.data;
+						} else if (response.stages && Array.isArray(response.stages)) {
+							stages = response.stages;
+						} else {
+							// Check if this is a stages object (keys are stage IDs)
+							const keys = Object.keys(response);
+							if (keys.length > 0 && response[keys[0]] && typeof response[keys[0]] === 'object' && (response[keys[0]] as any).key) {
+								// Convert object format to array format
+								stages = keys.map(key => response[key] as any);
+							} else {
+								// If it's a single stage object, wrap it in an array
+								stages = [response];
+							}
+						}
+					}
+
+					// Filter stages if filter is provided
+					let filteredStages = stages;
+					if (filter) {
+						const filterLower = filter.toLowerCase();
+						filteredStages = stages.filter(stage => 
+							stage && stage.key && (
+								(stage.name || '').toLowerCase().includes(filterLower) ||
+								stage.key.toLowerCase().includes(filterLower)
+							)
+						);
+					}
+
+					// Map the response data to the format expected by n8n resourceLocator
+					const results = filteredStages
+						.filter(stage => stage && stage.key) // Filter out invalid stages
+						.map(stage => ({
+							name: `${stage.name || 'Unnamed Stage'} (${stage.key || 'no-key'})`,
+							value: stage.key || '',
+							url: `https://www.streak.com/pipeline/${pipelineKey}/stage/${stage.key || 'no-key'}`,
+						}));
 
 					return { results };
 				} catch (error) {
@@ -293,12 +523,15 @@ export class Streak implements INodeType {
 
 			// Team Key (only for getTeam operation)
 			{
-				displayName: 'Team Key',
+				displayName: 'Team Name or ID',
 				name: 'teamKey',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamOptions',
+				},
 				default: '',
 				required: true,
-				description: 'The key of the team to get information about',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				displayOptions: {
 					show: {
 						resource: ['team'],
@@ -524,11 +757,27 @@ export class Streak implements INodeType {
 
 			// Stage Key (for listBoxes filtering)
 			{
-				displayName: 'Stage Key',
+				displayName: 'Stage',
 				name: 'stageKeyFilter',
-				type: 'string',
-				default: '',
-				description: 'Filter boxes by stage key (optional)',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				description: 'The stage to filter boxes by (optional)',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getStageOptions',
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'agxzfm1haWw...',
+					},
+				],
 				displayOptions: {
 					show: {
 						resource: ['box'],
@@ -555,11 +804,27 @@ export class Streak implements INodeType {
 
 			// Stage Key (for createBox)
 			{
-				displayName: 'Stage Key',
+				displayName: 'Stage',
 				name: 'stageKey',
-				type: 'string',
-				default: '',
-				description: 'The key of the stage to place the box in (optional)',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				description: 'The stage to place the box in (optional)',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getStageOptions',
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'agxzfm1haWw...',
+					},
+				],
 				displayOptions: {
 					show: {
 						resource: ['box'],
@@ -632,7 +897,7 @@ export class Streak implements INodeType {
 						name: 'stageKey',
 						type: 'string',
 						default: '',
-						description: 'New stage key for the box',
+						description: 'New stage key for the box (use expressions to get from stage dropdown)',
 					},
 					{
 						displayName: 'Assigned To (Team/User Key)',
@@ -714,12 +979,28 @@ export class Streak implements INodeType {
 
 			// Stage Key (for stage operations)
 			{
-				displayName: 'Stage Key',
+				displayName: 'Stage',
 				name: 'stageKey',
-				type: 'string',
-				default: '',
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
 				required: true,
-				description: 'The key of the stage',
+				description: 'The stage to operate on',
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						typeOptions: {
+							searchListMethod: 'getStageOptions',
+						},
+					},
+					{
+						displayName: 'By ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'agxzfm1haWw...',
+					},
+				],
 				displayOptions: {
 					show: {
 						resource: ['stage'],
@@ -1187,12 +1468,15 @@ export class Streak implements INodeType {
 
 			// Team Key (for createContact)
 			{
-				displayName: 'Team Key',
+				displayName: 'Team Name or ID',
 				name: 'teamKey',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamOptions',
+				},
 				default: '',
 				required: true,
-				description: 'The key of the team to create the contact in',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				displayOptions: {
 					show: {
 						resource: ['contact'],
@@ -1417,12 +1701,15 @@ export class Streak implements INodeType {
 
 			// Team Key (for createOrganization)
 			{
-				displayName: 'Team Key',
+				displayName: 'Team Name or ID',
 				name: 'teamKey',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamOptions',
+				},
 				default: '',
 				required: true,
-				description: 'The key of the team to create the organization in',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				displayOptions: {
 					show: {
 						resource: ['organization'],
@@ -1433,12 +1720,15 @@ export class Streak implements INodeType {
 
 			// Team Key (for checkExistingOrganizations)
 			{
-				displayName: 'Team Key',
+				displayName: 'Team Name or ID',
 				name: 'teamKey',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamOptions',
+				},
 				default: '',
 				required: true,
-				description: 'The key of the team to check for existing organizations in',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				displayOptions: {
 					show: {
 						resource: ['organization'],

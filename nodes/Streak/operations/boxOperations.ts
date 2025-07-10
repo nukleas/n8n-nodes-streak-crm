@@ -15,7 +15,8 @@ export async function handleBoxOperations(
 		// List Boxes in Pipeline operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
 		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
-		const stageKeyFilter = this.getNodeParameter('stageKeyFilter', itemIndex, '') as string;
+		const stageKeyFilterParam = this.getNodeParameter('stageKeyFilter', itemIndex, '') as string | { mode: string; value: string };
+		const stageKeyFilter = typeof stageKeyFilterParam === 'string' ? stageKeyFilterParam : stageKeyFilterParam?.value || '';
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
@@ -82,7 +83,8 @@ export async function handleBoxOperations(
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
 		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const boxName = this.getNodeParameter('boxName', itemIndex) as string;
-		const stageKey = this.getNodeParameter('stageKey', itemIndex, '') as string;
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex, '') as string | { mode: string; value: string };
+		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam?.value || '';
 		const additionalFields = this.getNodeParameter(
 			'additionalFields',
 			itemIndex,
