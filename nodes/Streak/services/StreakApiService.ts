@@ -28,6 +28,15 @@ export interface IStreakStage {
 }
 
 /**
+ * Interface for Team data returned from Streak API
+ */
+export interface IStreakTeam {
+	key: string;
+	name: string;
+	[key: string]: any;
+}
+
+/**
  * Interface for Box (Deal) data returned from Streak API
  */
 export interface IStreakBox {
@@ -61,6 +70,19 @@ export class StreakApiService {
 		apiKey: string,
 	): Promise<IStreakPipeline[]> {
 		return this.makeRequest(context, 'GET', '/pipelines', apiKey) as Promise<IStreakPipeline[]>;
+	}
+
+	/**
+	 * Fetch all teams from the Streak API
+	 * @param context - The n8n execution or load options context
+	 * @param apiKey - Streak API key for authentication
+	 * @returns Array of team objects or raw response
+	 */
+	public static async getTeams(
+		context: IExecuteFunctions | ILoadOptionsFunctions,
+		apiKey: string,
+	): Promise<IDataObject | IDataObject[]> {
+		return this.makeRequest(context, 'GET', '/users/me/teams', apiKey);
 	}
 
 	/**
@@ -111,6 +133,23 @@ export class StreakApiService {
 	}
 
 	/**
+	 * Update an existing pipeline with multiple fields
+	 * @param context - The n8n execution context
+	 * @param apiKey - Streak API key for authentication
+	 * @param pipelineKey - Key of the pipeline to update
+	 * @param updateData - Object containing fields to update
+	 * @returns The updated pipeline object
+	 */
+	public static async updatePipelineWithData(
+		context: IExecuteFunctions,
+		apiKey: string,
+		pipelineKey: string,
+		updateData: IDataObject,
+	): Promise<IStreakPipeline> {
+		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}`, apiKey, updateData) as Promise<IStreakPipeline>;
+	}
+
+	/**
 	 * Delete a pipeline
 	 * @param context - The n8n execution context
 	 * @param apiKey - Streak API key for authentication
@@ -158,24 +197,28 @@ export class StreakApiService {
 	 * @param context - The n8n execution or load options context
 	 * @param apiKey - Streak API key for authentication
 	 * @param pipelineKey - Pipeline key to get stages for
-	 * @returns Array of stage objects for the pipeline
+	 * @returns Array of stage objects or raw response
 	 */
 	public static async getStages(
 		context: IExecuteFunctions | ILoadOptionsFunctions,
 		apiKey: string,
 		pipelineKey: string,
-	): Promise<IStreakStage[]> {
-		return this.makeRequest(
+	): Promise<IDataObject | IDataObject[]> {
+		const endpoint = `/pipelines/${pipelineKey}/stages`;
+		
+		const result = await this.makeRequest(
 			context,
 			'GET',
-			`/pipelines/${pipelineKey}/stages`,
+			endpoint,
 			apiKey,
-		) as Promise<IStreakStage[]>;
+		);
+		
+		return result;
 	}
 
 	/**
 	 * List boxes in a pipeline
-	 * @param context - The n8n execution context
+	 * @param context - The n8n execution or load options context
 	 * @param apiKey - Streak API key for authentication
 	 * @param pipelineKey - Pipeline key to list boxes from
 	 * @param limit - Optional limit on number of results
@@ -183,7 +226,7 @@ export class StreakApiService {
 	 * @returns Array of box objects in the pipeline
 	 */
 	public static async listBoxes(
-		context: IExecuteFunctions,
+		context: IExecuteFunctions | ILoadOptionsFunctions,
 		apiKey: string,
 		pipelineKey: string,
 		limit?: number,

@@ -28,37 +28,72 @@ export async function handleContactOperations(
 	} else if (operation === 'createContact') {
 		// Create Contact operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
-		const contactEmail = this.getNodeParameter('email', itemIndex) as string;
+		const emailAddresses = this.getNodeParameter('emailAddresses', itemIndex, []) as string[];
+		const givenName = this.getNodeParameter('givenName', itemIndex, '') as string;
+		const familyName = this.getNodeParameter('familyName', itemIndex, '') as string;
 		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
 		
-		validateParameters.call(this, { teamKey, contactEmail }, ['teamKey', 'contactEmail'], itemIndex);
+		validateParameters.call(this, { teamKey }, ['teamKey'], itemIndex);
 		
-		const body: IDataObject = {
-			email: contactEmail,
-		};
+		// Check that at least one of name or email is provided (API requirement)
+		const hasName = givenName || familyName;
+		const hasEmail = emailAddresses && emailAddresses.length > 0;
 		
-		if (additionalFields.firstName) {
-			body.firstName = additionalFields.firstName;
+		if (!hasName && !hasEmail) {
+			throw new NodeOperationError(
+				this.getNode(),
+				'At least one name (Given Name or Family Name) or email address must be provided',
+				{ itemIndex },
+			);
 		}
 		
-		if (additionalFields.lastName) {
-			body.lastName = additionalFields.lastName;
+		const body: IDataObject = {};
+		
+		// Add email addresses if provided
+		if (hasEmail) {
+			body.emailAddresses = emailAddresses;
 		}
 		
-		if (additionalFields.fullName) {
-			body.fullName = additionalFields.fullName;
+		// Add names if provided
+		if (givenName) {
+			body.givenName = givenName;
 		}
 		
-		if (additionalFields.phones && (additionalFields.phones as string[]).length > 0) {
-			body.phones = additionalFields.phones;
+		if (familyName) {
+			body.familyName = familyName;
 		}
 		
-		if (additionalFields.organization) {
-			body.organization = additionalFields.organization;
-		}
-		
+		// Add additional fields
 		if (additionalFields.title) {
 			body.title = additionalFields.title;
+		}
+		
+		if (additionalFields.phoneNumbers && (additionalFields.phoneNumbers as string[]).length > 0) {
+			body.phoneNumbers = additionalFields.phoneNumbers;
+		}
+		
+		if (additionalFields.addresses && (additionalFields.addresses as string[]).length > 0) {
+			body.addresses = additionalFields.addresses;
+		}
+		
+		if (additionalFields.other) {
+			body.other = additionalFields.other;
+		}
+		
+		if (additionalFields.twitterHandle) {
+			body.twitterHandle = additionalFields.twitterHandle;
+		}
+		
+		if (additionalFields.facebookHandle) {
+			body.facebookHandle = additionalFields.facebookHandle;
+		}
+		
+		if (additionalFields.linkedinHandle) {
+			body.linkedinHandle = additionalFields.linkedinHandle;
+		}
+		
+		if (additionalFields.photoUrl) {
+			body.photoUrl = additionalFields.photoUrl;
 		}
 		
 		return await makeStreakRequest.call(
@@ -86,32 +121,48 @@ export async function handleContactOperations(
 		
 		const body: IDataObject = {};
 		
-		if (updateFields.email) {
-			body.email = updateFields.email;
+		if (updateFields.emailAddresses && (updateFields.emailAddresses as string[]).length > 0) {
+			body.emailAddresses = updateFields.emailAddresses;
 		}
 		
-		if (updateFields.firstName) {
-			body.firstName = updateFields.firstName;
+		if (updateFields.givenName) {
+			body.givenName = updateFields.givenName;
 		}
 		
-		if (updateFields.lastName) {
-			body.lastName = updateFields.lastName;
-		}
-		
-		if (updateFields.fullName) {
-			body.fullName = updateFields.fullName;
-		}
-		
-		if (updateFields.phones && (updateFields.phones as string[]).length > 0) {
-			body.phones = updateFields.phones;
-		}
-		
-		if (updateFields.organization) {
-			body.organization = updateFields.organization;
+		if (updateFields.familyName) {
+			body.familyName = updateFields.familyName;
 		}
 		
 		if (updateFields.title) {
 			body.title = updateFields.title;
+		}
+		
+		if (updateFields.phoneNumbers && (updateFields.phoneNumbers as string[]).length > 0) {
+			body.phoneNumbers = updateFields.phoneNumbers;
+		}
+		
+		if (updateFields.addresses && (updateFields.addresses as string[]).length > 0) {
+			body.addresses = updateFields.addresses;
+		}
+		
+		if (updateFields.other) {
+			body.other = updateFields.other;
+		}
+		
+		if (updateFields.twitterHandle) {
+			body.twitterHandle = updateFields.twitterHandle;
+		}
+		
+		if (updateFields.facebookHandle) {
+			body.facebookHandle = updateFields.facebookHandle;
+		}
+		
+		if (updateFields.linkedinHandle) {
+			body.linkedinHandle = updateFields.linkedinHandle;
+		}
+		
+		if (updateFields.photoUrl) {
+			body.photoUrl = updateFields.photoUrl;
 		}
 		
 		return await makeStreakRequest.call(

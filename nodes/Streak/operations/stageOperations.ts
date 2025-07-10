@@ -28,7 +28,8 @@ export async function handleStageOperations(
 	} else if (operation === 'getStage') {
 		// Get Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		const stageKey = this.getNodeParameter('stageKey', itemIndex) as string;
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as string | { mode: string; value: string };
+		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		
 		validateParameters.call(this, { pipelineKey, stageKey }, ['pipelineKey', 'stageKey'], itemIndex);
 		
@@ -66,7 +67,8 @@ export async function handleStageOperations(
 	} else if (operation === 'updateStage') {
 		// Update Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		const stageKey = this.getNodeParameter('stageKey', itemIndex) as string;
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as string | { mode: string; value: string };
+		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
 		
 		validateParameters.call(this, { pipelineKey, stageKey }, ['pipelineKey', 'stageKey'], itemIndex);
@@ -100,7 +102,8 @@ export async function handleStageOperations(
 	} else if (operation === 'deleteStage') {
 		// Delete Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		const stageKey = this.getNodeParameter('stageKey', itemIndex) as string;
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as string | { mode: string; value: string };
+		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		
 		validateParameters.call(this, { pipelineKey, stageKey }, ['pipelineKey', 'stageKey'], itemIndex);
 		

@@ -89,7 +89,8 @@ export async function handleFieldOperations(
 		return { success: true };
 	} else if (operation === 'listFieldValues') {
 		// List Field Values operation
-		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 		
@@ -97,7 +98,8 @@ export async function handleFieldOperations(
 		return await fieldsService.getBoxFieldValues(boxKey);
 	} else if (operation === 'getFieldValue') {
 		// Get Field Value operation
-		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		const fieldKey = this.getNodeParameter('fieldKey', itemIndex) as string;
 		
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
@@ -106,7 +108,8 @@ export async function handleFieldOperations(
 		return await fieldsService.getBoxFieldValue(boxKey, fieldKey);
 	} else if (operation === 'updateFieldValue') {
 		// Update Field Value operation
-		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		const fieldKey = this.getNodeParameter('fieldKey', itemIndex) as string;
 		const fieldValue = this.getNodeParameter('fieldValue', itemIndex) as string | number | boolean | IDataObject;
 		

@@ -27,7 +27,8 @@ export async function handleTaskOperations(
 		);
 	} else if (operation === 'getTasksInBox') {
 		// Get Tasks in Box operation
-		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 		
@@ -62,7 +63,8 @@ export async function handleTaskOperations(
 		}
 	} else if (operation === 'createTask') {
 		// Create Task operation
-		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		const text = this.getNodeParameter('text', itemIndex) as string;
 		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
 		
