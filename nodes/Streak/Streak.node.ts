@@ -49,8 +49,12 @@ export class Streak implements INodeType {
 			},
 		],
 		usableAsTool: true,
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		/**
+		 * Waiting on this to be merged into n8n
+		 * @https://github.com/n8n-io/n8n/pull/10595 
+		 */
+		inputs: [NodeConnectionType.Main], // eslint-disable-line
+		outputs: [NodeConnectionType.Main], // eslint-disable-line
 		properties: nodeProperties,
 	};
 
