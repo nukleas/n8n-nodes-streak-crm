@@ -200,20 +200,6 @@ export const taskProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Text',
-				name: 'text',
-				type: 'string',
-				default: '',
-				description: 'New text content for the task',
-			},
-			{
-				displayName: 'Due Date',
-				name: 'dueDate',
-				type: 'dateTime',
-				default: '',
-				description: 'New due date for the task',
-			},
-			{
 				displayName: 'Assignees',
 				name: 'assignees',
 				type: 'string',
@@ -224,6 +210,20 @@ export const taskProperties: INodeProperties[] = [
 				description: 'New user keys to assign to the task',
 			},
 			{
+				displayName: 'Completed',
+				name: 'completed',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the task is completed',
+			},
+			{
+				displayName: 'Due Date',
+				name: 'dueDate',
+				type: 'dateTime',
+				default: '',
+				description: 'New due date for the task',
+			},
+			{
 				displayName: 'Reminder',
 				name: 'reminder',
 				type: 'dateTime',
@@ -231,11 +231,11 @@ export const taskProperties: INodeProperties[] = [
 				description: 'New reminder date for the task',
 			},
 			{
-				displayName: 'Completed',
-				name: 'completed',
-				type: 'boolean',
-				default: false,
-				description: 'Whether the task is completed',
+				displayName: 'Text',
+				name: 'text',
+				type: 'string',
+				default: '',
+				description: 'New text content for the task',
 			},
 		],
 	},
