@@ -58,11 +58,7 @@ export const taskProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['task'],
-				operation: [
-					'getTask',
-					'updateTask',
-					'deleteTask',
-				],
+				operation: ['getTask', 'updateTask', 'deleteTask'],
 			},
 		},
 	},
@@ -78,10 +74,7 @@ export const taskProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['task'],
-				operation: [
-					'getTasksInBox',
-					'createTask',
-				],
+				operation: ['getTasksInBox', 'createTask'],
 			},
 		},
 	},
@@ -113,10 +106,7 @@ export const taskProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['task'],
-				operation: [
-					'getTasksInBox',
-					'createTask',
-				],
+				operation: ['getTasksInBox', 'createTask'],
 			},
 		},
 	},

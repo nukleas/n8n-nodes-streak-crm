@@ -15,9 +15,9 @@ export async function handleStageOperations(
 	if (operation === 'listStages') {
 		// List Stages operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		
+
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
-		
+
 		return await makeStreakRequest.call(
 			this,
 			'GET',
@@ -28,11 +28,18 @@ export async function handleStageOperations(
 	} else if (operation === 'getStage') {
 		// Get Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as string | { mode: string; value: string };
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
 		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
-		
-		validateParameters.call(this, { pipelineKey, stageKey }, ['pipelineKey', 'stageKey'], itemIndex);
-		
+
+		validateParameters.call(
+			this,
+			{ pipelineKey, stageKey },
+			['pipelineKey', 'stageKey'],
+			itemIndex,
+		);
+
 		return await makeStreakRequest.call(
 			this,
 			'GET',
@@ -44,18 +51,27 @@ export async function handleStageOperations(
 		// Create Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
 		const stageName = this.getNodeParameter('stageName', itemIndex) as string;
-		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
-		
-		validateParameters.call(this, { pipelineKey, stageName }, ['pipelineKey', 'stageName'], itemIndex);
-		 
+		const additionalFields = this.getNodeParameter(
+			'additionalFields',
+			itemIndex,
+			{},
+		) as IDataObject;
+
+		validateParameters.call(
+			this,
+			{ pipelineKey, stageName },
+			['pipelineKey', 'stageName'],
+			itemIndex,
+		);
+
 		const body: IDataObject = {
 			name: stageName,
 		};
-		
+
 		if (additionalFields.color) {
 			body.color = additionalFields.color;
 		}
-		
+
 		return await makeStreakRequest.call(
 			this,
 			'PUT',
@@ -67,12 +83,19 @@ export async function handleStageOperations(
 	} else if (operation === 'updateStage') {
 		// Update Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as string | { mode: string; value: string };
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
 		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
-		
-		validateParameters.call(this, { pipelineKey, stageKey }, ['pipelineKey', 'stageKey'], itemIndex);
-		
+
+		validateParameters.call(
+			this,
+			{ pipelineKey, stageKey },
+			['pipelineKey', 'stageKey'],
+			itemIndex,
+		);
+
 		if (Object.keys(updateFields).length === 0) {
 			throw new NodeOperationError(
 				this.getNode(),
@@ -80,17 +103,17 @@ export async function handleStageOperations(
 				{ itemIndex },
 			);
 		}
-		
+
 		const body: IDataObject = {};
-		
+
 		if (updateFields.name) {
 			body.name = updateFields.name;
 		}
-		
+
 		if (updateFields.color) {
 			body.color = updateFields.color;
 		}
-		
+
 		return await makeStreakRequest.call(
 			this,
 			'POST',
@@ -102,11 +125,18 @@ export async function handleStageOperations(
 	} else if (operation === 'deleteStage') {
 		// Delete Stage operation
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
-		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as string | { mode: string; value: string };
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
 		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
-		
-		validateParameters.call(this, { pipelineKey, stageKey }, ['pipelineKey', 'stageKey'], itemIndex);
-		
+
+		validateParameters.call(
+			this,
+			{ pipelineKey, stageKey },
+			['pipelineKey', 'stageKey'],
+			itemIndex,
+		);
+
 		return await makeStreakRequest.call(
 			this,
 			'DELETE',
@@ -116,5 +146,9 @@ export async function handleStageOperations(
 		);
 	}
 
-	throw new NodeOperationError(this.getNode(), `The stage operation "${operation}" is not supported!`, { itemIndex });
+	throw new NodeOperationError(
+		this.getNode(),
+		`The stage operation "${operation}" is not supported!`,
+		{ itemIndex },
+	);
 }

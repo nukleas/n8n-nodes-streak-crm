@@ -44,7 +44,7 @@ export function getApiVersionForEndpoint(endpoint: string): 'v1' | 'v2' {
 	if (ENDPOINT_API_VERSIONS[endpoint]) {
 		return ENDPOINT_API_VERSIONS[endpoint];
 	}
-	
+
 	// Check for pattern matches
 	for (const [pattern, version] of Object.entries(ENDPOINT_API_VERSIONS)) {
 		if (pattern.includes('*')) {
@@ -58,7 +58,7 @@ export function getApiVersionForEndpoint(endpoint: string): 'v1' | 'v2' {
 			return version;
 		}
 	}
-	
+
 	// Default to v1 for unknown endpoints
 	return 'v1';
 }
@@ -79,7 +79,7 @@ export async function makeStreakRequest(
 	try {
 		// Auto-determine API version if not provided
 		const version = apiVersion || getApiVersionForEndpoint(endpoint);
-		
+
 		// Build request options with proper content-type only when needed
 		const headers: IDataObject = {
 			Accept: 'application/json',

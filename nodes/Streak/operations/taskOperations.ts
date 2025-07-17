@@ -15,25 +15,21 @@ export async function handleTaskOperations(
 	if (operation === 'getTask') {
 		// Get Task operation
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
-		
+
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
-		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/tasks/${taskKey}`,
-			apiKey,
-			itemIndex,
-		);
+
+		return await makeStreakRequest.call(this, 'GET', `/tasks/${taskKey}`, apiKey, itemIndex);
 	} else if (operation === 'getTasksInBox') {
 		// Get Tasks in Box operation
-		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
 		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
-		
+
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
-		
+
 		if (returnAll) {
 			return await handlePagination.call(
 				this,
@@ -54,42 +50,53 @@ export async function handleTaskOperations(
 				{},
 				{ limit: limit.toString() },
 			);
-			
-			if (response && typeof response === 'object' && 'tasks' in response && Array.isArray(response.tasks)) {
+
+			if (
+				response &&
+				typeof response === 'object' &&
+				'tasks' in response &&
+				Array.isArray(response.tasks)
+			) {
 				return response.tasks as IDataObject[];
 			}
-			
+
 			return [];
 		}
 	} else if (operation === 'createTask') {
 		// Create Task operation
-		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as string | { mode: string; value: string };
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
 		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
 		const text = this.getNodeParameter('text', itemIndex) as string;
-		const additionalFields = this.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
-		
+		const additionalFields = this.getNodeParameter(
+			'additionalFields',
+			itemIndex,
+			{},
+		) as IDataObject;
+
 		validateParameters.call(this, { boxKey, text }, ['boxKey', 'text'], itemIndex);
-		
+
 		const body: IDataObject = {
 			text,
 		};
-		
+
 		if (additionalFields.dueDate) {
 			body.dueDate = additionalFields.dueDate;
 		}
-		
+
 		if (additionalFields.assignees && (additionalFields.assignees as string[]).length > 0) {
 			body.assignees = additionalFields.assignees;
 		}
-		
+
 		if (additionalFields.reminder) {
 			body.reminder = additionalFields.reminder;
 		}
-		
+
 		if (additionalFields.completed !== undefined) {
 			body.completed = additionalFields.completed;
 		}
-		
+
 		return await makeStreakRequest.call(
 			this,
 			'POST',
@@ -102,9 +109,9 @@ export async function handleTaskOperations(
 		// Update Task operation
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
-		
+
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
-		
+
 		if (Object.keys(updateFields).length === 0) {
 			throw new NodeOperationError(
 				this.getNode(),
@@ -112,51 +119,42 @@ export async function handleTaskOperations(
 				{ itemIndex },
 			);
 		}
-		
+
 		const body: IDataObject = {};
-		
+
 		if (updateFields.text) {
 			body.text = updateFields.text;
 		}
-		
+
 		if (updateFields.dueDate) {
 			body.dueDate = updateFields.dueDate;
 		}
-		
+
 		if (updateFields.assignees && (updateFields.assignees as string[]).length > 0) {
 			body.assignees = updateFields.assignees;
 		}
-		
+
 		if (updateFields.reminder) {
 			body.reminder = updateFields.reminder;
 		}
-		
+
 		if (updateFields.completed !== undefined) {
 			body.completed = updateFields.completed;
 		}
-		
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/tasks/${taskKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+
+		return await makeStreakRequest.call(this, 'POST', `/tasks/${taskKey}`, apiKey, itemIndex, body);
 	} else if (operation === 'deleteTask') {
 		// Delete Task operation
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
-		
+
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
-		
-		return await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/tasks/${taskKey}`,
-			apiKey,
-			itemIndex,
-		);
+
+		return await makeStreakRequest.call(this, 'DELETE', `/tasks/${taskKey}`, apiKey, itemIndex);
 	}
 
-	throw new NodeOperationError(this.getNode(), `The task operation "${operation}" is not supported!`, { itemIndex });
+	throw new NodeOperationError(
+		this.getNode(),
+		`The task operation "${operation}" is not supported!`,
+		{ itemIndex },
+	);
 }

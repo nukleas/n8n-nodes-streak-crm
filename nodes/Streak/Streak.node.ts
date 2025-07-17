@@ -51,7 +51,7 @@ export class Streak implements INodeType {
 		usableAsTool: true,
 		/**
 		 * Waiting on this to be merged into n8n
-		 * @https://github.com/n8n-io/n8n/pull/10595 
+		 * @https://github.com/n8n-io/n8n/pull/10595
 		 */
 		inputs: [NodeConnectionType.Main], // eslint-disable-line
 		outputs: [NodeConnectionType.Main], // eslint-disable-line
@@ -92,17 +92,26 @@ export class Streak implements INodeType {
 				} else if (resource === 'contact') {
 					responseData = await handleContactOperations.call(this, operation, itemIndex, apiKey);
 				} else if (resource === 'organization') {
-					responseData = await handleOrganizationOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleOrganizationOperations.call(
+						this,
+						operation,
+						itemIndex,
+						apiKey,
+					);
 				} else if (resource === 'task') {
 					responseData = await handleTaskOperations.call(this, operation, itemIndex, apiKey);
 				} else {
-					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not supported!`, { itemIndex });
+					throw new NodeOperationError(
+						this.getNode(),
+						`The resource "${resource}" is not supported!`,
+						{ itemIndex },
+					);
 				}
 
 				// Process the response
 				const executionData = this.helpers.constructExecutionMetaData(
 					this.helpers.returnJsonArray(responseData),
-					{ itemData: { item: itemIndex } }
+					{ itemData: { item: itemIndex } },
 				);
 				returnData.push(...executionData);
 			} catch (error) {
@@ -110,7 +119,7 @@ export class Streak implements INodeType {
 				if (this.continueOnFail()) {
 					const executionErrorData = this.helpers.constructExecutionMetaData(
 						this.helpers.returnJsonArray({ error: error.message }),
-						{ itemData: { item: itemIndex } }
+						{ itemData: { item: itemIndex } },
 					);
 					returnData.push(...executionErrorData);
 					continue;

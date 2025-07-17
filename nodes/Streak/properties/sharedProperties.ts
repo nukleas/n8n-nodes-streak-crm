@@ -11,7 +11,13 @@ export const sharedProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['pipeline', 'box', 'field'],
-				operation: ['listAllPipelines', 'listBoxes', 'getTimeline', 'listFields', 'listFieldValues'],
+				operation: [
+					'listAllPipelines',
+					'listBoxes',
+					'getTimeline',
+					'listFields',
+					'listFieldValues',
+				],
 			},
 		},
 	},
@@ -27,7 +33,13 @@ export const sharedProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['pipeline', 'box', 'field'],
-				operation: ['listAllPipelines', 'listBoxes', 'getTimeline', 'listFields', 'listFieldValues'],
+				operation: [
+					'listAllPipelines',
+					'listBoxes',
+					'getTimeline',
+					'listFields',
+					'listFieldValues',
+				],
 				returnAll: [false],
 			},
 		},

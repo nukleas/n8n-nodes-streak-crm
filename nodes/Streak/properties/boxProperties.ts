@@ -70,12 +70,7 @@ export const boxProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['box'],
-				operation: [
-					'getBox',
-					'updateBox',
-					'deleteBox',
-					'getTimeline',
-				],
+				operation: ['getBox', 'updateBox', 'deleteBox', 'getTimeline'],
 			},
 		},
 	},
@@ -126,10 +121,7 @@ export const boxProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['box'],
-				operation: [
-					'listBoxes',
-					'createBox',
-				],
+				operation: ['listBoxes', 'createBox'],
 			},
 		},
 	},

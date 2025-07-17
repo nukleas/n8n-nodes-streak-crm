@@ -1,4 +1,10 @@
-import { IDataObject, IExecuteFunctions, IHttpRequestMethods, ILoadOptionsFunctions, NodeApiError } from 'n8n-workflow';
+import {
+	IDataObject,
+	IExecuteFunctions,
+	IHttpRequestMethods,
+	ILoadOptionsFunctions,
+	NodeApiError,
+} from 'n8n-workflow';
 import { getApiVersionForEndpoint } from '../operations/utils';
 
 /**
@@ -97,7 +103,12 @@ export class StreakApiService {
 		apiKey: string,
 		pipelineKey: string,
 	): Promise<IStreakPipeline> {
-		return this.makeRequest(context, 'GET', `/pipelines/${pipelineKey}`, apiKey) as Promise<IStreakPipeline>;
+		return this.makeRequest(
+			context,
+			'GET',
+			`/pipelines/${pipelineKey}`,
+			apiKey,
+		) as Promise<IStreakPipeline>;
 	}
 
 	/**
@@ -112,7 +123,9 @@ export class StreakApiService {
 		apiKey: string,
 		name: string,
 	): Promise<IStreakPipeline> {
-		return this.makeRequest(context, 'PUT', '/pipelines', apiKey, { name }) as Promise<IStreakPipeline>;
+		return this.makeRequest(context, 'PUT', '/pipelines', apiKey, {
+			name,
+		}) as Promise<IStreakPipeline>;
 	}
 
 	/**
@@ -129,7 +142,9 @@ export class StreakApiService {
 		pipelineKey: string,
 		name: string,
 	): Promise<IStreakPipeline> {
-		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}`, apiKey, { name }) as Promise<IStreakPipeline>;
+		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}`, apiKey, {
+			name,
+		}) as Promise<IStreakPipeline>;
 	}
 
 	/**
@@ -146,7 +161,13 @@ export class StreakApiService {
 		pipelineKey: string,
 		updateData: IDataObject,
 	): Promise<IStreakPipeline> {
-		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}`, apiKey, updateData) as Promise<IStreakPipeline>;
+		return this.makeRequest(
+			context,
+			'POST',
+			`/pipelines/${pipelineKey}`,
+			apiKey,
+			updateData,
+		) as Promise<IStreakPipeline>;
 	}
 
 	/**
@@ -161,7 +182,12 @@ export class StreakApiService {
 		apiKey: string,
 		pipelineKey: string,
 	): Promise<IDataObject> {
-		return this.makeRequest(context, 'DELETE', `/pipelines/${pipelineKey}`, apiKey) as Promise<IDataObject>;
+		return this.makeRequest(
+			context,
+			'DELETE',
+			`/pipelines/${pipelineKey}`,
+			apiKey,
+		) as Promise<IDataObject>;
 	}
 
 	/**
@@ -180,16 +206,10 @@ export class StreakApiService {
 		targetPipelineKey: string,
 		boxKeys: string[],
 	): Promise<IDataObject> {
-		return this.makeRequest(
-			context,
-			'POST',
-			`/pipelines/${pipelineKey}/boxes/batch`,
-			apiKey,
-			{
-				targetPipelineKey,
-				boxKeys,
-			},
-		) as Promise<IDataObject>;
+		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}/boxes/batch`, apiKey, {
+			targetPipelineKey,
+			boxKeys,
+		}) as Promise<IDataObject>;
 	}
 
 	/**
@@ -205,14 +225,9 @@ export class StreakApiService {
 		pipelineKey: string,
 	): Promise<IDataObject | IDataObject[]> {
 		const endpoint = `/pipelines/${pipelineKey}/stages`;
-		
-		const result = await this.makeRequest(
-			context,
-			'GET',
-			endpoint,
-			apiKey,
-		);
-		
+
+		const result = await this.makeRequest(context, 'GET', endpoint, apiKey);
+
 		return result;
 	}
 
@@ -233,15 +248,15 @@ export class StreakApiService {
 		page?: number,
 	): Promise<IStreakBox[]> {
 		const query: IDataObject = {};
-		
+
 		if (limit !== undefined) {
 			query.limit = limit;
 		}
-		
+
 		if (page !== undefined) {
 			query.page = page;
 		}
-		
+
 		return this.makeRequest(
 			context,
 			'GET',
@@ -275,9 +290,9 @@ export class StreakApiService {
 		try {
 			// Auto-determine API version if not provided
 			const version = apiVersion || getApiVersionForEndpoint(endpoint);
-			
+
 			const headers: Record<string, string> = {
-				'Accept': 'application/json',
+				Accept: 'application/json',
 			};
 
 			// Add Content-Type header only when sending data

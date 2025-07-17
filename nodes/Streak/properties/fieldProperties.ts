@@ -76,13 +76,7 @@ export const fieldProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['field'],
-				operation: [
-					'listFields',
-					'getField',
-					'createField',
-					'updateField',
-					'deleteField',
-				],
+				operation: ['listFields', 'getField', 'createField', 'updateField', 'deleteField'],
 			},
 		},
 	},
@@ -98,11 +92,7 @@ export const fieldProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['field'],
-				operation: [
-					'listFieldValues',
-					'getFieldValue',
-					'updateFieldValue',
-				],
+				operation: ['listFieldValues', 'getFieldValue', 'updateFieldValue'],
 			},
 		},
 	},
@@ -134,11 +124,7 @@ export const fieldProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['field'],
-				operation: [
-					'listFieldValues',
-					'getFieldValue',
-					'updateFieldValue',
-				],
+				operation: ['listFieldValues', 'getFieldValue', 'updateFieldValue'],
 			},
 		},
 	},
@@ -154,13 +140,7 @@ export const fieldProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['field'],
-				operation: [
-					'getField',
-					'updateField',
-					'deleteField',
-					'getFieldValue',
-					'updateFieldValue',
-				],
+				operation: ['getField', 'updateField', 'deleteField', 'getFieldValue', 'updateFieldValue'],
 			},
 		},
 	},

@@ -6,7 +6,7 @@ export abstract class AbstractService<T> {
 
 	constructor(apiKey: string, baseUrl: string) {
 		this.apiKey = apiKey;
-		
+
 		this.baseUrl = baseUrl;
 	}
 
@@ -26,7 +26,7 @@ export abstract class AbstractService<T> {
 
 		const headers = {
 			'Content-Type': 'application/json',
-			'Authorization': `Basic ${Buffer.from(`${this.apiKey}:`).toString('base64')}`,
+			Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString('base64')}`,
 		};
 
 		try {
