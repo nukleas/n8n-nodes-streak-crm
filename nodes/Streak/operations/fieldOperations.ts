@@ -15,7 +15,12 @@ export async function handleFieldOperations(
 	// Handle field operations
 	if (operation === 'listFields') {
 		// List Fields operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
@@ -23,7 +28,11 @@ export async function handleFieldOperations(
 		return await fieldsService.query();
 	} else if (operation === 'getField') {
 		// Get Field operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const fieldKey = this.getNodeParameter('fieldKey', itemIndex) as string;
 
 		validateParameters.call(
@@ -37,7 +46,11 @@ export async function handleFieldOperations(
 		return await fieldsService.get(fieldKey);
 	} else if (operation === 'createField') {
 		// Create Field operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const fieldName = this.getNodeParameter('fieldName', itemIndex) as string;
 		const fieldType = this.getNodeParameter('fieldType', itemIndex) as string;
 		const additionalFields = this.getNodeParameter(
@@ -67,7 +80,17 @@ export async function handleFieldOperations(
 		}
 
 		// Handle field-type specific properties
-		if (fieldType === 'DROPDOWN_ENUMERATION' && additionalFields.enumValues) {
+		if (fieldType === 'DROPDOWN_ENUMERATION') {
+			if (
+				!additionalFields.enumValues ||
+				(Array.isArray(additionalFields.enumValues) && additionalFields.enumValues.length === 0)
+			) {
+				throw new NodeOperationError(
+					this.getNode(),
+					'Dropdown Values are required for DROPDOWN_ENUMERATION field type',
+					{ itemIndex },
+				);
+			}
 			fieldParams.enumValues = additionalFields.enumValues;
 		}
 
@@ -75,7 +98,11 @@ export async function handleFieldOperations(
 		return await fieldsService.create(fieldParams);
 	} else if (operation === 'updateField') {
 		// Update Field operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const fieldKey = this.getNodeParameter('fieldKey', itemIndex) as string;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
 
@@ -98,7 +125,11 @@ export async function handleFieldOperations(
 		return await fieldsService.update(fieldKey, updateFields);
 	} else if (operation === 'deleteField') {
 		// Delete Field operation
-		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const fieldKey = this.getNodeParameter('fieldKey', itemIndex) as string;
 
 		validateParameters.call(

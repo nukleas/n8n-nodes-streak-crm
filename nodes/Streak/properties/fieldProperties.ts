@@ -67,12 +67,28 @@ export const fieldProperties: INodeProperties[] = [
 
 	// Pipeline Key (for field operations)
 	{
-		displayName: 'Pipeline Key',
+		displayName: 'Pipeline',
 		name: 'pipelineKey',
-		type: 'string',
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'The key of the pipeline',
+		description: 'The pipeline to operate on',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['field'],
@@ -83,12 +99,28 @@ export const fieldProperties: INodeProperties[] = [
 
 	// Pipeline Key (required for box dependency)
 	{
-		displayName: 'Pipeline Key',
+		displayName: 'Pipeline',
 		name: 'pipelineKey',
-		type: 'string',
-		default: '',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'The key of the pipeline containing the box',
+		description: 'The pipeline containing the box',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['field'],

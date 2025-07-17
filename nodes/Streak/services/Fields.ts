@@ -30,7 +30,7 @@ export class FieldsService extends AbstractService<IStreakField> {
 	private pipelineKey: string;
 
 	constructor(apiKey: string, pipelineKey: string) {
-		super(apiKey, 'https://www.streak.com/api/v1');
+		super(apiKey, 'https://api.streak.com/api/v1');
 		this.pipelineKey = pipelineKey;
 	}
 
