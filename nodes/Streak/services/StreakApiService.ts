@@ -116,15 +116,18 @@ export class StreakApiService {
 	 * @param context - The n8n execution context
 	 * @param apiKey - Streak API key for authentication
 	 * @param name - Name of the pipeline to create
+	 * @param teamKey - Team key to assign the pipeline to
 	 * @returns The newly created pipeline object
 	 */
 	public static async createPipeline(
 		context: IExecuteFunctions,
 		apiKey: string,
 		name: string,
+		teamKey: string,
 	): Promise<IStreakPipeline> {
-		return this.makeRequest(context, 'PUT', '/pipelines', apiKey, {
+		return this.makeRequestForm(context, 'PUT', '/pipelines', apiKey, {
 			name,
+			teamKey,
 		}) as Promise<IStreakPipeline>;
 	}
 
@@ -311,6 +314,87 @@ export class StreakApiService {
 				qs: query,
 				body,
 				json: true,
+			};
+
+			// Use the appropriate helper based on context type
+			if ('getNode' in context && 'getCredentials' in context) {
+				// IExecuteFunctions context
+				return await (context as IExecuteFunctions).helpers.httpRequest(options);
+			} else {
+				// ILoadOptionsFunctions context
+				return await (context as ILoadOptionsFunctions).helpers.httpRequest(options);
+			}
+		} catch (error) {
+			// Create a properly formatted error with more context
+			if ('getNode' in context) {
+				const executionContext = context as IExecuteFunctions;
+				throw new NodeApiError(executionContext.getNode(), error, {
+					message: `Streak API Error: ${error.message}`,
+					description: `Error when calling ${method} ${endpoint}`,
+					httpCode: error.statusCode,
+				});
+			} else {
+				// For load options functions, return empty data instead of throwing
+				// This prevents dropdowns from breaking when API errors occur
+				if (method === 'GET') {
+					return [];
+				}
+				throw error;
+			}
+		}
+	}
+
+	/**
+	 * Make a form-encoded request to the Streak API with proper error handling
+	 * @param context - The n8n execution or load options context
+	 * @param method - HTTP method (GET, POST, PUT, DELETE, etc.)
+	 * @param endpoint - API endpoint (will be appended to base URL)
+	 * @param apiKey - Streak API key for authentication
+	 * @param body - Optional request body for methods like POST, PUT
+	 * @param query - Optional query parameters
+	 * @param apiVersion - Optional API version override
+	 * @returns Response data from the API
+	 */
+	private static async makeRequestForm(
+		context: IExecuteFunctions | ILoadOptionsFunctions,
+		method: IHttpRequestMethods,
+		endpoint: string,
+		apiKey: string,
+		body?: IDataObject,
+		query?: IDataObject,
+		apiVersion?: 'v1' | 'v2',
+	): Promise<IDataObject | IDataObject[]> {
+		try {
+			// Auto-determine API version if not provided
+			const version = apiVersion || getApiVersionForEndpoint(endpoint);
+
+			const headers: Record<string, string> = {
+				Accept: 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
+			};
+
+			// Manually encode form data
+			let formBody = '';
+			if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+				const params = new URLSearchParams();
+				for (const [key, value] of Object.entries(body)) {
+					if (value !== undefined && value !== null) {
+						params.append(key, String(value));
+					}
+				}
+				formBody = params.toString();
+			}
+
+			const options = {
+				method,
+				url: `${this.BASE_URL}/${version}${endpoint}`,
+				headers,
+				auth: {
+					username: apiKey,
+					password: '',
+				},
+				qs: query,
+				body: formBody,
 			};
 
 			// Use the appropriate helper based on context type

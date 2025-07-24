@@ -394,4 +394,68 @@ export const listSearch = {
 			return { results: [] };
 		}
 	},
+
+	// Search method for team resourceLocator lists
+	async getTeamSearchOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		try {
+			// Get API credentials
+			const credentials = await this.getCredentials('streakApi');
+			if (!credentials?.apiKey) {
+				throw new NodeOperationError(this.getNode(), 'No API key provided');
+			}
+			const apiKey = credentials.apiKey as string;
+
+			// Use the StreakApiService to get teams
+			const response = await StreakApiService.getTeams(this, apiKey);
+
+			// Handle the v2 API response structure: [{results: [...]}]
+			let teams: any[] = [];
+			if (Array.isArray(response)) {
+				// v2 API returns array of objects with 'results' property
+				for (const item of response) {
+					if (item && item.results && Array.isArray(item.results)) {
+						teams.push(...item.results);
+					}
+				}
+			} else if (response && typeof response === 'object') {
+				// Fallback: check if it's a direct results object
+				if (response.results && Array.isArray(response.results)) {
+					teams = response.results;
+				} else {
+					// Single team object
+					teams = [response];
+				}
+			}
+
+			// Filter teams if filter is provided
+			let filteredTeams = teams;
+			if (filter) {
+				const filterLower = filter.toLowerCase();
+				filteredTeams = teams.filter(
+					(team) =>
+						team &&
+						team.key &&
+						((team.name || '').toLowerCase().includes(filterLower) ||
+							team.key.toLowerCase().includes(filterLower)),
+				);
+			}
+
+			// Map the response data to the format expected by n8n resourceLocator
+			const results = filteredTeams
+				.filter((team) => team && team.key) // Filter out invalid teams
+				.map((team) => ({
+					name: `${team.name || 'Unnamed Team'} (${team.key || 'no-key'})`,
+					value: team.key || '',
+					url: `https://www.streak.com/team/${team.key || 'no-key'}`,
+				}));
+
+			return { results };
+		} catch (error) {
+			// Return empty results on error
+			return { results: [] };
+		}
+	},
 };

@@ -101,6 +101,38 @@ export const pipelineProperties: INodeProperties[] = [
 		},
 	},
 
+	// Team Key (for createPipeline only)
+	{
+		displayName: 'Team',
+		name: 'teamKey',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		required: true,
+		description: 'The team to assign the pipeline to',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getTeamSearchOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['pipeline'],
+				operation: ['createPipeline'],
+			},
+		},
+	},
+
 	// Box Keys (for moveBoxesBatch)
 	{
 		displayName: 'Box Keys',

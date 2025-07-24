@@ -30,10 +30,14 @@ export async function handlePipelineOperations(
 	} else if (operation === 'createPipeline') {
 		// Create Pipeline operation
 		const pipelineName = this.getNodeParameter('pipelineName', itemIndex) as string;
+		const teamKeyParam = this.getNodeParameter('teamKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const teamKey = typeof teamKeyParam === 'string' ? teamKeyParam : teamKeyParam.value;
 
-		validateParameters.call(this, { pipelineName }, ['pipelineName'], itemIndex);
+		validateParameters.call(this, { pipelineName, teamKey }, ['pipelineName', 'teamKey'], itemIndex);
 
-		return await StreakApiService.createPipeline(this, apiKey, pipelineName);
+		return await StreakApiService.createPipeline(this, apiKey, pipelineName, teamKey);
 	} else if (operation === 'updatePipeline') {
 		// Update Pipeline operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
