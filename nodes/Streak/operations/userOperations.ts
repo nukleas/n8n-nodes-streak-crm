@@ -14,27 +14,19 @@ export async function handleUserOperations(
 	// Handle user operations
 	if (operation === 'getCurrentUser') {
 		// Get Current User operation
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			'/users/me',
-			apiKey,
-			itemIndex,
-		);
+		return await makeStreakRequest.call(this, 'GET', '/users/me', apiKey, itemIndex);
 	} else if (operation === 'getUser') {
 		// Get User operation
 		const userKey = this.getNodeParameter('userKey', itemIndex) as string;
-		
+
 		validateParameters.call(this, { userKey }, ['userKey'], itemIndex);
-		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/users/${userKey}`,
-			apiKey,
-			itemIndex,
-		);
+
+		return await makeStreakRequest.call(this, 'GET', `/users/${userKey}`, apiKey, itemIndex);
 	}
 
-	throw new NodeOperationError(this.getNode(), `The user operation "${operation}" is not supported!`, { itemIndex });
+	throw new NodeOperationError(
+		this.getNode(),
+		`The user operation "${operation}" is not supported!`,
+		{ itemIndex },
+	);
 }

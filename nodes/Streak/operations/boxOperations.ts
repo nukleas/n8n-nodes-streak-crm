@@ -13,10 +13,18 @@ export async function handleBoxOperations(
 	// Handle box operations
 	if (operation === 'listBoxes') {
 		// List Boxes in Pipeline operation
-		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
-		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
-		const stageKeyFilterParam = this.getNodeParameter('stageKeyFilter', itemIndex, '') as string | { mode: string; value: string };
-		const stageKeyFilter = typeof stageKeyFilterParam === 'string' ? stageKeyFilterParam : stageKeyFilterParam?.value || '';
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const stageKeyFilterParam = this.getNodeParameter('stageKeyFilter', itemIndex, '') as
+			| string
+			| { mode: string; value: string };
+		const stageKeyFilter =
+			typeof stageKeyFilterParam === 'string'
+				? stageKeyFilterParam
+				: stageKeyFilterParam?.value || '';
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
@@ -66,7 +74,13 @@ export async function handleBoxOperations(
 		const boxes: IDataObject[] = [];
 		for (const boxKey of boxKeys) {
 			try {
-				const response = await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}`, apiKey, itemIndex);
+				const response = await makeStreakRequest.call(
+					this,
+					'GET',
+					`/boxes/${boxKey}`,
+					apiKey,
+					itemIndex,
+				);
 				// Normalize response to ensure it's an array of IDataObject
 				const normalizedResponse = Array.isArray(response) ? response : [response];
 				boxes.push(...normalizedResponse);
@@ -80,10 +94,15 @@ export async function handleBoxOperations(
 		return boxes;
 	} else if (operation === 'createBox') {
 		// Create Box operation
-		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
-		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const boxName = this.getNodeParameter('boxName', itemIndex) as string;
-		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex, '') as string | { mode: string; value: string };
+		const stageKeyParam = this.getNodeParameter('stageKey', itemIndex, '') as
+			| string
+			| { mode: string; value: string };
 		const stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam?.value || '';
 		const additionalFields = this.getNodeParameter(
 			'additionalFields',

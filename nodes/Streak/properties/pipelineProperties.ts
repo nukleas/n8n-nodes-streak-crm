@@ -80,12 +80,7 @@ export const pipelineProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['pipeline'],
-				operation: [
-					'getPipeline',
-					'updatePipeline',
-					'deletePipeline',
-					'moveBoxesBatch',
-				],
+				operation: ['getPipeline', 'updatePipeline', 'deletePipeline', 'moveBoxesBatch'],
 			},
 		},
 	},
@@ -98,6 +93,38 @@ export const pipelineProperties: INodeProperties[] = [
 		default: '',
 		required: true,
 		description: 'The name of the pipeline',
+		displayOptions: {
+			show: {
+				resource: ['pipeline'],
+				operation: ['createPipeline'],
+			},
+		},
+	},
+
+	// Team Key (for createPipeline only)
+	{
+		displayName: 'Team',
+		name: 'teamKey',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		required: true,
+		description: 'The team to assign the pipeline to',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getTeamSearchOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['pipeline'],
@@ -133,7 +160,8 @@ export const pipelineProperties: INodeProperties[] = [
 		type: 'resourceLocator',
 		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+		description:
+			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 		modes: [
 			{
 				displayName: 'From List',
@@ -201,7 +229,8 @@ export const pipelineProperties: INodeProperties[] = [
 					loadOptionsMethod: 'getTeamOptions',
 				},
 				default: '',
-				description: 'Team to assign the pipeline to. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+				description:
+					'Team to assign the pipeline to. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 		],
 	},

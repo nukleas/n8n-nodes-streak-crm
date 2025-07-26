@@ -18,8 +18,11 @@ export async function handlePipelineOperations(
 		return await StreakApiService.getPipelines(this, apiKey);
 	} else if (operation === 'getPipeline') {
 		// Get Pipeline operation
-		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
-		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
@@ -27,14 +30,21 @@ export async function handlePipelineOperations(
 	} else if (operation === 'createPipeline') {
 		// Create Pipeline operation
 		const pipelineName = this.getNodeParameter('pipelineName', itemIndex) as string;
+		const teamKeyParam = this.getNodeParameter('teamKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const teamKey = typeof teamKeyParam === 'string' ? teamKeyParam : teamKeyParam.value;
 
-		validateParameters.call(this, { pipelineName }, ['pipelineName'], itemIndex);
+		validateParameters.call(this, { pipelineName, teamKey }, ['pipelineName', 'teamKey'], itemIndex);
 
-		return await StreakApiService.createPipeline(this, apiKey, pipelineName);
+		return await StreakApiService.createPipeline(this, apiKey, pipelineName, teamKey);
 	} else if (operation === 'updatePipeline') {
 		// Update Pipeline operation
-		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
-		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
@@ -57,16 +67,22 @@ export async function handlePipelineOperations(
 		return await StreakApiService.updatePipelineWithData(this, apiKey, pipelineKey, updateData);
 	} else if (operation === 'deletePipeline') {
 		// Delete Pipeline operation
-		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
-		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
 		return await StreakApiService.deletePipeline(this, apiKey, pipelineKey);
 	} else if (operation === 'moveBoxesBatch') {
 		// Move Boxes (Batch) operation
-		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as string | { mode: string; value: string };
-		const pipelineKey = typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
+		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const pipelineKey =
+			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 		// Get boxKeys as string or string[] and ensure it's properly formatted as array
 		let boxKeysInput: string[] = [];
 		const rawInput = this.getNodeParameter('boxKeys', itemIndex);
@@ -82,8 +98,13 @@ export async function handlePipelineOperations(
 			// If it's already an array, use it directly
 			boxKeysInput = rawInput.map((item) => String(item)).filter(Boolean);
 		}
-		const targetPipelineKeyParam = this.getNodeParameter('targetPipelineKey', itemIndex) as string | { mode: string; value: string };
-		const targetPipelineKey = typeof targetPipelineKeyParam === 'string' ? targetPipelineKeyParam : targetPipelineKeyParam.value;
+		const targetPipelineKeyParam = this.getNodeParameter('targetPipelineKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const targetPipelineKey =
+			typeof targetPipelineKeyParam === 'string'
+				? targetPipelineKeyParam
+				: targetPipelineKeyParam.value;
 
 		validateParameters.call(
 			this,

@@ -28,7 +28,7 @@ export const nodeProperties: INodeProperties[] = [
 	...contactProperties,
 	...organizationProperties,
 	...taskProperties,
-	
+
 	// Shared properties (returnAll, limit)
 	...sharedProperties,
 ];

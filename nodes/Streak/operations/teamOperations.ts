@@ -14,27 +14,19 @@ export async function handleTeamOperations(
 	// Handle team operations
 	if (operation === 'getMyTeams') {
 		// Get My Teams operation
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			'/users/me/teams',
-			apiKey,
-			itemIndex,
-		);
+		return await makeStreakRequest.call(this, 'GET', '/users/me/teams', apiKey, itemIndex);
 	} else if (operation === 'getTeam') {
 		// Get Team operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
-		
+
 		validateParameters.call(this, { teamKey }, ['teamKey'], itemIndex);
-		
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/teams/${teamKey}`,
-			apiKey,
-			itemIndex,
-		);
+
+		return await makeStreakRequest.call(this, 'GET', `/teams/${teamKey}`, apiKey, itemIndex);
 	}
 
-	throw new NodeOperationError(this.getNode(), `The team operation "${operation}" is not supported!`, { itemIndex });
+	throw new NodeOperationError(
+		this.getNode(),
+		`The team operation "${operation}" is not supported!`,
+		{ itemIndex },
+	);
 }

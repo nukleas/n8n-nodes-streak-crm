@@ -74,13 +74,7 @@ export const stageProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['stage'],
-				operation: [
-					'listStages',
-					'getStage',
-					'createStage',
-					'updateStage',
-					'deleteStage',
-				],
+				operation: ['listStages', 'getStage', 'createStage', 'updateStage', 'deleteStage'],
 			},
 		},
 	},
@@ -112,11 +106,7 @@ export const stageProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['stage'],
-				operation: [
-					'getStage',
-					'updateStage',
-					'deleteStage',
-				],
+				operation: ['getStage', 'updateStage', 'deleteStage'],
 			},
 		},
 	},
