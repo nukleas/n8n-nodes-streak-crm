@@ -133,6 +133,131 @@ export const pipelineProperties: INodeProperties[] = [
 		},
 	},
 
+	// Stages (for createPipeline only)
+	{
+		displayName: 'Stages',
+		name: 'stages',
+		type: 'fixedCollection',
+		placeholder: 'Add Stage',
+		default: { stage: [{ name: '' }] },
+		required: true,
+		description: 'The stages for the pipeline. Each stage must have a name.',
+		typeOptions: {
+			multipleValues: true,
+		},
+		options: [
+			{
+				displayName: 'Stage',
+				name: 'stage',
+				values: [
+					{
+						displayName: 'Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						required: true,
+						description: 'The name of the stage',
+					},
+				],
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['pipeline'],
+				operation: ['createPipeline'],
+			},
+		},
+	},
+
+	// Additional Options (for createPipeline only)
+	{
+		displayName: 'Additional Options',
+		name: 'additionalOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['pipeline'],
+				operation: ['createPipeline'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Team Wide',
+				name: 'teamWide',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the pipeline will be shared with all users in the team',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				placeholder: 'Add Field',
+				default: { field: [] },
+				description: 'Custom fields that boxes in this pipeline can have',
+				typeOptions: {
+					multipleValues: true,
+				},
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Name',
+								name: 'name',
+								type: 'string',
+								default: '',
+								required: true,
+								description: 'The name of the field',
+							},
+							{
+								displayName: 'Type',
+								name: 'type',
+								type: 'options',
+								default: 'TEXT_INPUT',
+								required: true,
+								description: 'The type of the field',
+								options: [
+									{
+										name: 'Checkbox',
+										value: 'CHECKBOX',
+									},
+									{
+										name: 'Date',
+										value: 'DATE',
+									},
+									{
+										name: 'Dropdown',
+										value: 'DROPDOWN',
+									},
+									{
+										name: 'Formula',
+										value: 'FORMULA',
+									},
+									{
+										name: 'Tag',
+										value: 'TAG',
+									},
+									{
+										name: 'Team Contact',
+										value: 'TEAM_CONTACT',
+									},
+									{
+										name: 'Text Input',
+										value: 'TEXT_INPUT',
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+		],
+	},
+
 	// Box Keys (for moveBoxesBatch)
 	{
 		displayName: 'Box Keys',
