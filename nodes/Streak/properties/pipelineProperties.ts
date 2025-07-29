@@ -139,7 +139,7 @@ export const pipelineProperties: INodeProperties[] = [
 		name: 'stages',
 		type: 'fixedCollection',
 		placeholder: 'Add Stage',
-		default: { stage: [{ name: '' }] },
+		default: { stage: [] },
 		required: true,
 		description: 'The stages for the pipeline. Each stage must have a name.',
 		typeOptions: {

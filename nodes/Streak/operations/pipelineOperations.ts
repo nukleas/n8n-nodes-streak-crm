@@ -57,14 +57,40 @@ export async function handlePipelineOperations(
 		let fieldTypes = '';
 
 		if (additionalOptions.customFields) {
-			const customFieldsInput = additionalOptions.customFields as {
-				field: Array<{ name: string; type: string }>;
-			};
-			const fields = customFieldsInput.field.filter((field) => field.name.trim() !== '');
+			// Validate customFields structure before processing
+			if (
+				typeof additionalOptions.customFields === 'object' &&
+				additionalOptions.customFields !== null &&
+				'field' in additionalOptions.customFields &&
+				Array.isArray((additionalOptions.customFields as any).field)
+			) {
+				const customFieldsInput = additionalOptions.customFields as {
+					field: Array<{ name: string; type: string }>;
+				};
+				
+				// Filter fields with valid names and types
+				const fields = customFieldsInput.field.filter((field) => {
+					return (
+						field &&
+						typeof field === 'object' &&
+						typeof field.name === 'string' &&
+						field.name.trim() !== '' &&
+						typeof field.type === 'string' &&
+						field.type.trim() !== ''
+					);
+				});
 
-			if (fields.length > 0) {
-				fieldNames = fields.map((field) => field.name).join(',');
-				fieldTypes = fields.map((field) => field.type).join(',');
+				if (fields.length > 0) {
+					// Extract names and types separately for validation
+					const names = fields.map((field) => field.name);
+					const types = fields.map((field) => field.type);
+					
+					// Verify arrays have matching lengths (should always be true after filtering, but safety check)
+					if (names.length === types.length) {
+						fieldNames = names.join(',');
+						fieldTypes = types.join(',');
+					}
+				}
 			}
 		}
 
