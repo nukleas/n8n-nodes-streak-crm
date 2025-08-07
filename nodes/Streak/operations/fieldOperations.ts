@@ -21,7 +21,6 @@ export async function handleFieldOperations(
 		const pipelineKey =
 			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
 
-
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
 		const fieldsService = new FieldsService(apiKey, pipelineKey);

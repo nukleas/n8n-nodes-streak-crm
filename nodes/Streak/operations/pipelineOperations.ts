@@ -35,9 +35,83 @@ export async function handlePipelineOperations(
 			| { mode: string; value: string };
 		const teamKey = typeof teamKeyParam === 'string' ? teamKeyParam : teamKeyParam.value;
 
-		validateParameters.call(this, { pipelineName, teamKey }, ['pipelineName', 'teamKey'], itemIndex);
+		// Get stages from the fixedCollection input and convert to comma-separated string
+		const stagesInput = this.getNodeParameter('stages', itemIndex, { stage: [] }) as {
+			stage: Array<{ name: string }>;
+		};
+		const stageNames = stagesInput.stage
+			.map((stage) => stage.name)
+			.filter((name) => name.trim() !== '')
+			.join(',');
 
-		return await StreakApiService.createPipeline(this, apiKey, pipelineName, teamKey);
+		// Get additional options
+		const additionalOptions = this.getNodeParameter(
+			'additionalOptions',
+			itemIndex,
+			{},
+		) as IDataObject;
+		const teamWide = additionalOptions.teamWide as boolean | undefined;
+
+		// Process custom fields if provided
+		let fieldNames = '';
+		let fieldTypes = '';
+
+		if (additionalOptions.customFields) {
+			// Validate customFields structure before processing
+			if (
+				typeof additionalOptions.customFields === 'object' &&
+				additionalOptions.customFields !== null &&
+				'field' in additionalOptions.customFields &&
+				Array.isArray((additionalOptions.customFields as any).field)
+			) {
+				const customFieldsInput = additionalOptions.customFields as {
+					field: Array<{ name: string; type: string }>;
+				};
+				
+				// Filter fields with valid names and types
+				const fields = customFieldsInput.field.filter((field) => {
+					return (
+						field &&
+						typeof field === 'object' &&
+						typeof field.name === 'string' &&
+						field.name.trim() !== '' &&
+						typeof field.type === 'string' &&
+						field.type.trim() !== ''
+					);
+				});
+
+				if (fields.length > 0) {
+					// Extract names and types separately for validation
+					const names = fields.map((field) => field.name);
+					const types = fields.map((field) => field.type);
+					
+					// Verify arrays have matching lengths (should always be true after filtering, but safety check)
+					if (names.length === types.length) {
+						fieldNames = names.join(',');
+						fieldTypes = types.join(',');
+					}
+				}
+			}
+		}
+
+		validateParameters.call(
+			this,
+			{ pipelineName, teamKey },
+			['pipelineName', 'teamKey'],
+			itemIndex,
+		);
+
+		// Create pipeline with all optional parameters
+		return await StreakApiService.createPipeline(
+			this,
+			apiKey,
+			pipelineName,
+			teamKey,
+			stageNames || undefined,
+			teamWide,
+			fieldNames || undefined,
+			fieldTypes || undefined,
+		);
 	} else if (operation === 'updatePipeline') {
 		// Update Pipeline operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as

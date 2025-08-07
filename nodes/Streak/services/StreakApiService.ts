@@ -117,6 +117,10 @@ export class StreakApiService {
 	 * @param apiKey - Streak API key for authentication
 	 * @param name - Name of the pipeline to create
 	 * @param teamKey - Team key to assign the pipeline to
+	 * @param stageNames - Optional comma-separated string of stage names
+	 * @param teamWide - Optional boolean indicating if pipeline is team-wide
+	 * @param fieldNames - Optional comma-separated string of field names
+	 * @param fieldTypes - Optional comma-separated string of field types
 	 * @returns The newly created pipeline object
 	 */
 	public static async createPipeline(
@@ -124,11 +128,59 @@ export class StreakApiService {
 		apiKey: string,
 		name: string,
 		teamKey: string,
+		stageNames?: string,
+		teamWide?: boolean,
+		fieldNames?: string,
+		fieldTypes?: string,
 	): Promise<IStreakPipeline> {
-		return this.makeRequestForm(context, 'PUT', '/pipelines', apiKey, {
+		const body: IDataObject = {
 			name,
 			teamKey,
-		}) as Promise<IStreakPipeline>;
+		};
+
+		// Add optional parameters if provided
+		if (stageNames && stageNames.trim() !== '') {
+			body.stageNames = stageNames;
+		}
+
+		if (teamWide !== undefined) {
+			body.teamWide = teamWide;
+		}
+
+		if (fieldNames && fieldNames.trim() !== '') {
+			body.fieldNames = fieldNames;
+		}
+
+		if (fieldTypes && fieldTypes.trim() !== '') {
+			body.fieldTypes = fieldTypes;
+		}
+
+		return this.makeRequestForm(
+			context,
+			'PUT',
+			'/pipelines',
+			apiKey,
+			body,
+		) as Promise<IStreakPipeline>;
+	}
+
+	/**
+	 * Create a stage in a pipeline
+	 * @param context - The n8n execution context
+	 * @param apiKey - Streak API key for authentication
+	 * @param pipelineKey - Key of the pipeline to create stage in
+	 * @param stageName - Name of the stage to create
+	 * @returns The newly created stage object
+	 */
+	public static async createStage(
+		context: IExecuteFunctions,
+		apiKey: string,
+		pipelineKey: string,
+		stageName: string,
+	): Promise<IStreakStage> {
+		return this.makeRequestForm(context, 'PUT', `/pipelines/${pipelineKey}/stages`, apiKey, {
+			name: stageName,
+		}) as Promise<IStreakStage>;
 	}
 
 	/**
@@ -355,7 +407,7 @@ export class StreakApiService {
 	 * @param apiVersion - Optional API version override
 	 * @returns Response data from the API
 	 */
-	private static async makeRequestForm(
+	public static async makeRequestForm(
 		context: IExecuteFunctions | ILoadOptionsFunctions,
 		method: IHttpRequestMethods,
 		endpoint: string,
