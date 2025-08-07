@@ -260,11 +260,16 @@ export class StreakApiService {
 		pipelineKey: string,
 		targetPipelineKey: string,
 		boxKeys: string[],
-	): Promise<IDataObject> {
-		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}/boxes/batch`, apiKey, {
-			targetPipelineKey,
-			boxKeys,
-		}) as Promise<IDataObject>;
+	): Promise<IDataObject | IDataObject[]> {
+		// Transform the input to match Streak API v2 requirements
+		// API expects: [{ key: "boxKey", boxKey: "boxKey", pipelineKey: "targetPipelineKey" }, ...]
+		const requestBody = boxKeys.map(boxKey => ({
+			key: boxKey,
+			boxKey: boxKey,
+			pipelineKey: targetPipelineKey,
+		}));
+
+		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}/boxes/batch`, apiKey, requestBody);
 	}
 
 	/**
@@ -338,7 +343,7 @@ export class StreakApiService {
 		method: IHttpRequestMethods,
 		endpoint: string,
 		apiKey: string,
-		body?: IDataObject,
+		body?: IDataObject | IDataObject[],
 		query?: IDataObject,
 		apiVersion?: 'v1' | 'v2',
 	): Promise<IDataObject | IDataObject[]> {
@@ -412,7 +417,7 @@ export class StreakApiService {
 		method: IHttpRequestMethods,
 		endpoint: string,
 		apiKey: string,
-		body?: IDataObject,
+		body?: IDataObject | IDataObject[],
 		query?: IDataObject,
 		apiVersion?: 'v1' | 'v2',
 	): Promise<IDataObject | IDataObject[]> {
