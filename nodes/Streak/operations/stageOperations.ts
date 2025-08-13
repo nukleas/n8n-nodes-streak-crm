@@ -1,6 +1,7 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { makeStreakRequest, validateParameters } from './utils';
+import { StreakApiService } from '../services/StreakApiService';
 
 /**
  * Handle stage-related operations for the Streak API
@@ -76,78 +77,18 @@ export async function handleStageOperations(
 			itemIndex,
 		);
 
-		const body: IDataObject = {
-			name: stageName,
-		};
-
-		if (additionalFields.color) {
-			body.color = additionalFields.color;
-		}
-
-		return await makeStreakRequest.call(
+		const stage = await StreakApiService.createStage(
 			this,
-			'PUT',
-			`/pipelines/${pipelineKey}/stages`,
 			apiKey,
-			itemIndex,
+			pipelineKey,
+			stageName,
 		);
 
-		// Prepare url-encoded body (required by Streak API)
-		const formParams = new URLSearchParams();
-		formParams.append('name', stageName);
-
 		if (additionalFields.color) {
-			formParams.append('color', additionalFields.color as string);
+			stage.color = additionalFields.color;
 		}
 
-		// Use direct HTTP request with url-encoded format
-		try {
-			const response = await this.helpers.httpRequest({
-				method: 'PUT',
-				url: `https://api.streak.com/api/v1/pipelines/${pipelineKey}/stages`,
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					Accept: 'application/json',
-				},
-				auth: {
-					username: apiKey,
-					password: '',
-				},
-				body: formParams.toString(),
-			});
-
-			return response;
-		} catch (error) {
-			// Handle specific error cases with user-friendly messages
-			// Try to get the actual response body that contains the error message
-			let apiErrorMessage = '';
-			try {
-				const responseData = error.response?.data || error.response?.body;
-				if (responseData && typeof responseData === 'object' && responseData.error) {
-					apiErrorMessage = responseData.error;
-				} else if (responseData && typeof responseData === 'string') {
-					const parsed = JSON.parse(responseData);
-					apiErrorMessage = parsed.error || responseData;
-				}
-			} catch (e) {
-				// If we can't parse the response, use the original error message
-				apiErrorMessage = error.message || 'Unknown error';
-			}
-
-			// Handle common error cases with user-friendly messages
-			if (apiErrorMessage.includes('stage name already exists')) {
-				throw new NodeOperationError(
-					this.getNode(),
-					`Stage name "${stageName}" already exists in this pipeline. Please choose a different name.`,
-					{ itemIndex },
-				);
-			}
-
-			// For other errors, provide a clear message
-			throw new NodeOperationError(this.getNode(), `Failed to create stage: ${apiErrorMessage}`, {
-				itemIndex,
-			});
-		}
+		return stage;
 	} else if (operation === 'updateStage') {
 		// Update Stage operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
