@@ -41,12 +41,48 @@ export async function handleOrganizationOperations(
 			name,
 		};
 
+		if (additionalFields.addresses) {
+			body.addresses = additionalFields.addresses;
+		}
+
 		if (additionalFields.domains && (additionalFields.domains as string[]).length > 0) {
 			body.domains = additionalFields.domains;
 		}
 
+		if (additionalFields.employeeCount) {
+			body.employeeCount = additionalFields.employeeCount;
+		}
+
+		if (additionalFields.facebookHandle) {
+			body.facebookHandle = additionalFields.facebookHandle;
+		}
+
+		if (additionalFields.industry) {
+			body.industry = additionalFields.industry;
+		}
+
+		if (additionalFields.linkedInHandle) {
+			body.linkedInHandle = additionalFields.linkedInHandle;
+		}
+
+		if (additionalFields.logoUrl) {
+			body.logoUrl = additionalFields.logoUrl;
+		}
+
+		if (additionalFields.other) {
+			body.other = additionalFields.other;
+		}
+
+		if (additionalFields.phoneNumbers) {
+			body.phoneNumbers = additionalFields.phoneNumbers;
+		}
+
 		if (additionalFields.relationships) {
 			body.relationships = additionalFields.relationships;
+		}
+
+		if (additionalFields.twitterHandle) {
+			body.twitterHandle = additionalFields.twitterHandle;
 		}
 
 		return await makeStreakRequest.call(
@@ -107,16 +143,52 @@ export async function handleOrganizationOperations(
 
 		const body: IDataObject = {};
 
-		if (updateFields.name) {
-			body.name = updateFields.name;
+		if (updateFields.addresses) {
+			body.addresses = updateFields.addresses;
 		}
 
 		if (updateFields.domains && (updateFields.domains as string[]).length > 0) {
 			body.domains = updateFields.domains;
 		}
 
+		if (updateFields.employeeCount) {
+			body.employeeCount = updateFields.employeeCount;
+		}
+
+		if (updateFields.facebookHandle) {
+			body.facebookHandle = updateFields.facebookHandle;
+		}
+
+		if (updateFields.industry) {
+			body.industry = updateFields.industry;
+		}
+
+		if (updateFields.linkedInHandle) {
+			body.linkedInHandle = updateFields.linkedInHandle;
+		}
+
+		if (updateFields.logoUrl) {
+			body.logoUrl = updateFields.logoUrl;
+		}
+
+		if (updateFields.name) {
+			body.name = updateFields.name;
+		}
+
+		if (updateFields.other) {
+			body.other = updateFields.other;
+		}
+
+		if (updateFields.phoneNumbers) {
+			body.phoneNumbers = updateFields.phoneNumbers;
+		}
+
 		if (updateFields.relationships) {
 			body.relationships = updateFields.relationships;
+		}
+
+		if (updateFields.twitterHandle) {
+			body.twitterHandle = updateFields.twitterHandle;
 		}
 
 		return await makeStreakRequest.call(
