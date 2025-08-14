@@ -51,6 +51,50 @@ export abstract class AbstractService<T> {
 		}
 	}
 
+	protected async requestFormEncoded<R>(
+		method: string,
+		path: string,
+		body?: any,
+		queryParams?: Record<string, string>,
+	): Promise<R> {
+		const url = new URL(`${this.baseUrl}${path}`);
+
+		if (queryParams) {
+			Object.entries(queryParams).forEach(([key, value]) => {
+				url.searchParams.append(key, value);
+			});
+		}
+
+		const headers = {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString('base64')}`,
+		};
+
+		// Convert body to URL-encoded format
+		const formBody = body ? new URLSearchParams(body).toString() : undefined;
+
+		try {
+			const response = await fetch(url.toString(), {
+				method,
+				headers,
+				body: formBody,
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => null);
+				throw new Error(
+					`API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`,
+				);
+			}
+
+			const data = await response.json();
+			return data as R;
+		} catch (error) {
+			console.error(`Request failed:`, error);
+			throw error;
+		}
+	}
+
 	abstract get(id: string): Promise<T>;
 
 	abstract query(queryParams?: Record<string, string>): Promise<T[]>;
