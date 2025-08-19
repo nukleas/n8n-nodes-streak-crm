@@ -200,9 +200,9 @@ export const fieldProperties: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{
-				name: 'Text Input',
-				value: 'TEXT_INPUT',
-				description: 'Single line text field',
+				name: 'Checkbox',
+				value: 'CHECKBOX',
+				description: 'Checkbox field (boolean)',
 			},
 			{
 				name: 'Date',
@@ -210,9 +210,9 @@ export const fieldProperties: INodeProperties[] = [
 				description: 'Date field',
 			},
 			{
-				name: 'Tag',
-				value: 'TAG',
-				description: 'Tag field for labels',
+				name: 'Dropdown',
+				value: 'DROPDOWN',
+				description: 'Dropdown selection field',
 			},
 			{
 				name: 'Formula',
@@ -220,19 +220,19 @@ export const fieldProperties: INodeProperties[] = [
 				description: 'Formula field for calculations',
 			},
 			{
-				name: 'Dropdown',
-				value: 'DROPDOWN',
-				description: 'Dropdown selection field',
-			},
-			{
-				name: 'Checkbox',
-				value: 'CHECKBOX',
-				description: 'Checkbox field (boolean)',
+				name: 'Tag',
+				value: 'TAG',
+				description: 'Tag field for labels',
 			},
 			{
 				name: 'Team Contact',
 				value: 'TEAM_CONTACT',
 				description: 'Team contact field',
+			},
+			{
+				name: 'Text Input',
+				value: 'TEXT_INPUT',
+				description: 'Single line text field',
 			},
 		],
 		default: 'TEXT_INPUT',
