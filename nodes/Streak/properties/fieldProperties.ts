@@ -200,14 +200,9 @@ export const fieldProperties: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{
-				name: 'Checkbox',
-				value: 'CHECKBOX',
-				description: 'Checkbox field (boolean)',
-			},
-			{
-				name: 'Contact',
-				value: 'CONTACT',
-				description: 'Contact field',
+				name: 'Text Input',
+				value: 'TEXT_INPUT',
+				description: 'Single line text field',
 			},
 			{
 				name: 'Date',
@@ -215,32 +210,32 @@ export const fieldProperties: INodeProperties[] = [
 				description: 'Date field',
 			},
 			{
+				name: 'Tag',
+				value: 'TAG',
+				description: 'Tag field for labels',
+			},
+			{
+				name: 'Formula',
+				value: 'FORMULA',
+				description: 'Formula field for calculations',
+			},
+			{
 				name: 'Dropdown',
-				value: 'DROPDOWN_ENUMERATION',
+				value: 'DROPDOWN',
 				description: 'Dropdown selection field',
 			},
 			{
-				name: 'File',
-				value: 'FILE',
-				description: 'File attachment field',
+				name: 'Checkbox',
+				value: 'CHECKBOX',
+				description: 'Checkbox field (boolean)',
 			},
 			{
-				name: 'Number',
-				value: 'NUMBER',
-				description: 'Numeric field',
-			},
-			{
-				name: 'Paragraph Text',
-				value: 'TEXT_PARAGRAPH',
-				description: 'Multi-line text field',
-			},
-			{
-				name: 'Text',
-				value: 'TEXT',
-				description: 'Single line text field',
+				name: 'Team Contact',
+				value: 'TEAM_CONTACT',
+				description: 'Team contact field',
 			},
 		],
-		default: 'TEXT',
+		default: 'TEXT_INPUT',
 		required: true,
 		description: 'The type of field to create',
 		displayOptions: {

@@ -77,7 +77,17 @@ export class FieldsService extends AbstractService<IStreakField> {
 	 * @returns The newly created field object
 	 */
 	async create(params: Omit<IStreakField, 'key'>): Promise<IStreakField> {
-		return this.request<IStreakField>('PUT', `/pipelines/${this.pipelineKey}/fields`, params);
+		// For field creation, we need to use form-encoded data
+		const fieldData = {
+			name: params.name,
+			type: params.type,
+			...(params.description && { description: params.description }),
+			...(params.keyName && { keyName: params.keyName }),
+			...(params.enumValues && { enumValues: params.enumValues }),
+		};
+		
+		// Use special method for form-encoded request
+		return this.requestFormEncoded<IStreakField>('PUT', `/pipelines/${this.pipelineKey}/fields`, fieldData);
 	}
 
 	/**

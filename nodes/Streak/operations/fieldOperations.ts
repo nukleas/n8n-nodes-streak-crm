@@ -79,14 +79,14 @@ export async function handleFieldOperations(
 		}
 
 		// Handle field-type specific properties
-		if (fieldType === 'DROPDOWN_ENUMERATION') {
+		if (fieldType === 'DROPDOWN') {
 			if (
 				!additionalFields.enumValues ||
 				(Array.isArray(additionalFields.enumValues) && additionalFields.enumValues.length === 0)
 			) {
 				throw new NodeOperationError(
 					this.getNode(),
-					'Dropdown Values are required for DROPDOWN_ENUMERATION field type',
+					'Dropdown Values are required for DROPDOWN field type',
 					{ itemIndex },
 				);
 			}
