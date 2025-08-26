@@ -162,7 +162,9 @@ export async function handleBoxOperations(
 		}
 
 		if (updateFields.stageKey) {
-			body.stageKey = updateFields.stageKey;
+			// Handle resourceLocator format for stageKey
+			const stageKeyParam = updateFields.stageKey as string | { mode: string; value: string };
+			body.stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		}
 
 		if (updateFields.assignedToTeamKeyOrUserKey) {
