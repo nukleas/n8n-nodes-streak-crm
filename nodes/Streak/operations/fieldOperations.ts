@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { validateParameters } from './utils';
+import { makeStreakRequest, validateParameters } from './utils';
 import { FieldsService } from '../services/Fields';
 
 /**
@@ -150,13 +150,7 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/boxes/${boxKey}/fields`,
-			apiKey,
-			itemIndex,
-		);
+		return await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}/fields`, apiKey, itemIndex);
 	} else if (operation === 'getFieldValue') {
 		// Get Field Value operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
