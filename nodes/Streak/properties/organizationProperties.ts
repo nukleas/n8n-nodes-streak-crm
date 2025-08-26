@@ -128,7 +128,7 @@ export const organizationProperties: INodeProperties[] = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				default: '',
+				default: [],
 				description: 'Website domains to check for existing organizations (e.g., example.com). The Streak API only supports checking by domains, not organization names.',
 			},
 		],
