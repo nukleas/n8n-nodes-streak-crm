@@ -47,17 +47,17 @@ export async function handleTaskOperations(
 				`/boxes/${boxKey}/tasks`,
 				apiKey,
 				itemIndex,
-				{},
-				{ limit: limit.toString() },
+				undefined,
+				{ limit },
 			);
 
-			if (
-				response &&
-				typeof response === 'object' &&
-				'tasks' in response &&
-				Array.isArray(response.tasks)
-			) {
-				return response.tasks as IDataObject[];
+			if (Array.isArray(response)) return response as IDataObject[];
+
+			if (response && typeof response === 'object') {
+				const obj = response as IDataObject;
+				if (Array.isArray((obj as any).tasks)) return (obj as any).tasks as IDataObject[];
+				if (Array.isArray((obj as any).results)) return (obj as any).results as IDataObject[];
+				if (Array.isArray((obj as any).items)) return (obj as any).items as IDataObject[];
 			}
 
 			return [];
@@ -78,23 +78,23 @@ export async function handleTaskOperations(
 		validateParameters.call(this, { boxKey, text }, ['boxKey', 'text'], itemIndex);
 
 		const body: IDataObject = {
+			// v2 requires the box key in the body as `key`
+			key: boxKey,
 			text,
 		};
 
 		if (additionalFields.dueDate) {
-			body.dueDate = additionalFields.dueDate;
+			// Convert to Unix timestamp in milliseconds
+			const dateValue = additionalFields.dueDate as string;
+			body.dueDate = new Date(dateValue).getTime();
 		}
 
 		if (additionalFields.assignees && (additionalFields.assignees as string[]).length > 0) {
-			body.assignees = additionalFields.assignees;
-		}
-
-		if (additionalFields.reminder) {
-			body.reminder = additionalFields.reminder;
-		}
-
-		if (additionalFields.completed !== undefined) {
-			body.completed = additionalFields.completed;
+			// v2 expects an array of objects with { email }
+			const assigneesArray = Array.isArray(additionalFields.assignees)
+				? (additionalFields.assignees as string[])
+				: [String(additionalFields.assignees)];
+			body.assignedToSharingEntries = assigneesArray.filter((e) => !!e).map((email) => ({ email }));
 		}
 
 		return await makeStreakRequest.call(
@@ -127,19 +127,22 @@ export async function handleTaskOperations(
 		}
 
 		if (updateFields.dueDate) {
-			body.dueDate = updateFields.dueDate;
+			// Convert to Unix timestamp in milliseconds
+			const dateValue = updateFields.dueDate as string;
+			body.dueDate = new Date(dateValue).getTime();
 		}
 
 		if (updateFields.assignees && (updateFields.assignees as string[]).length > 0) {
-			body.assignees = updateFields.assignees;
+			// v2 expects an array of objects with { email }
+			const assigneesArray = Array.isArray(updateFields.assignees)
+				? (updateFields.assignees as string[])
+				: [String(updateFields.assignees)];
+			body.assignedToSharingEntries = assigneesArray.filter((e) => !!e).map((email) => ({ email }));
 		}
 
-		if (updateFields.reminder) {
-			body.reminder = updateFields.reminder;
-		}
-
+		// Map completed boolean to v2 status enum
 		if (updateFields.completed !== undefined) {
-			body.completed = updateFields.completed;
+			body.status = updateFields.completed ? 'DONE' : 'NOT_DONE';
 		}
 
 		return await makeStreakRequest.call(this, 'POST', `/tasks/${taskKey}`, apiKey, itemIndex, body);
