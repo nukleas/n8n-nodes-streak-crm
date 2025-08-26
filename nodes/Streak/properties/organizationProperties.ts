@@ -157,7 +157,8 @@ export const organizationProperties: INodeProperties[] = [
 				name: 'addresses',
 				type: 'string',
 				default: '',
-				description: 'The only addresses associated with the organization will be the ones you include here, make sure to include any previously associated addresses as well as the new one(s)',
+				description:
+					'The only addresses associated with the organization will be the ones you include here, make sure to include any previously associated addresses as well as the new one(s)',
 			},
 			{
 				displayName: 'Domains',
@@ -216,7 +217,8 @@ export const organizationProperties: INodeProperties[] = [
 				name: 'phoneNumbers',
 				type: 'string',
 				default: '',
-				description: 'The only phone numbers associated with the organization will be the ones you include here, make sure to include any previously associated numbers as well as the new one(s)',
+				description:
+					'The only phone numbers associated with the organization will be the ones you include here, make sure to include any previously associated numbers as well as the new one(s)',
 			},
 			{
 				displayName: 'Relationships',
@@ -254,7 +256,8 @@ export const organizationProperties: INodeProperties[] = [
 				name: 'addresses',
 				type: 'string',
 				default: '',
-				description: 'The only addresses associated with the organization will be the ones you include here, make sure to include any previously associated addresses as well as the new one(s)',
+				description:
+					'The only addresses associated with the organization will be the ones you include here, make sure to include any previously associated addresses as well as the new one(s)',
 			},
 			{
 				displayName: 'Domains',
@@ -320,7 +323,8 @@ export const organizationProperties: INodeProperties[] = [
 				name: 'phoneNumbers',
 				type: 'string',
 				default: '',
-				description: 'The only phone numbers associated with the organization will be the ones you include here, make sure to include any previously associated numbers as well as the new one(s)',
+				description:
+					'The only phone numbers associated with the organization will be the ones you include here, make sure to include any previously associated numbers as well as the new one(s)',
 			},
 			{
 				displayName: 'Relationships',

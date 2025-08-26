@@ -31,7 +31,7 @@ export async function handleTaskOperations(
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
 		if (returnAll) {
-			return await handlePagination.call(
+			const results = await handlePagination.call(
 				this,
 				`/boxes/${boxKey}/tasks`,
 				apiKey,
@@ -40,6 +40,13 @@ export async function handleTaskOperations(
 				100,
 				{},
 			);
+
+			// Handle pagination results - if empty, return structured response
+			if (!results || (Array.isArray(results) && results.length === 0)) {
+				return [{ tasks: [], count: 0 }];
+			}
+
+			return results;
 		} else {
 			const response = await makeStreakRequest.call(
 				this,
@@ -51,16 +58,39 @@ export async function handleTaskOperations(
 				{ limit },
 			);
 
-			if (Array.isArray(response)) return response as IDataObject[];
+			// Handle the list tasks response - should return an array of tasks
+			if (Array.isArray(response)) {
+				const taskArray = response as IDataObject[];
+				// If empty array, return structured response to keep workflow running
+				if (taskArray.length === 0) {
+					return [{ tasks: [], count: 0 }];
+				}
+				return taskArray;
+			}
 
 			if (response && typeof response === 'object') {
 				const obj = response as IDataObject;
-				if (Array.isArray((obj as any).tasks)) return (obj as any).tasks as IDataObject[];
-				if (Array.isArray((obj as any).results)) return (obj as any).results as IDataObject[];
-				if (Array.isArray((obj as any).items)) return (obj as any).items as IDataObject[];
+				// Check common response patterns
+				if (Array.isArray(obj.tasks)) {
+					const tasks = obj.tasks as IDataObject[];
+					return tasks.length === 0 ? [{ tasks: [], count: 0 }] : tasks;
+				}
+				if (Array.isArray(obj.results)) {
+					const results = obj.results as IDataObject[];
+					return results.length === 0 ? [{ tasks: [], count: 0 }] : results;
+				}
+				if (Array.isArray(obj.items)) {
+					const items = obj.items as IDataObject[];
+					return items.length === 0 ? [{ tasks: [], count: 0 }] : items;
+				}
+				if (Array.isArray(obj.data)) {
+					const data = obj.data as IDataObject[];
+					return data.length === 0 ? [{ tasks: [], count: 0 }] : data;
+				}
 			}
 
-			return [];
+			// If no tasks found, return consistent structure (matches loadOptions pattern)
+			return [{ tasks: [], count: 0 }];
 		}
 	} else if (operation === 'createTask') {
 		// Create Task operation
@@ -97,7 +127,7 @@ export async function handleTaskOperations(
 			body.assignedToSharingEntries = assigneesArray.filter((e) => !!e).map((email) => ({ email }));
 		}
 
-		return await makeStreakRequest.call(
+		const response = await makeStreakRequest.call(
 			this,
 			'POST',
 			`/boxes/${boxKey}/tasks`,
@@ -105,6 +135,13 @@ export async function handleTaskOperations(
 			itemIndex,
 			body,
 		);
+
+		// Handle the create task response - should return a single task object
+		if (response && typeof response === 'object') {
+			return response as IDataObject;
+		}
+
+		return response;
 	} else if (operation === 'updateTask') {
 		// Update Task operation
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
@@ -145,14 +182,46 @@ export async function handleTaskOperations(
 			body.status = updateFields.completed ? 'DONE' : 'NOT_DONE';
 		}
 
-		return await makeStreakRequest.call(this, 'POST', `/tasks/${taskKey}`, apiKey, itemIndex, body);
+		const response = await makeStreakRequest.call(
+			this,
+			'POST',
+			`/tasks/${taskKey}`,
+			apiKey,
+			itemIndex,
+			body,
+		);
+
+		// Handle the update task response - should return the updated task object
+		if (response && typeof response === 'object') {
+			return response as IDataObject;
+		}
+
+		return response;
 	} else if (operation === 'deleteTask') {
 		// Delete Task operation
 		const taskKey = this.getNodeParameter('taskKey', itemIndex) as string;
 
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'DELETE', `/tasks/${taskKey}`, apiKey, itemIndex);
+		const response = await makeStreakRequest.call(
+			this,
+			'DELETE',
+			`/tasks/${taskKey}`,
+			apiKey,
+			itemIndex,
+		);
+
+		// Handle the delete task response - return success confirmation
+		if (
+			response === null ||
+			response === undefined ||
+			(typeof response === 'string' && response === '') ||
+			(typeof response === 'object' && Object.keys(response as IDataObject).length === 0)
+		) {
+			return { success: true, message: 'Task deleted successfully' };
+		}
+
+		return response;
 	}
 
 	throw new NodeOperationError(
