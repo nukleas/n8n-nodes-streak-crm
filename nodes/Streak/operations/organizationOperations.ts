@@ -42,7 +42,10 @@ export async function handleOrganizationOperations(
 		};
 
 		if (additionalFields.addresses) {
-			body.addresses = additionalFields.addresses;
+			// Addresses field must be an array - convert string to array if needed
+			body.addresses = Array.isArray(additionalFields.addresses) 
+				? additionalFields.addresses 
+				: [additionalFields.addresses];
 		}
 
 		if (additionalFields.domains && (additionalFields.domains as string[]).length > 0) {
@@ -74,7 +77,10 @@ export async function handleOrganizationOperations(
 		}
 
 		if (additionalFields.phoneNumbers) {
-			body.phoneNumbers = additionalFields.phoneNumbers;
+			// phoneNumbers field must be an array - convert string to array if needed
+			body.phoneNumbers = Array.isArray(additionalFields.phoneNumbers) 
+				? additionalFields.phoneNumbers 
+				: [additionalFields.phoneNumbers];
 		}
 
 		if (additionalFields.relationships) {
@@ -138,7 +144,10 @@ export async function handleOrganizationOperations(
 		const body: IDataObject = {};
 
 		if (updateFields.addresses) {
-			body.addresses = updateFields.addresses;
+			// Addresses field must be an array - convert string to array if needed
+			body.addresses = Array.isArray(updateFields.addresses) 
+				? updateFields.addresses 
+				: [updateFields.addresses];
 		}
 
 		if (updateFields.domains && (updateFields.domains as string[]).length > 0) {
@@ -174,7 +183,10 @@ export async function handleOrganizationOperations(
 		}
 
 		if (updateFields.phoneNumbers) {
-			body.phoneNumbers = updateFields.phoneNumbers;
+			// phoneNumbers field must be an array - convert string to array if needed
+			body.phoneNumbers = Array.isArray(updateFields.phoneNumbers) 
+				? updateFields.phoneNumbers 
+				: [updateFields.phoneNumbers];
 		}
 
 		if (updateFields.relationships) {

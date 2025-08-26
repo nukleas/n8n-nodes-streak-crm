@@ -152,9 +152,12 @@ export const organizationProperties: INodeProperties[] = [
 				displayName: 'Addresses',
 				name: 'addresses',
 				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
 				default: '',
 				description:
-					'The only addresses associated with the organization will be the ones you include here, make sure to include any previously associated addresses as well as the new one(s)',
+					'Addresses associated with the organization. Can be a single address or multiple addresses. The Streak API replaces all existing addresses with the ones you provide (does not merge).',
 			},
 			{
 				displayName: 'Domains',
@@ -212,9 +215,12 @@ export const organizationProperties: INodeProperties[] = [
 				displayName: 'Phone Numbers',
 				name: 'phoneNumbers',
 				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
 				default: '',
 				description:
-					'The only phone numbers associated with the organization will be the ones you include here, make sure to include any previously associated numbers as well as the new one(s)',
+					'Phone numbers associated with the organization. Can be a single number or multiple numbers. The Streak API replaces all existing numbers with the ones you provide (does not merge).',
 			},
 			{
 				displayName: 'Relationships',
@@ -251,9 +257,12 @@ export const organizationProperties: INodeProperties[] = [
 				displayName: 'Addresses',
 				name: 'addresses',
 				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
 				default: '',
 				description:
-					'The only addresses associated with the organization will be the ones you include here, make sure to include any previously associated addresses as well as the new one(s)',
+					'Addresses associated with the organization. Can be a single address or multiple addresses. The Streak API replaces all existing addresses with the ones you provide (does not merge).',
 			},
 			{
 				displayName: 'Domains',
@@ -318,9 +327,12 @@ export const organizationProperties: INodeProperties[] = [
 				displayName: 'Phone Numbers',
 				name: 'phoneNumbers',
 				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
 				default: '',
 				description:
-					'The only phone numbers associated with the organization will be the ones you include here, make sure to include any previously associated numbers as well as the new one(s)',
+					'Phone numbers associated with the organization. Can be a single number or multiple numbers. The Streak API replaces all existing numbers with the ones you provide (does not merge).',
 			},
 			{
 				displayName: 'Relationships',
