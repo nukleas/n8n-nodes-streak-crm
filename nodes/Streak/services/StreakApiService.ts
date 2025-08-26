@@ -263,13 +263,19 @@ export class StreakApiService {
 	): Promise<IDataObject | IDataObject[]> {
 		// Transform the input to match Streak API v2 requirements
 		// API expects: [{ key: "boxKey", boxKey: "boxKey", pipelineKey: "targetPipelineKey" }, ...]
-		const requestBody = boxKeys.map(boxKey => ({
+		const requestBody = boxKeys.map((boxKey) => ({
 			key: boxKey,
 			boxKey: boxKey,
 			pipelineKey: targetPipelineKey,
 		}));
 
-		return this.makeRequest(context, 'POST', `/pipelines/${pipelineKey}/boxes/batch`, apiKey, requestBody);
+		return this.makeRequest(
+			context,
+			'POST',
+			`/pipelines/${pipelineKey}/boxes/batch`,
+			apiKey,
+			requestBody,
+		);
 	}
 
 	/**

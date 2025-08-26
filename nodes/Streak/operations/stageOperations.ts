@@ -77,12 +77,7 @@ export async function handleStageOperations(
 			itemIndex,
 		);
 
-		const stage = await StreakApiService.createStage(
-			this,
-			apiKey,
-			pipelineKey,
-			stageName,
-		);
+		const stage = await StreakApiService.createStage(this, apiKey, pipelineKey, stageName);
 
 		if (additionalFields.color) {
 			stage.color = additionalFields.color;

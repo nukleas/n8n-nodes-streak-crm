@@ -85,9 +85,13 @@ export class FieldsService extends AbstractService<IStreakField> {
 			...(params.keyName && { keyName: params.keyName }),
 			...(params.enumValues && { enumValues: params.enumValues }),
 		};
-		
+
 		// Use special method for form-encoded request
-		return this.requestFormEncoded<IStreakField>('PUT', `/pipelines/${this.pipelineKey}/fields`, fieldData);
+		return this.requestFormEncoded<IStreakField>(
+			'PUT',
+			`/pipelines/${this.pipelineKey}/fields`,
+			fieldData,
+		);
 	}
 
 	/**

@@ -100,23 +100,17 @@ export async function handleOrganizationOperations(
 
 		validateParameters.call(this, { teamKey }, ['teamKey'], itemIndex);
 
-		if (!checkFields.domain && !checkFields.name) {
+		if (!checkFields.domains || !(checkFields.domains as string[])?.length) {
 			throw new NodeOperationError(
 				this.getNode(),
-				'At least one of domain or name must be specified',
+				'At least one domain must be specified for checking existing organizations',
 				{ itemIndex },
 			);
 		}
 
-		const body: IDataObject = {};
-
-		if (checkFields.domain) {
-			body.domain = checkFields.domain;
-		}
-
-		if (checkFields.name) {
-			body.name = checkFields.name;
-		}
+		const body: IDataObject = {
+			domains: checkFields.domains,
+		};
 
 		return await makeStreakRequest.call(
 			this,

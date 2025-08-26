@@ -67,7 +67,7 @@ export async function handlePipelineOperations(
 				const customFieldsInput = additionalOptions.customFields as {
 					field: Array<{ name: string; type: string }>;
 				};
-				
+
 				// Filter fields with valid names and types
 				const fields = customFieldsInput.field.filter((field) => {
 					return (
@@ -84,7 +84,7 @@ export async function handlePipelineOperations(
 					// Extract names and types separately for validation
 					const names = fields.map((field) => field.name);
 					const types = fields.map((field) => field.type);
-					
+
 					// Verify arrays have matching lengths (should always be true after filtering, but safety check)
 					if (names.length === types.length) {
 						fieldNames = names.join(',');
