@@ -97,7 +97,7 @@ export async function handleContactOperations(
 		return await makeStreakRequest.call(
 			this,
 			'POST',
-			`/teams/${teamKey}/contacts`,
+			`/teams/${teamKey}/contacts/`,
 			apiKey,
 			itemIndex,
 			body,

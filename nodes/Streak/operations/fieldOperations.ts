@@ -150,8 +150,13 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		const fieldsService = new FieldsService(apiKey, '');
-		return await fieldsService.getBoxFieldValues(boxKey);
+		return await makeStreakRequest.call(
+			this,
+			'GET',
+			`/boxes/${boxKey}/fields`,
+			apiKey,
+			itemIndex,
+		);
 	} else if (operation === 'getFieldValue') {
 		// Get Field Value operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -162,8 +167,13 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
 
-		const fieldsService = new FieldsService(apiKey, '');
-		return await fieldsService.getBoxFieldValue(boxKey, fieldKey);
+		return await makeStreakRequest.call(
+			this,
+			'GET',
+			`/boxes/${boxKey}/fields/${fieldKey}`,
+			apiKey,
+			itemIndex,
+		);
 	} else if (operation === 'updateFieldValue') {
 		// Update Field Value operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -179,8 +189,14 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
 
-		const fieldsService = new FieldsService(apiKey, '');
-		return await fieldsService.updateBoxFieldValue(boxKey, fieldKey, fieldValue);
+		return await makeStreakRequest.call(
+			this,
+			'POST',
+			`/boxes/${boxKey}/fields/${fieldKey}`,
+			apiKey,
+			itemIndex,
+			{ value: fieldValue },
+		);
 	}
 
 	throw new NodeOperationError(
