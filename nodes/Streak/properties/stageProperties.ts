@@ -15,10 +15,10 @@ export const stageProperties: INodeProperties[] = [
 		default: 'listStages',
 		options: [
 			{
-				name: 'Create Stage',
+				name: 'Create Stage in a Pipeline',
 				value: 'createStage',
 				description: 'Creates a new stage in a pipeline',
-				action: 'Create a stage',
+				action: 'Create a stage in a pipeline',
 			},
 			{
 				name: 'Delete Stage',
@@ -33,10 +33,10 @@ export const stageProperties: INodeProperties[] = [
 				action: 'Get a stage',
 			},
 			{
-				name: 'List Stages',
+				name: 'List Stages in a Pipeline',
 				value: 'listStages',
 				description: 'Lists all stages in a pipeline',
-				action: 'List stages',
+				action: 'List stages in a pipeline',
 			},
 			{
 				name: 'Update Stage',

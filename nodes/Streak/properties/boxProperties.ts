@@ -15,10 +15,10 @@ export const boxProperties: INodeProperties[] = [
 		default: 'listBoxes',
 		options: [
 			{
-				name: 'Create Box',
+				name: 'Create Box in a Pipeline',
 				value: 'createBox',
 				description: 'Creates a new box in a pipeline',
-				action: 'Create a box',
+				action: 'Create a box in a pipeline',
 			},
 			{
 				name: 'Delete Box',

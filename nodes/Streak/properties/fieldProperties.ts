@@ -15,10 +15,10 @@ export const fieldProperties: INodeProperties[] = [
 		default: 'listFields',
 		options: [
 			{
-				name: 'Create Field',
+				name: 'Create Field in a Pipeline',
 				value: 'createField',
 				description: 'Creates a new field in a pipeline',
-				action: 'Create a field',
+				action: 'Create a field in a pipeline',
 			},
 			{
 				name: 'Delete Field',
@@ -33,19 +33,19 @@ export const fieldProperties: INodeProperties[] = [
 				action: 'Get a field',
 			},
 			{
-				name: 'Get Field Value',
+				name: 'Get Field Value in a Box',
 				value: 'getFieldValue',
 				description: 'Gets a specific field value for a box',
-				action: 'Get a field value',
+				action: 'Get a field value in a box',
 			},
 			{
-				name: 'List Field Values',
+				name: 'List Field Values in a Box',
 				value: 'listFieldValues',
 				description: 'Lists all field values for a box',
-				action: 'List field values for a box',
+				action: 'List field values in a box',
 			},
 			{
-				name: 'List Fields',
+				name: 'List Fields in a Pipeline',
 				value: 'listFields',
 				description: 'Lists all fields in a pipeline',
 				action: 'List fields in a pipeline',
@@ -57,10 +57,10 @@ export const fieldProperties: INodeProperties[] = [
 				action: 'Update a field',
 			},
 			{
-				name: 'Update Field Value',
+				name: 'Update Field Value in a Box',
 				value: 'updateFieldValue',
 				description: 'Updates a field value for a box',
-				action: 'Update a field value',
+				action: 'Update a field value in a box',
 			},
 		],
 	},
