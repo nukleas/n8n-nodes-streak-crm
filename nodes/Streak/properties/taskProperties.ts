@@ -15,10 +15,10 @@ export const taskProperties: INodeProperties[] = [
 		default: 'getTask',
 		options: [
 			{
-				name: 'Create Task',
+				name: 'Create Task in a Box',
 				value: 'createTask',
 				description: 'Creates a new task for a box',
-				action: 'Create a task',
+				action: 'Create a task in a box',
 			},
 			{
 				name: 'Delete Task',
@@ -33,10 +33,10 @@ export const taskProperties: INodeProperties[] = [
 				action: 'Get a task',
 			},
 			{
-				name: 'Get Tasks in Box',
+				name: 'Get Tasks in a Box',
 				value: 'getTasksInBox',
 				description: 'Gets all tasks associated with a box',
-				action: 'Get tasks in box',
+				action: 'Get tasks in a box',
 			},
 			{
 				name: 'Update Task',
