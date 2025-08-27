@@ -62,35 +62,35 @@ export async function handleContactOperations(
 		}
 
 		// Add additional fields
-		if (additionalFields.title) {
+		if (additionalFields.title !== undefined) {
 			body.title = additionalFields.title;
 		}
 
-		if (additionalFields.phoneNumbers && (additionalFields.phoneNumbers as string[]).length > 0) {
+		if (additionalFields.phoneNumbers !== undefined) {
 			body.phoneNumbers = additionalFields.phoneNumbers;
 		}
 
-		if (additionalFields.addresses && (additionalFields.addresses as string[]).length > 0) {
+		if (additionalFields.addresses !== undefined) {
 			body.addresses = additionalFields.addresses;
 		}
 
-		if (additionalFields.other) {
+		if (additionalFields.other !== undefined) {
 			body.other = additionalFields.other;
 		}
 
-		if (additionalFields.twitterHandle) {
+		if (additionalFields.twitterHandle !== undefined) {
 			body.twitterHandle = additionalFields.twitterHandle;
 		}
 
-		if (additionalFields.facebookHandle) {
+		if (additionalFields.facebookHandle !== undefined) {
 			body.facebookHandle = additionalFields.facebookHandle;
 		}
 
-		if (additionalFields.linkedinHandle) {
+		if (additionalFields.linkedinHandle !== undefined) {
 			body.linkedinHandle = additionalFields.linkedinHandle;
 		}
 
-		if (additionalFields.photoUrl) {
+		if (additionalFields.photoUrl !== undefined) {
 			body.photoUrl = additionalFields.photoUrl;
 		}
 
@@ -119,47 +119,49 @@ export async function handleContactOperations(
 
 		const body: IDataObject = {};
 
-		if (updateFields.emailAddresses && (updateFields.emailAddresses as string[]).length > 0) {
+		// Handle array fields - always include them if they're defined (even if empty)
+		if (updateFields.emailAddresses !== undefined) {
 			body.emailAddresses = updateFields.emailAddresses;
 		}
 
-		if (updateFields.givenName) {
-			body.givenName = updateFields.givenName;
-		}
-
-		if (updateFields.familyName) {
-			body.familyName = updateFields.familyName;
-		}
-
-		if (updateFields.title) {
-			body.title = updateFields.title;
-		}
-
-		if (updateFields.phoneNumbers && (updateFields.phoneNumbers as string[]).length > 0) {
+		if (updateFields.phoneNumbers !== undefined) {
 			body.phoneNumbers = updateFields.phoneNumbers;
 		}
 
-		if (updateFields.addresses && (updateFields.addresses as string[]).length > 0) {
+		if (updateFields.addresses !== undefined) {
 			body.addresses = updateFields.addresses;
 		}
 
-		if (updateFields.other) {
+		// Handle string fields - only include if not undefined
+		if (updateFields.givenName !== undefined) {
+			body.givenName = updateFields.givenName;
+		}
+
+		if (updateFields.familyName !== undefined) {
+			body.familyName = updateFields.familyName;
+		}
+
+		if (updateFields.title !== undefined) {
+			body.title = updateFields.title;
+		}
+
+		if (updateFields.other !== undefined) {
 			body.other = updateFields.other;
 		}
 
-		if (updateFields.twitterHandle) {
+		if (updateFields.twitterHandle !== undefined) {
 			body.twitterHandle = updateFields.twitterHandle;
 		}
 
-		if (updateFields.facebookHandle) {
+		if (updateFields.facebookHandle !== undefined) {
 			body.facebookHandle = updateFields.facebookHandle;
 		}
 
-		if (updateFields.linkedinHandle) {
+		if (updateFields.linkedinHandle !== undefined) {
 			body.linkedinHandle = updateFields.linkedinHandle;
 		}
 
-		if (updateFields.photoUrl) {
+		if (updateFields.photoUrl !== undefined) {
 			body.photoUrl = updateFields.photoUrl;
 		}
 
