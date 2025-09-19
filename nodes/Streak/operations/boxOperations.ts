@@ -35,9 +35,6 @@ export async function handleBoxOperations(
 
 		// If search query is provided, use the search endpoint
 		if (trimmedSearchQuery) {
-			const credentials = await this.getCredentials('streakApi');
-			const apiKey = credentials.apiKey as string;
-
 			// Use the search endpoint for queries
 			const results = await StreakApiService.searchBoxes(
 				this,

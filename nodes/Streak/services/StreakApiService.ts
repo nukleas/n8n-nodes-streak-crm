@@ -56,6 +56,17 @@ export interface IStreakBox {
 }
 
 /**
+ * Interface for Search Response data returned from Streak API
+ */
+export interface IStreakSearchResponse {
+	results: {
+		boxes: IStreakBox[];
+		[key: string]: any;
+	};
+	[key: string]: any;
+}
+
+/**
  * Service class for interacting with the Streak API
  * Centralizes all API calls and provides consistent error handling
  */
@@ -349,10 +360,7 @@ export class StreakApiService {
 		pipelineKey?: string,
 		stageKey?: string,
 	): Promise<IStreakBox[]> {
-		// URL encode the query for the path parameter
-		const encodedQuery = encodeURIComponent(query);
-
-		// Build query parameters (not including the search query itself)
+		// Build query parameters
 		const searchParams: IDataObject = {};
 
 		if (pipelineKey) {
@@ -364,15 +372,19 @@ export class StreakApiService {
 		}
 
 		// Use the search endpoint with query in the URL path
+		// Add the query to searchParams
+		searchParams.query = query;
+
+		// Use the search endpoint
 		const response = (await this.makeRequest(
 			context,
 			'GET',
-			`/search?query=${encodedQuery}`,
+			'/search',
 			apiKey,
 			undefined,
 			searchParams,
 			'v1', // Force v1 API for search endpoint
-		)) as any;
+		)) as IStreakSearchResponse;
 
 		// Extract boxes from search response
 		// Streak search API returns results.boxes array
