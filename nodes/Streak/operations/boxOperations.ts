@@ -1,6 +1,7 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { StreakApiService } from '../services/StreakApiService';
 /**
  * Handle box-related operations for the Streak API
  */
@@ -25,37 +26,66 @@ export async function handleBoxOperations(
 			typeof stageKeyFilterParam === 'string'
 				? stageKeyFilterParam
 				: stageKeyFilterParam?.value || '';
+		const searchQuery = this.getNodeParameter('searchQuery', itemIndex, '') as string;
+		const trimmedSearchQuery = searchQuery?.trim();
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		// Build query parameters
-		const queryParams: IDataObject = { limit };
-		if (stageKeyFilter) {
-			queryParams.stageKey = stageKeyFilter;
-		}
+		// If search query is provided, use the search endpoint
+		if (trimmedSearchQuery) {
+			const credentials = await this.getCredentials('streakApi');
+			const apiKey = credentials.apiKey as string;
 
-		if (returnAll) {
-			return await handlePagination.call(
+			// Use the search endpoint for queries
+			const results = await StreakApiService.searchBoxes(
 				this,
-				`/pipelines/${pipelineKey}/boxes`,
 				apiKey,
-				returnAll,
-				itemIndex,
-				limit,
-				queryParams,
+				trimmedSearchQuery,
+				pipelineKey,
+				stageKeyFilter,
 			);
+
+			// Handle empty search results consistently with normal listing
+			if (!results || (Array.isArray(results) && results.length === 0)) {
+				return [];
+			}
+
+			// Apply limit if returnAll is false
+			if (!returnAll && limit && results.length > limit) {
+				return results.slice(0, limit);
+			}
+
+			return results;
 		} else {
-			return await makeStreakRequest.call(
-				this,
-				'GET',
-				`/pipelines/${pipelineKey}/boxes`,
-				apiKey,
-				itemIndex,
-				undefined,
-				queryParams,
-			);
+			// No search query - use regular list boxes endpoint
+			const queryParams: IDataObject = { limit };
+			if (stageKeyFilter) {
+				queryParams.stageKey = stageKeyFilter;
+			}
+
+			if (returnAll) {
+				return await handlePagination.call(
+					this,
+					`/pipelines/${pipelineKey}/boxes`,
+					apiKey,
+					returnAll,
+					itemIndex,
+					limit,
+					queryParams,
+				);
+			} else {
+				return await makeStreakRequest.call(
+					this,
+					'GET',
+					`/pipelines/${pipelineKey}/boxes`,
+					apiKey,
+					itemIndex,
+					undefined,
+					queryParams,
+				);
+			}
 		}
 	} else if (operation === 'getBox') {
 		// Get Box operation
