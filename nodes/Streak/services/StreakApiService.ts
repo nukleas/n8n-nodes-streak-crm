@@ -56,6 +56,17 @@ export interface IStreakBox {
 }
 
 /**
+ * Interface for Search Response data returned from Streak API
+ */
+export interface IStreakSearchResponse {
+	results: {
+		boxes: IStreakBox[];
+		[key: string]: any;
+	};
+	[key: string]: any;
+}
+
+/**
  * Service class for interacting with the Streak API
  * Centralizes all API calls and provides consistent error handling
  */
@@ -334,6 +345,62 @@ export class StreakApiService {
 	}
 
 	/**
+	 * Search for boxes using the dedicated search endpoint
+	 * @param context - The n8n execution or load options context
+	 * @param apiKey - Streak API key for authentication
+	 * @param query - Search query string
+	 * @param pipelineKey - Optional pipeline key to limit search scope
+	 * @param stageKey - Optional stage key to limit search scope
+	 * @returns Array of search results containing boxes
+	 */
+	public static async searchBoxes(
+		context: IExecuteFunctions | ILoadOptionsFunctions,
+		apiKey: string,
+		query: string,
+		pipelineKey?: string,
+		stageKey?: string,
+	): Promise<IStreakBox[]> {
+		// Build query parameters
+		const searchParams: IDataObject = {};
+
+		if (pipelineKey) {
+			searchParams.pipelineKey = pipelineKey;
+		}
+
+		if (stageKey) {
+			searchParams.stageKey = stageKey;
+		}
+
+		// Use the search endpoint with query in the URL path
+		// Add the query to searchParams
+		searchParams.query = query;
+
+		// Use the search endpoint
+		const response = (await this.makeRequest(
+			context,
+			'GET',
+			'/search',
+			apiKey,
+			undefined,
+			searchParams,
+			'v1', // Force v1 API for search endpoint
+		)) as IStreakSearchResponse;
+
+		// Extract boxes from search response
+		// Streak search API returns results.boxes array
+		if (
+			response &&
+			response.results &&
+			response.results.boxes &&
+			Array.isArray(response.results.boxes)
+		) {
+			return response.results.boxes;
+		}
+
+		return [];
+	}
+
+	/**
 	 * Make a request to the Streak API with proper error handling
 	 * @param context - The n8n execution or load options context
 	 * @param method - HTTP method (GET, POST, PUT, DELETE, etc.)
@@ -370,22 +437,26 @@ export class StreakApiService {
 				method,
 				url: `${this.BASE_URL}/${version}${endpoint}`,
 				headers,
-				auth: {
-					username: apiKey,
-					password: '',
-				},
 				qs: query,
 				body,
 				json: true,
 			};
 
-			// Use the appropriate helper based on context type
+			// Use the built-in n8n helper for authenticated requests
 			if ('getNode' in context && 'getCredentials' in context) {
 				// IExecuteFunctions context
-				return await (context as IExecuteFunctions).helpers.httpRequest(options);
+				return await (context as IExecuteFunctions).helpers.httpRequestWithAuthentication.call(
+					context as IExecuteFunctions,
+					'streakApi',
+					options,
+				);
 			} else {
 				// ILoadOptionsFunctions context
-				return await (context as ILoadOptionsFunctions).helpers.httpRequest(options);
+				return await (context as ILoadOptionsFunctions).helpers.httpRequestWithAuthentication.call(
+					context as ILoadOptionsFunctions,
+					'streakApi',
+					options,
+				);
 			}
 		} catch (error) {
 			// Create a properly formatted error with more context
@@ -452,21 +523,25 @@ export class StreakApiService {
 				method,
 				url: `${this.BASE_URL}/${version}${endpoint}`,
 				headers,
-				auth: {
-					username: apiKey,
-					password: '',
-				},
 				qs: query,
 				body: formBody,
 			};
 
-			// Use the appropriate helper based on context type
+			// Use the built-in n8n helper for authenticated requests
 			if ('getNode' in context && 'getCredentials' in context) {
 				// IExecuteFunctions context
-				return await (context as IExecuteFunctions).helpers.httpRequest(options);
+				return await (context as IExecuteFunctions).helpers.httpRequestWithAuthentication.call(
+					context as IExecuteFunctions,
+					'streakApi',
+					options,
+				);
 			} else {
 				// ILoadOptionsFunctions context
-				return await (context as ILoadOptionsFunctions).helpers.httpRequest(options);
+				return await (context as ILoadOptionsFunctions).helpers.httpRequestWithAuthentication.call(
+					context as ILoadOptionsFunctions,
+					'streakApi',
+					options,
+				);
 			}
 		} catch (error) {
 			// Create a properly formatted error with more context

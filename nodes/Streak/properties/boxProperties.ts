@@ -157,6 +157,22 @@ export const boxProperties: INodeProperties[] = [
 		},
 	},
 
+	// Search Query (for listBoxes filtering)
+	{
+		displayName: 'Search Query',
+		name: 'searchQuery',
+		type: 'string',
+		default: '',
+		placeholder: 'e.g., "John Doe", "Acme Corp", "urgent"',
+		description: 'Search for boxes by name, notes, or other fields (leave empty for no search)',
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['listBoxes'],
+			},
+		},
+	},
+
 	// Box Name (for createBox)
 	{
 		displayName: 'Box Name',
