@@ -1,4 +1,5 @@
 import { AbstractService } from './AbstractService';
+import { IExecuteFunctions } from 'n8n-workflow';
 
 /**
  * Interface for Streak Field data
@@ -29,8 +30,8 @@ export interface IStreakFieldValue {
 export class FieldsService extends AbstractService<IStreakField> {
 	private pipelineKey: string;
 
-	constructor(apiKey: string, pipelineKey: string) {
-		super(apiKey, 'https://api.streak.com/api/v1');
+	constructor(apiKey: string, pipelineKey: string, context: IExecuteFunctions) {
+		super(apiKey, 'https://api.streak.com/api/v1', context);
 		this.pipelineKey = pipelineKey;
 	}
 

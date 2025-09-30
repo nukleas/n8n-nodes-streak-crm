@@ -23,7 +23,7 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
 		return await fieldsService.query();
 	} else if (operation === 'getField') {
 		// Get Field operation
@@ -41,7 +41,7 @@ export async function handleFieldOperations(
 			itemIndex,
 		);
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
 		return await fieldsService.get(fieldKey);
 	} else if (operation === 'createField') {
 		// Create Field operation
@@ -93,7 +93,7 @@ export async function handleFieldOperations(
 			fieldParams.enumValues = additionalFields.enumValues;
 		}
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
 		return await fieldsService.create(fieldParams);
 	} else if (operation === 'updateField') {
 		// Update Field operation
@@ -120,7 +120,7 @@ export async function handleFieldOperations(
 			);
 		}
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
 		return await fieldsService.update(fieldKey, updateFields);
 	} else if (operation === 'deleteField') {
 		// Delete Field operation
@@ -138,7 +138,7 @@ export async function handleFieldOperations(
 			itemIndex,
 		);
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey);
+		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
 		await fieldsService.delete(fieldKey);
 		return { success: true };
 	} else if (operation === 'listFieldValues') {

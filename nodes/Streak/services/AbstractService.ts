@@ -1,97 +1,98 @@
-import { URL } from 'url';
+import { IExecuteFunctions, IHttpRequestMethods, NodeOperationError } from 'n8n-workflow';
 
 export abstract class AbstractService<T> {
 	protected apiKey: string;
 	protected baseUrl: string;
+	protected context?: IExecuteFunctions;
 
-	constructor(apiKey: string, baseUrl: string) {
+	constructor(apiKey: string, baseUrl: string, context?: IExecuteFunctions) {
 		this.apiKey = apiKey;
-
 		this.baseUrl = baseUrl;
+		this.context = context;
 	}
 
 	protected async request<R>(
-		method: string,
+		method: IHttpRequestMethods,
 		path: string,
 		body?: any,
 		queryParams?: Record<string, string>,
 	): Promise<R> {
-		const url = new URL(`${this.baseUrl}${path}`);
-
-		if (queryParams) {
-			Object.entries(queryParams).forEach(([key, value]) => {
-				url.searchParams.append(key, value);
-			});
+		if (!this.context) {
+			throw new Error(
+				'Context is required for making HTTP requests. Please provide IExecuteFunctions context to the constructor.',
+			);
 		}
 
-		const headers = {
+		const url = `${this.baseUrl}${path}`;
+
+		const headers: Record<string, string> = {
 			'Content-Type': 'application/json',
-			Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString('base64')}`,
 		};
 
 		try {
-			const response = await fetch(url.toString(), {
+			const response = await this.context.helpers.httpRequest({
 				method,
+				url,
 				headers,
-				body: body ? JSON.stringify(body) : undefined,
+				auth: {
+					username: this.apiKey,
+					password: '',
+				},
+				qs: queryParams,
+				body,
+				json: true,
 			});
 
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => null);
-				throw new Error(
-					`API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`,
-				);
-			}
-
-			const data = await response.json();
-			return data as R;
+			return response as R;
 		} catch (error) {
-			console.error(`Request failed:`, error);
-			throw error;
+			throw new NodeOperationError(
+				this.context.getNode(),
+				`API request failed: ${error.message || 'Unknown error'}`,
+			);
 		}
 	}
 
 	protected async requestFormEncoded<R>(
-		method: string,
+		method: IHttpRequestMethods,
 		path: string,
 		body?: any,
 		queryParams?: Record<string, string>,
 	): Promise<R> {
-		const url = new URL(`${this.baseUrl}${path}`);
-
-		if (queryParams) {
-			Object.entries(queryParams).forEach(([key, value]) => {
-				url.searchParams.append(key, value);
-			});
+		if (!this.context) {
+			throw new Error(
+				'Context is required for making HTTP requests. Please provide IExecuteFunctions context to the constructor.',
+			);
 		}
 
-		const headers = {
+		const url = `${this.baseUrl}${path}`;
+
+		const headers: Record<string, string> = {
 			'Content-Type': 'application/x-www-form-urlencoded',
-			Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString('base64')}`,
 		};
 
 		// Convert body to URL-encoded format
 		const formBody = body ? new URLSearchParams(body).toString() : undefined;
 
 		try {
-			const response = await fetch(url.toString(), {
+			const response = await this.context.helpers.httpRequest({
 				method,
+				url,
 				headers,
+				auth: {
+					username: this.apiKey,
+					password: '',
+				},
+				qs: queryParams,
 				body: formBody,
+				json: true,
 			});
 
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => null);
-				throw new Error(
-					`API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`,
-				);
-			}
-
-			const data = await response.json();
-			return data as R;
+			return response as R;
 		} catch (error) {
-			console.error(`Request failed:`, error);
-			throw error;
+			throw new NodeOperationError(
+				this.context.getNode(),
+				`API request failed: ${error.message || 'Unknown error'}`,
+			);
 		}
 	}
 
