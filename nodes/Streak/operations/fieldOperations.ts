@@ -150,7 +150,7 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}/fields`, apiKey, itemIndex);
+		return await makeStreakRequest.call(this, 'GET', `/boxes/${encodeURIComponent(boxKey)}/fields`, apiKey, itemIndex);
 	} else if (operation === 'getFieldValue') {
 		// Get Field Value operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -164,7 +164,7 @@ export async function handleFieldOperations(
 		return await makeStreakRequest.call(
 			this,
 			'GET',
-			`/boxes/${boxKey}/fields/${fieldKey}`,
+			`/boxes/${encodeURIComponent(boxKey)}/fields/${encodeURIComponent(fieldKey)}`,
 			apiKey,
 			itemIndex,
 		);
@@ -186,7 +186,7 @@ export async function handleFieldOperations(
 		return await makeStreakRequest.call(
 			this,
 			'POST',
-			`/boxes/${boxKey}/fields/${fieldKey}`,
+			`/boxes/${encodeURIComponent(boxKey)}/fields/${encodeURIComponent(fieldKey)}`,
 			apiKey,
 			itemIndex,
 			{ value: fieldValue },
