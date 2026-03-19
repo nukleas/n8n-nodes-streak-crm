@@ -11,6 +11,13 @@ import { fieldProperties } from './fieldProperties';
 import { contactProperties } from './contactProperties';
 import { organizationProperties } from './organizationProperties';
 import { taskProperties } from './taskProperties';
+import { commentProperties } from './commentProperties';
+import { meetingProperties } from './meetingProperties';
+import { threadProperties } from './threadProperties';
+import { fileProperties } from './fileProperties';
+import { newsfeedProperties } from './newsfeedProperties';
+import { snippetProperties } from './snippetProperties';
+import { searchProperties } from './searchProperties';
 import { sharedProperties } from './sharedProperties';
 
 // Export consolidated properties array
@@ -28,6 +35,13 @@ export const nodeProperties: INodeProperties[] = [
 	...contactProperties,
 	...organizationProperties,
 	...taskProperties,
+	...commentProperties,
+	...meetingProperties,
+	...threadProperties,
+	...fileProperties,
+	...newsfeedProperties,
+	...snippetProperties,
+	...searchProperties,
 
 	// Shared properties (returnAll, limit)
 	...sharedProperties,

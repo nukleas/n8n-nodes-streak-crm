@@ -10,13 +10,20 @@ export const sharedProperties: INodeProperties[] = [
 		description: 'Whether to return all results or only up to a given limit',
 		displayOptions: {
 			show: {
-				resource: ['pipeline', 'box', 'field'],
+				resource: ['pipeline', 'box', 'field', 'thread', 'file', 'comment', 'newsfeed', 'snippet'],
 				operation: [
 					'listAllPipelines',
 					'listBoxes',
 					'getTimeline',
 					'listFields',
 					'listFieldValues',
+					'listThreadsInBox',
+					'listFilesInBox',
+					'listCommentsInBox',
+					'getPipelineNewsfeed',
+					'getBoxNewsfeed',
+					'getAllNewsfeed',
+					'listSnippets',
 				],
 			},
 		},
@@ -32,13 +39,20 @@ export const sharedProperties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				resource: ['pipeline', 'box', 'field'],
+				resource: ['pipeline', 'box', 'field', 'thread', 'file', 'comment', 'newsfeed', 'snippet'],
 				operation: [
 					'listAllPipelines',
 					'listBoxes',
 					'getTimeline',
 					'listFields',
 					'listFieldValues',
+					'listThreadsInBox',
+					'listFilesInBox',
+					'listCommentsInBox',
+					'getPipelineNewsfeed',
+					'getBoxNewsfeed',
+					'getAllNewsfeed',
+					'listSnippets',
 				],
 				returnAll: [false],
 			},

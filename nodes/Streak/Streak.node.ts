@@ -23,6 +23,13 @@ import { handleFieldOperations } from './operations/fieldOperations';
 import { handleContactOperations } from './operations/contactOperations';
 import { handleOrganizationOperations } from './operations/organizationOperations';
 import { handleTaskOperations } from './operations/taskOperations';
+import { handleCommentOperations } from './operations/commentOperations';
+import { handleMeetingOperations } from './operations/meetingOperations';
+import { handleThreadOperations } from './operations/threadOperations';
+import { handleFileOperations } from './operations/fileOperations';
+import { handleNewsfeedOperations } from './operations/newsfeedOperations';
+import { handleSnippetOperations } from './operations/snippetOperations';
+import { handleSearchOperations } from './operations/searchOperations';
 
 export class Streak implements INodeType {
 	// Define methods required by n8n for resource locators and dynamic data loading
@@ -100,6 +107,25 @@ export class Streak implements INodeType {
 					);
 				} else if (resource === 'task') {
 					responseData = await handleTaskOperations.call(this, operation, itemIndex, apiKey);
+				} else if (resource === 'comment') {
+					responseData = await handleCommentOperations.call(this, operation, itemIndex, apiKey);
+				} else if (resource === 'meeting') {
+					responseData = await handleMeetingOperations.call(this, operation, itemIndex, apiKey);
+				} else if (resource === 'thread') {
+					responseData = await handleThreadOperations.call(this, operation, itemIndex, apiKey);
+				} else if (resource === 'file') {
+					responseData = await handleFileOperations.call(this, operation, itemIndex, apiKey);
+				} else if (resource === 'newsfeed') {
+					responseData = await handleNewsfeedOperations.call(
+						this,
+						operation,
+						itemIndex,
+						apiKey,
+					);
+				} else if (resource === 'snippet') {
+					responseData = await handleSnippetOperations.call(this, operation, itemIndex, apiKey);
+				} else if (resource === 'search') {
+					responseData = await handleSearchOperations.call(this, operation, itemIndex, apiKey);
 				} else {
 					throw new NodeOperationError(
 						this.getNode(),

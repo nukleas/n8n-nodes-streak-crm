@@ -5,6 +5,17 @@ All notable changes to the n8n-nodes-streak-crm project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0]
+### Added
+- **Thread resource**: List threads in a box, get thread details, add email threads to boxes, remove threads
+- **File resource**: List files in a box, get file metadata, get file contents, add Google Drive files to boxes
+- **Comment resource**: List comments in a box, get/create/edit/delete comments
+- **Meeting resource**: Create meetings (meeting notes or call logs), edit and delete meetings
+- **Newsfeed resource**: View activity feeds for pipelines, boxes, or across all pipelines
+- **Snippet resource**: List, get, create, edit, and delete email snippets
+- **Search resource**: Search across boxes, contacts, and organizations
+- Full pagination support (Return All / Limit) for all new list operations
+
 ## [Unreleased]
 ### Added
 - Pipeline creation now supports stages - users can add multiple stages with names

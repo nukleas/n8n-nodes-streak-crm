@@ -35,6 +35,8 @@ const ENDPOINT_API_VERSIONS: Record<string, 'v1' | 'v2'> = {
 	'/pipelines/*/boxes': 'v2', // Create box uses v2
 	'/teams/*/contacts': 'v2', // Create contact uses v2
 	'/teams/*/organizations': 'v2', // Create organization uses v2
+	'/boxes/*/comments': 'v2', // Create comment uses v2
+	'/boxes/*/meetings': 'v2', // Create meeting uses v2
 };
 
 /**
