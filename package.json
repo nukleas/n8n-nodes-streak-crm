@@ -38,7 +38,8 @@
       "dist/credentials/StreakApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Streak/Streak.node.js"
+      "dist/nodes/Streak/Streak.node.js",
+      "dist/nodes/Streak/StreakTrigger.node.js"
     ]
   },
   "devDependencies": {

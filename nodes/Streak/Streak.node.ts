@@ -5,7 +5,7 @@ import type {
 	INodeTypeDescription,
 	IDataObject,
 } from 'n8n-workflow';
-import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
+import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
 // Import the methods
 import { loadOptions, listSearch } from './methods/loadOptions';
@@ -60,8 +60,8 @@ export class Streak implements INodeType {
 		 * Waiting on this to be merged into n8n
 		 * @https://github.com/n8n-io/n8n/pull/10595
 		 */
-		inputs: [NodeConnectionType.Main], // eslint-disable-line
-		outputs: [NodeConnectionType.Main], // eslint-disable-line
+		inputs: [NodeConnectionTypes.Main], // eslint-disable-line
+		outputs: [NodeConnectionTypes.Main], // eslint-disable-line
 		properties: nodeProperties,
 	};
 

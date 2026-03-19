@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0]
 ### Added
+- **Streak Trigger node**: Webhook-based trigger that starts workflows when Streak events occur
+  - Supports 20 event types: box, stage, contact, organization, task, meeting, and comment events
+  - Webhooks can be scoped to a specific pipeline or team
+  - Automatic webhook registration on workflow activate and cleanup on deactivate
 - **Thread resource**: List threads in a box, get thread details, get thread by Gmail ID, add email threads to boxes, remove threads
 - **File resource**: List files in a box, get file metadata, get file contents, add Google Drive files to boxes
 - **Comment resource**: List comments in a box, get/create/edit/delete comments
