@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
+import { streakApiRequest, validateParameters } from './utils';
 
 /**
  * Handle search-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleSearchOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'searchByQuery' || operation === 'searchByName') {
 		const qs: IDataObject = {};
@@ -42,15 +41,7 @@ export async function handleSearchOperations(
 			qs.stageKey = additionalFields.stageKey;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			'/search',
-			apiKey,
-			itemIndex,
-			undefined,
-			qs,
-		);
+		return await streakApiRequest(this, 'GET', '/search', undefined, qs, 'v1');
 	}
 
 	throw new NodeOperationError(

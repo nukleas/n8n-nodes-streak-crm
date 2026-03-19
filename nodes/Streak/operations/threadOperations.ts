@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle thread-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleThreadOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'listThreadsInBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -21,12 +20,10 @@ export async function handleThreadOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			`/boxes/${boxKey}/threads`,
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{},
 		);
@@ -35,13 +32,7 @@ export async function handleThreadOperations(
 
 		validateParameters.call(this, { threadKey }, ['threadKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/threads/${threadKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/threads/${threadKey}`);
 	} else if (operation === 'getThreadByGmailId') {
 		const hexGmailThreadId = this.getNodeParameter('hexGmailThreadId', itemIndex) as string;
 
@@ -49,12 +40,10 @@ export async function handleThreadOperations(
 
 		// Undocumented endpoint that uses POST for a read operation.
 		// Only works when the authenticated user owns the email thread.
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'POST',
 			'/threadinfo/',
-			apiKey,
-			itemIndex,
 			undefined,
 			{ hexGmailThreadId },
 		);
@@ -72,12 +61,10 @@ export async function handleThreadOperations(
 			itemIndex,
 		);
 
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'PUT',
 			`/boxes/${boxKey}/threads`,
-			apiKey,
-			itemIndex,
 			{ boxKey, threadGmailId },
 		);
 	} else if (operation === 'removeThread') {
@@ -85,13 +72,7 @@ export async function handleThreadOperations(
 
 		validateParameters.call(this, { threadKey }, ['threadKey'], itemIndex);
 
-		const response = await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/threads/${threadKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const response = await streakApiRequest(this, 'DELETE', `/threads/${threadKey}`);
 
 		if (
 			response === null ||

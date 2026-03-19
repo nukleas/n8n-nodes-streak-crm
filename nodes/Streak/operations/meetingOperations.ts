@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle meeting-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleMeetingOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'listMeetingsInBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -21,12 +20,10 @@ export async function handleMeetingOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			`/boxes/${boxKey}/meetings`,
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{},
 		);
@@ -35,13 +32,7 @@ export async function handleMeetingOperations(
 
 		validateParameters.call(this, { meetingKey }, ['meetingKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/meetings/${meetingKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/meetings/${meetingKey}`);
 	} else if (operation === 'createMeeting') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
@@ -75,14 +66,7 @@ export async function handleMeetingOperations(
 			body.notes = additionalFields.notes;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/boxes/${boxKey}/meetings`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/boxes/${boxKey}/meetings`, body);
 	} else if (operation === 'editMeeting') {
 		const meetingKey = this.getNodeParameter('meetingKey', itemIndex) as string;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;
@@ -115,26 +99,13 @@ export async function handleMeetingOperations(
 			body.notes = updateFields.notes;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/meetings/${meetingKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/meetings/${meetingKey}`, body);
 	} else if (operation === 'deleteMeeting') {
 		const meetingKey = this.getNodeParameter('meetingKey', itemIndex) as string;
 
 		validateParameters.call(this, { meetingKey }, ['meetingKey'], itemIndex);
 
-		const response = await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/meetings/${meetingKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const response = await streakApiRequest(this, 'DELETE', `/meetings/${meetingKey}`);
 
 		if (
 			response === null ||

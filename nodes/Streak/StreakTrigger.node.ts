@@ -8,8 +8,7 @@ import type {
 	IWebhookResponseData,
 } from 'n8n-workflow';
 import { NodeConnectionTypes } from 'n8n-workflow';
-
-const API_BASE = 'https://api.streak.com/api/v2';
+import { streakApiRequest } from './operations/utils';
 
 export class StreakTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -120,14 +119,10 @@ export class StreakTrigger implements INodeType {
 	methods = {
 		loadOptions: {
 			async getPipelineOptions(this: ILoadOptionsFunctions) {
-				const pipelines = (await this.helpers.httpRequestWithAuthentication.call(
+				const pipelines = (await streakApiRequest(
 					this,
-					'streakApi',
-					{
-						method: 'GET',
-						url: 'https://api.streak.com/api/v1/pipelines',
-						json: true,
-					},
+					'GET',
+					'/pipelines',
 				)) as Array<{ key: string; name: string }>;
 
 				return pipelines
@@ -139,14 +134,10 @@ export class StreakTrigger implements INodeType {
 			},
 
 			async getTeamOptions(this: ILoadOptionsFunctions) {
-				const response = (await this.helpers.httpRequestWithAuthentication.call(
+				const response = (await streakApiRequest(
 					this,
-					'streakApi',
-					{
-						method: 'GET',
-						url: `${API_BASE}/users/me/teams`,
-						json: true,
-					},
+					'GET',
+					'/users/me/teams',
 				)) as Array<{ results?: Array<{ key: string; name: string }> }>;
 
 				const teams: Array<{ key: string; name: string }> = [];
@@ -177,11 +168,11 @@ export class StreakTrigger implements INodeType {
 				if (webhookData.webhookKey) {
 					// Verify the webhook still exists on Streak's side
 					try {
-						await this.helpers.httpRequestWithAuthentication.call(this, 'streakApi', {
-							method: 'GET',
-							url: `${API_BASE}/webhooks/${webhookData.webhookKey}`,
-							json: true,
-						});
+						await streakApiRequest(
+							this,
+							'GET',
+							`/webhooks/${webhookData.webhookKey}`,
+						);
 						return true;
 					} catch {
 						// Webhook no longer exists on Streak, clean up local state
@@ -197,25 +188,17 @@ export class StreakTrigger implements INodeType {
 				try {
 					if (scope === 'pipeline') {
 						const pipelineKey = this.getNodeParameter('pipelineKey') as string;
-						existingWebhooks = (await this.helpers.httpRequestWithAuthentication.call(
+						existingWebhooks = (await streakApiRequest(
 							this,
-							'streakApi',
-							{
-								method: 'GET',
-								url: `${API_BASE}/pipelines/${pipelineKey}/webhooks`,
-								json: true,
-							},
+							'GET',
+							`/pipelines/${pipelineKey}/webhooks`,
 						)) as IDataObject[];
 					} else {
 						const teamKey = this.getNodeParameter('teamKey') as string;
-						existingWebhooks = (await this.helpers.httpRequestWithAuthentication.call(
+						existingWebhooks = (await streakApiRequest(
 							this,
-							'streakApi',
-							{
-								method: 'GET',
-								url: `${API_BASE}/teams/${teamKey}/webhooks`,
-								json: true,
-							},
+							'GET',
+							`/teams/${teamKey}/webhooks`,
 						)) as IDataObject[];
 					}
 				} catch {
@@ -255,15 +238,11 @@ export class StreakTrigger implements INodeType {
 					body.teamKey = this.getNodeParameter('teamKey') as string;
 				}
 
-				const response = (await this.helpers.httpRequestWithAuthentication.call(
+				const response = (await streakApiRequest(
 					this,
-					'streakApi',
-					{
-						method: 'POST',
-						url: `${API_BASE}/webhooks`,
-						body,
-						json: true,
-					},
+					'POST',
+					'/webhooks',
+					body,
 				)) as IDataObject;
 
 				if (!response?.key) {
@@ -285,11 +264,11 @@ export class StreakTrigger implements INodeType {
 				}
 
 				try {
-					await this.helpers.httpRequestWithAuthentication.call(this, 'streakApi', {
-						method: 'DELETE',
-						url: `${API_BASE}/webhooks/${webhookKey}`,
-						json: true,
-					});
+					await streakApiRequest(
+						this,
+						'DELETE',
+						`/webhooks/${webhookKey}`,
+					);
 				} catch {
 					// Webhook may already be deleted, that's fine
 				}

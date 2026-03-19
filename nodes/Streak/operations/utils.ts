@@ -1,10 +1,21 @@
 import {
 	IExecuteFunctions,
+	IHookFunctions,
+	ILoadOptionsFunctions,
+	IWebhookFunctions,
 	IDataObject,
 	NodeOperationError,
 	IHttpRequestMethods,
-	JsonObject,
 } from 'n8n-workflow';
+
+/**
+ * Any n8n context that supports httpRequest and getCredentials
+ */
+export type StreakApiContext =
+	| IExecuteFunctions
+	| IHookFunctions
+	| ILoadOptionsFunctions
+	| IWebhookFunctions;
 
 /**
  * Mapping of endpoint patterns to their correct API versions
@@ -67,33 +78,44 @@ export function getApiVersionForEndpoint(endpoint: string): 'v1' | 'v2' {
 }
 
 /**
- * Helper function to make a request to the Streak API with proper error handling
+ * Get the Streak API key from credentials
  */
-export async function makeStreakRequest(
-	this: IExecuteFunctions,
+export async function getStreakApiKey(context: StreakApiContext): Promise<string> {
+	const credentials = await context.getCredentials('streakApi');
+	if (!credentials?.apiKey) {
+		throw new NodeOperationError(
+			context.getNode(),
+			'No API key provided. Please configure your Streak API credentials.',
+		);
+	}
+	return credentials.apiKey as string;
+}
+
+/**
+ * Make a request to the Streak API. Works from any n8n context (execute, hook, webhook, loadOptions).
+ * Accepts endpoint fragments (e.g. `/users/me`) and auto-detects the API version.
+ */
+export async function streakApiRequest(
+	context: StreakApiContext,
 	method: IHttpRequestMethods,
 	endpoint: string,
-	apiKey: string,
-	itemIndex = 0,
-	body?: IDataObject,
+	body?: IDataObject | IDataObject[],
 	query?: IDataObject,
 	apiVersion?: 'v1' | 'v2',
 ): Promise<IDataObject | IDataObject[]> {
+	const apiKey = await getStreakApiKey(context);
+	const version = apiVersion || getApiVersionForEndpoint(endpoint);
+	const url = `https://api.streak.com/api/${version}${endpoint}`;
+	const headers: IDataObject = {
+		Accept: 'application/json',
+	};
+	if (['POST', 'PUT', 'PATCH'].includes(method)) {
+		headers['Content-Type'] = 'application/json';
+	}
 	try {
-		// Auto-determine API version if not provided
-		const version = apiVersion || getApiVersionForEndpoint(endpoint);
-
-		// Build request options with proper content-type only when needed
-		const headers: IDataObject = {
-			Accept: 'application/json',
-		};
-		const url = `https://api.streak.com/api/${version}${endpoint}`;
-		if (['POST', 'PUT', 'PATCH'].includes(method)) {
-			headers['Content-Type'] = 'application/json';
-		}
-		return (await this.helpers.httpRequest({
+		return (await context.helpers.httpRequest({
 			method,
-			url: url,
+			url,
 			headers,
 			auth: {
 				username: apiKey,
@@ -102,12 +124,62 @@ export async function makeStreakRequest(
 			qs: query,
 			body,
 			json: true,
-		})) as JsonObject;
+		})) as IDataObject | IDataObject[];
 	} catch (error) {
 		throw new NodeOperationError(
-			this.getNode(),
-			`Streak API Error: ${error.message || 'Unknown error'}`,
-			{ itemIndex },
+			context.getNode(),
+			error instanceof Error ? error : new Error(`Streak API error on ${method} ${endpoint}`),
+		);
+	}
+}
+
+/**
+ * Make a form-encoded request to the Streak API. Used for endpoints that require
+ * application/x-www-form-urlencoded bodies (e.g. createPipeline, createStage).
+ */
+export async function streakApiFormRequest(
+	context: StreakApiContext,
+	method: IHttpRequestMethods,
+	endpoint: string,
+	body?: IDataObject,
+	query?: IDataObject,
+	apiVersion?: 'v1' | 'v2',
+): Promise<IDataObject | IDataObject[]> {
+	const apiKey = await getStreakApiKey(context);
+	const version = apiVersion || getApiVersionForEndpoint(endpoint);
+	const url = `https://api.streak.com/api/${version}${endpoint}`;
+
+	let formBody = '';
+	if (body && ['POST', 'PUT', 'PATCH'].includes(method)) {
+		const params = new URLSearchParams();
+		for (const [key, value] of Object.entries(body)) {
+			if (value !== undefined && value !== null) {
+				params.append(key, String(value));
+			}
+		}
+		formBody = params.toString();
+	}
+
+	try {
+		return (await context.helpers.httpRequest({
+			method,
+			url,
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			auth: {
+				username: apiKey,
+				password: '',
+			},
+			qs: query,
+			body: formBody,
+			json: true,
+		})) as IDataObject | IDataObject[];
+	} catch (error) {
+		throw new NodeOperationError(
+			context.getNode(),
+			error instanceof Error ? error : new Error(`Streak API error on ${method} ${endpoint}`),
 		);
 	}
 }
@@ -136,11 +208,9 @@ export function validateParameters(
  * Handle pagination for list operations
  */
 export async function handlePagination(
-	this: IExecuteFunctions,
+	context: StreakApiContext,
 	endpoint: string,
-	apiKey: string,
 	returnAll: boolean,
-	itemIndex = 0,
 	limit = 100,
 	additionalParams: IDataObject = {},
 	apiVersion?: 'v1' | 'v2',
@@ -148,7 +218,6 @@ export async function handlePagination(
 	let responseData: IDataObject[] = [];
 
 	if (returnAll) {
-		// If returnAll is true, get all results by handling pagination
 		let hasMore = true;
 		let page = 0;
 
@@ -159,12 +228,10 @@ export async function handlePagination(
 				limit,
 			};
 
-			const response = await makeStreakRequest.call(
-				this,
+			const response = await streakApiRequest(
+				context,
 				'GET',
 				endpoint,
-				apiKey,
-				itemIndex,
 				undefined,
 				query,
 				apiVersion,
@@ -173,7 +240,6 @@ export async function handlePagination(
 			const results = Array.isArray(response) ? response : [response];
 			responseData = [...responseData, ...results];
 
-			// If we received fewer results than requested, we've reached the end
 			if (results.length < limit) {
 				hasMore = false;
 			} else {
@@ -181,19 +247,16 @@ export async function handlePagination(
 			}
 		}
 	} else {
-		// If returnAll is false, just get the first page of results
 		const query: IDataObject = {
 			...additionalParams,
 			page: 0,
 			limit,
 		};
 
-		const response = await makeStreakRequest.call(
-			this,
+		const response = await streakApiRequest(
+			context,
 			'GET',
 			endpoint,
-			apiKey,
-			itemIndex,
 			undefined,
 			query,
 			apiVersion,

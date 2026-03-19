@@ -1,7 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
-import { StreakApiService } from '../services/StreakApiService';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 /**
  * Handle box-related operations for the Streak API
  */
@@ -9,7 +8,6 @@ export async function handleBoxOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle box operations
 	if (operation === 'listBoxes') {
@@ -36,16 +34,35 @@ export async function handleBoxOperations(
 		// If search query is provided, use the search endpoint
 		if (trimmedSearchQuery) {
 			// Use the search endpoint for queries
-			const results = await StreakApiService.searchBoxes(
+			const searchParams: IDataObject = { query: trimmedSearchQuery };
+			if (pipelineKey) {
+				searchParams.pipelineKey = pipelineKey;
+			}
+			if (stageKeyFilter) {
+				searchParams.stageKey = stageKeyFilter;
+			}
+
+			const searchResponse = (await streakApiRequest(
 				this,
-				apiKey,
-				trimmedSearchQuery,
-				pipelineKey,
-				stageKeyFilter,
-			);
+				'GET',
+				'/search',
+				undefined,
+				searchParams,
+				'v1',
+			)) as IDataObject;
+
+			// Extract boxes from search response
+			let results: IDataObject[] = [];
+			if (
+				searchResponse?.results &&
+				(searchResponse.results as IDataObject).boxes &&
+				Array.isArray((searchResponse.results as IDataObject).boxes)
+			) {
+				results = (searchResponse.results as IDataObject).boxes as IDataObject[];
+			}
 
 			// Handle empty search results consistently with normal listing
-			if (!results || (Array.isArray(results) && results.length === 0)) {
+			if (!results || results.length === 0) {
 				return [];
 			}
 
@@ -63,22 +80,18 @@ export async function handleBoxOperations(
 			}
 
 			if (returnAll) {
-				return await handlePagination.call(
+				return await handlePagination(
 					this,
 					`/pipelines/${pipelineKey}/boxes`,
-					apiKey,
 					returnAll,
-					itemIndex,
 					limit,
 					queryParams,
 				);
 			} else {
-				return await makeStreakRequest.call(
+				return await streakApiRequest(
 					this,
 					'GET',
 					`/pipelines/${pipelineKey}/boxes`,
-					apiKey,
-					itemIndex,
 					undefined,
 					queryParams,
 				);
@@ -90,7 +103,7 @@ export async function handleBoxOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'GET', `/boxes/${boxKey}`, apiKey, itemIndex);
+		return await streakApiRequest(this, 'GET', `/boxes/${boxKey}`);
 	} else if (operation === 'getMultipleBoxes') {
 		// Get Multiple Boxes operation
 		const boxKeys = this.getNodeParameter('boxKeys', itemIndex) as string[];
@@ -101,13 +114,7 @@ export async function handleBoxOperations(
 		const boxes: IDataObject[] = [];
 		for (const boxKey of boxKeys) {
 			try {
-				const response = await makeStreakRequest.call(
-					this,
-					'GET',
-					`/boxes/${boxKey}`,
-					apiKey,
-					itemIndex,
-				);
+				const response = await streakApiRequest(this, 'GET', `/boxes/${boxKey}`);
 				// Normalize response to ensure it's an array of IDataObject
 				const normalizedResponse = Array.isArray(response) ? response : [response];
 				boxes.push(...normalizedResponse);
@@ -155,14 +162,7 @@ export async function handleBoxOperations(
 			body.assignedToTeamKeyOrUserKey = additionalFields.assignedToTeamKeyOrUserKey;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/pipelines/${pipelineKey}/boxes`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/pipelines/${pipelineKey}/boxes`, body);
 	} else if (operation === 'updateBox') {
 		// Update Box operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
@@ -197,14 +197,14 @@ export async function handleBoxOperations(
 		if (updateFields.assignedToTeamKeyOrUserKey) {
 			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
 		}
-		return await makeStreakRequest.call(this, 'POST', `/boxes/${boxKey}`, apiKey, itemIndex, body);
+		return await streakApiRequest(this, 'POST', `/boxes/${boxKey}`, body);
 	} else if (operation === 'deleteBox') {
 		// Delete Box operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'DELETE', `/boxes/${boxKey}`, apiKey, itemIndex);
+		return await streakApiRequest(this, 'DELETE', `/boxes/${boxKey}`);
 	} else if (operation === 'getTimeline') {
 		// Get Timeline operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
@@ -214,21 +214,17 @@ export async function handleBoxOperations(
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
 		if (returnAll) {
-			return await handlePagination.call(
+			return await handlePagination(
 				this,
 				`/boxes/${boxKey}/timeline`,
-				apiKey,
 				returnAll,
-				itemIndex,
 				limit,
 			);
 		} else {
-			return await makeStreakRequest.call(
+			return await streakApiRequest(
 				this,
 				'GET',
 				`/boxes/${boxKey}/timeline`,
-				apiKey,
-				itemIndex,
 				undefined,
 				{ limit },
 			);

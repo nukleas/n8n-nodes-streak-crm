@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle task-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleTaskOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle task operations
 	if (operation === 'getTask') {
@@ -18,7 +17,7 @@ export async function handleTaskOperations(
 
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'GET', `/tasks/${taskKey}`, apiKey, itemIndex);
+		return await streakApiRequest(this, 'GET', `/tasks/${taskKey}`);
 	} else if (operation === 'getTasksInBox') {
 		// Get Tasks in Box operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -31,12 +30,10 @@ export async function handleTaskOperations(
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
 		if (returnAll) {
-			const results = await handlePagination.call(
+			const results = await handlePagination(
 				this,
 				`/boxes/${boxKey}/tasks`,
-				apiKey,
 				true,
-				itemIndex,
 				100,
 				{},
 			);
@@ -48,12 +45,10 @@ export async function handleTaskOperations(
 
 			return results;
 		} else {
-			const response = await makeStreakRequest.call(
+			const response = await streakApiRequest(
 				this,
 				'GET',
 				`/boxes/${boxKey}/tasks`,
-				apiKey,
-				itemIndex,
 				undefined,
 				{ limit },
 			);
@@ -127,12 +122,10 @@ export async function handleTaskOperations(
 			body.assignedToSharingEntries = assigneesArray.filter((e) => !!e).map((email) => ({ email }));
 		}
 
-		const response = await makeStreakRequest.call(
+		const response = await streakApiRequest(
 			this,
 			'POST',
 			`/boxes/${boxKey}/tasks`,
-			apiKey,
-			itemIndex,
 			body,
 		);
 
@@ -182,12 +175,10 @@ export async function handleTaskOperations(
 			body.status = updateFields.completed ? 'DONE' : 'NOT_DONE';
 		}
 
-		const response = await makeStreakRequest.call(
+		const response = await streakApiRequest(
 			this,
 			'POST',
 			`/tasks/${taskKey}`,
-			apiKey,
-			itemIndex,
 			body,
 		);
 
@@ -203,13 +194,7 @@ export async function handleTaskOperations(
 
 		validateParameters.call(this, { taskKey }, ['taskKey'], itemIndex);
 
-		const response = await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/tasks/${taskKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const response = await streakApiRequest(this, 'DELETE', `/tasks/${taskKey}`);
 
 		// Handle the delete task response - return success confirmation
 		if (

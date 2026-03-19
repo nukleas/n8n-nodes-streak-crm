@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle comment-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleCommentOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'listCommentsInBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -21,12 +20,10 @@ export async function handleCommentOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			`/boxes/${boxKey}/comments`,
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{},
 		);
@@ -35,13 +32,7 @@ export async function handleCommentOperations(
 
 		validateParameters.call(this, { commentKey }, ['commentKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/comments/${commentKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/comments/${commentKey}`);
 	} else if (operation === 'createComment') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
@@ -51,40 +42,20 @@ export async function handleCommentOperations(
 
 		validateParameters.call(this, { boxKey, message }, ['boxKey', 'message'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/boxes/${boxKey}/comments`,
-			apiKey,
-			itemIndex,
-			{ message },
-		);
+		return await streakApiRequest(this, 'POST', `/boxes/${boxKey}/comments`, { message });
 	} else if (operation === 'editComment') {
 		const commentKey = this.getNodeParameter('commentKey', itemIndex) as string;
 		const message = this.getNodeParameter('message', itemIndex) as string;
 
 		validateParameters.call(this, { commentKey, message }, ['commentKey', 'message'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/comments/${commentKey}`,
-			apiKey,
-			itemIndex,
-			{ message },
-		);
+		return await streakApiRequest(this, 'POST', `/comments/${commentKey}`, { message });
 	} else if (operation === 'deleteComment') {
 		const commentKey = this.getNodeParameter('commentKey', itemIndex) as string;
 
 		validateParameters.call(this, { commentKey }, ['commentKey'], itemIndex);
 
-		const response = await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/comments/${commentKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const response = await streakApiRequest(this, 'DELETE', `/comments/${commentKey}`);
 
 		if (
 			response === null ||

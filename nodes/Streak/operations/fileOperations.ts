@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle file-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleFileOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'listFilesInBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
@@ -21,12 +20,10 @@ export async function handleFileOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			`/boxes/${boxKey}/files`,
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{},
 			'v1',
@@ -36,31 +33,13 @@ export async function handleFileOperations(
 
 		validateParameters.call(this, { fileKey }, ['fileKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/files/${fileKey}`,
-			apiKey,
-			itemIndex,
-			undefined,
-			undefined,
-			'v1',
-		);
+		return await streakApiRequest(this, 'GET', `/files/${fileKey}`, undefined, undefined, 'v1');
 	} else if (operation === 'getFileContents') {
 		const fileKey = this.getNodeParameter('fileKey', itemIndex) as string;
 
 		validateParameters.call(this, { fileKey }, ['fileKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/files/${fileKey}/contents`,
-			apiKey,
-			itemIndex,
-			undefined,
-			undefined,
-			'v1',
-		);
+		return await streakApiRequest(this, 'GET', `/files/${fileKey}/contents`, undefined, undefined, 'v1');
 	} else if (operation === 'addFileToBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
@@ -75,12 +54,10 @@ export async function handleFileOperations(
 			itemIndex,
 		);
 
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'POST',
 			'/files/',
-			apiKey,
-			itemIndex,
 			{ driveFileId, driveBoxKey: boxKey },
 			undefined,
 			'v2',

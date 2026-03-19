@@ -69,13 +69,6 @@ export class Streak implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
-		// Get API key from credentials
-		const apiKey = (await this.getCredentials('streakApi'))?.apiKey as string;
-
-		if (!apiKey) {
-			throw new NodeOperationError(this.getNode(), 'No API key provided');
-		}
-
 		// Process each item
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			try {
@@ -85,47 +78,45 @@ export class Streak implements INodeType {
 
 				// Route to appropriate operation handler based on resource
 				if (resource === 'user') {
-					responseData = await handleUserOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleUserOperations.call(this, operation, itemIndex);
 				} else if (resource === 'team') {
-					responseData = await handleTeamOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleTeamOperations.call(this, operation, itemIndex);
 				} else if (resource === 'pipeline') {
-					responseData = await handlePipelineOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handlePipelineOperations.call(this, operation, itemIndex);
 				} else if (resource === 'box') {
-					responseData = await handleBoxOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleBoxOperations.call(this, operation, itemIndex);
 				} else if (resource === 'stage') {
-					responseData = await handleStageOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleStageOperations.call(this, operation, itemIndex);
 				} else if (resource === 'field') {
-					responseData = await handleFieldOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleFieldOperations.call(this, operation, itemIndex);
 				} else if (resource === 'contact') {
-					responseData = await handleContactOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleContactOperations.call(this, operation, itemIndex);
 				} else if (resource === 'organization') {
 					responseData = await handleOrganizationOperations.call(
 						this,
 						operation,
 						itemIndex,
-						apiKey,
 					);
 				} else if (resource === 'task') {
-					responseData = await handleTaskOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleTaskOperations.call(this, operation, itemIndex);
 				} else if (resource === 'comment') {
-					responseData = await handleCommentOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleCommentOperations.call(this, operation, itemIndex);
 				} else if (resource === 'meeting') {
-					responseData = await handleMeetingOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleMeetingOperations.call(this, operation, itemIndex);
 				} else if (resource === 'thread') {
-					responseData = await handleThreadOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleThreadOperations.call(this, operation, itemIndex);
 				} else if (resource === 'file') {
-					responseData = await handleFileOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleFileOperations.call(this, operation, itemIndex);
 				} else if (resource === 'newsfeed') {
 					responseData = await handleNewsfeedOperations.call(
 						this,
 						operation,
 						itemIndex,
-						apiKey,
 					);
 				} else if (resource === 'snippet') {
-					responseData = await handleSnippetOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleSnippetOperations.call(this, operation, itemIndex);
 				} else if (resource === 'search') {
-					responseData = await handleSearchOperations.call(this, operation, itemIndex, apiKey);
+					responseData = await handleSearchOperations.call(this, operation, itemIndex);
 				} else {
 					throw new NodeOperationError(
 						this.getNode(),

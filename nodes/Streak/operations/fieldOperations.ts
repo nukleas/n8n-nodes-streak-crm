@@ -1,7 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
-import { FieldsService } from '../services/Fields';
+import { streakApiRequest, streakApiFormRequest, validateParameters } from './utils';
 
 /**
  * Handle field-related operations for the Streak API
@@ -10,11 +9,9 @@ export async function handleFieldOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle field operations
 	if (operation === 'listFields') {
-		// List Fields operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -23,10 +20,8 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
-		return await fieldsService.query();
+		return await streakApiRequest(this, 'GET', `/pipelines/${pipelineKey}/fields`);
 	} else if (operation === 'getField') {
-		// Get Field operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -41,10 +36,8 @@ export async function handleFieldOperations(
 			itemIndex,
 		);
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
-		return await fieldsService.get(fieldKey);
+		return await streakApiRequest(this, 'GET', `/pipelines/${pipelineKey}/fields/${fieldKey}`);
 	} else if (operation === 'createField') {
-		// Create Field operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -93,10 +86,13 @@ export async function handleFieldOperations(
 			fieldParams.enumValues = additionalFields.enumValues;
 		}
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
-		return await fieldsService.create(fieldParams);
+		return await streakApiFormRequest(
+			this,
+			'PUT',
+			`/pipelines/${pipelineKey}/fields`,
+			fieldParams,
+		);
 	} else if (operation === 'updateField') {
-		// Update Field operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -120,10 +116,13 @@ export async function handleFieldOperations(
 			);
 		}
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
-		return await fieldsService.update(fieldKey, updateFields);
+		return await streakApiRequest(
+			this,
+			'POST',
+			`/pipelines/${pipelineKey}/fields/${fieldKey}`,
+			updateFields,
+		);
 	} else if (operation === 'deleteField') {
-		// Delete Field operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -138,11 +137,9 @@ export async function handleFieldOperations(
 			itemIndex,
 		);
 
-		const fieldsService = new FieldsService(apiKey, pipelineKey, this);
-		await fieldsService.delete(fieldKey);
+		await streakApiRequest(this, 'DELETE', `/pipelines/${pipelineKey}/fields/${fieldKey}`);
 		return { success: true };
 	} else if (operation === 'listFieldValues') {
-		// List Field Values operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -150,9 +147,8 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'GET', `/boxes/${encodeURIComponent(boxKey)}/fields`, apiKey, itemIndex);
+		return await streakApiRequest(this, 'GET', `/boxes/${encodeURIComponent(boxKey)}/fields`);
 	} else if (operation === 'getFieldValue') {
-		// Get Field Value operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -161,15 +157,12 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
 
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'GET',
 			`/boxes/${encodeURIComponent(boxKey)}/fields/${encodeURIComponent(fieldKey)}`,
-			apiKey,
-			itemIndex,
 		);
 	} else if (operation === 'updateFieldValue') {
-		// Update Field Value operation
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -183,12 +176,10 @@ export async function handleFieldOperations(
 
 		validateParameters.call(this, { boxKey, fieldKey }, ['boxKey', 'fieldKey'], itemIndex);
 
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'POST',
 			`/boxes/${encodeURIComponent(boxKey)}/fields/${encodeURIComponent(fieldKey)}`,
-			apiKey,
-			itemIndex,
 			{ value: fieldValue },
 		);
 	}

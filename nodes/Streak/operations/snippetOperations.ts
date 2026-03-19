@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle snippet-related operations for the Streak API
@@ -9,18 +9,15 @@ export async function handleSnippetOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'listSnippets') {
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			'/snippets',
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{},
 		);
@@ -29,13 +26,7 @@ export async function handleSnippetOperations(
 
 		validateParameters.call(this, { snippetKey }, ['snippetKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/snippets/${snippetKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/snippets/${snippetKey}`);
 	} else if (operation === 'createSnippet') {
 		const snippetName = this.getNodeParameter('snippetName', itemIndex) as string;
 		const snippetBody = this.getNodeParameter('snippetBody', itemIndex) as string;
@@ -47,12 +38,10 @@ export async function handleSnippetOperations(
 			itemIndex,
 		);
 
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'PUT',
 			'/snippets',
-			apiKey,
-			itemIndex,
 			{ snippetName, snippetText: snippetBody },
 		);
 	} else if (operation === 'editSnippet') {
@@ -79,26 +68,13 @@ export async function handleSnippetOperations(
 			body.snippetText = updateFields.snippetBody;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/snippets/${snippetKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/snippets/${snippetKey}`, body);
 	} else if (operation === 'deleteSnippet') {
 		const snippetKey = this.getNodeParameter('snippetKey', itemIndex) as string;
 
 		validateParameters.call(this, { snippetKey }, ['snippetKey'], itemIndex);
 
-		const response = await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/snippets/${snippetKey}`,
-			apiKey,
-			itemIndex,
-		);
+		const response = await streakApiRequest(this, 'DELETE', `/snippets/${snippetKey}`);
 
 		if (
 			response === null ||

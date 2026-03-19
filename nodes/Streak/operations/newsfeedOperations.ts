@@ -9,7 +9,6 @@ export async function handleNewsfeedOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'getPipelineNewsfeed') {
 		const pipelineKey = this.getNodeParameter('pipelineKey', itemIndex) as string;
@@ -19,12 +18,10 @@ export async function handleNewsfeedOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			`/pipelines/${pipelineKey}/newsfeed`,
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{ detailLevel },
 		);
@@ -39,12 +36,10 @@ export async function handleNewsfeedOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			`/boxes/${boxKey}/newsfeed`,
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{ detailLevel },
 		);
@@ -53,12 +48,10 @@ export async function handleNewsfeedOperations(
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
-		return await handlePagination.call(
+		return await handlePagination(
 			this,
 			'/newsfeed',
-			apiKey,
 			returnAll,
-			itemIndex,
 			returnAll ? 100 : limit,
 			{ detailLevel },
 		);
