@@ -55,6 +55,20 @@ export async function handleThreadOperations(
 			apiKey,
 			itemIndex,
 		);
+	} else if (operation === 'getThreadByGmailId') {
+		const hexGmailThreadId = this.getNodeParameter('hexGmailThreadId', itemIndex) as string;
+
+		validateParameters.call(this, { hexGmailThreadId }, ['hexGmailThreadId'], itemIndex);
+
+		return await makeStreakRequest.call(
+			this,
+			'POST',
+			'/threadinfo/',
+			apiKey,
+			itemIndex,
+			undefined,
+			{ hexGmailThreadId },
+		);
 	} else if (operation === 'addThreadToBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string

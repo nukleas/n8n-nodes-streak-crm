@@ -12,7 +12,7 @@ export const meetingProperties: INodeProperties[] = [
 				resource: ['meeting'],
 			},
 		},
-		default: 'createMeeting',
+		default: 'listMeetingsInBox',
 		options: [
 			{
 				name: 'Create Meeting',
@@ -32,6 +32,18 @@ export const meetingProperties: INodeProperties[] = [
 				description: 'Edits an existing meeting',
 				action: 'Edit a meeting',
 			},
+			{
+				name: 'Get Meeting',
+				value: 'getMeeting',
+				description: 'Gets a single meeting by key',
+				action: 'Get a meeting',
+			},
+			{
+				name: 'List Meetings in Box',
+				value: 'listMeetingsInBox',
+				description: 'Lists all meetings for a box',
+				action: 'List meetings in a box',
+			},
 		],
 	},
 
@@ -46,7 +58,7 @@ export const meetingProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['meeting'],
-				operation: ['editMeeting', 'deleteMeeting'],
+				operation: ['getMeeting', 'editMeeting', 'deleteMeeting'],
 			},
 		},
 	},
@@ -62,19 +74,19 @@ export const meetingProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['meeting'],
-				operation: ['createMeeting'],
+				operation: ['createMeeting', 'listMeetingsInBox'],
 			},
 		},
 	},
 
-	// Box Key (for create)
+	// Box Key (for create and list)
 	{
 		displayName: 'Box',
 		name: 'boxKey',
 		type: 'resourceLocator',
 		default: { mode: 'list', value: '' },
 		required: true,
-		description: 'The box to create the meeting in',
+		description: 'The box to operate on',
 		modes: [
 			{
 				displayName: 'From List',
@@ -94,7 +106,7 @@ export const meetingProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['meeting'],
-				operation: ['createMeeting'],
+				operation: ['createMeeting', 'listMeetingsInBox'],
 			},
 		},
 	},

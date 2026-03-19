@@ -30,6 +30,7 @@ export async function handleFileOperations(
 				itemIndex,
 				100,
 				{},
+				'v1',
 			);
 		} else {
 			const response = await makeStreakRequest.call(

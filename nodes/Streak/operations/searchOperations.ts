@@ -11,10 +11,36 @@ export async function handleSearchOperations(
 	itemIndex: number,
 	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
-	if (operation === 'search') {
-		const query = this.getNodeParameter('query', itemIndex) as string;
+	if (operation === 'searchByQuery' || operation === 'searchByName') {
+		const qs: IDataObject = {};
 
-		validateParameters.call(this, { query }, ['query'], itemIndex);
+		if (operation === 'searchByQuery') {
+			const query = this.getNodeParameter('query', itemIndex) as string;
+			validateParameters.call(this, { query }, ['query'], itemIndex);
+			qs.query = query;
+		} else {
+			const name = this.getNodeParameter('name', itemIndex) as string;
+			validateParameters.call(this, { name }, ['name'], itemIndex);
+			qs.name = name;
+		}
+
+		const additionalFields = this.getNodeParameter(
+			'additionalFields',
+			itemIndex,
+			{},
+		) as IDataObject;
+
+		if (additionalFields.page !== undefined && operation === 'searchByName') {
+			qs.page = additionalFields.page;
+		}
+
+		if (additionalFields.pipelineKey) {
+			qs.pipelineKey = additionalFields.pipelineKey;
+		}
+
+		if (additionalFields.stageKey) {
+			qs.stageKey = additionalFields.stageKey;
+		}
 
 		return await makeStreakRequest.call(
 			this,
@@ -23,7 +49,7 @@ export async function handleSearchOperations(
 			apiKey,
 			itemIndex,
 			undefined,
-			{ query },
+			qs,
 		);
 	}
 

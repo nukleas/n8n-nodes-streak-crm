@@ -143,6 +143,7 @@ export async function handlePagination(
 	itemIndex = 0,
 	limit = 100,
 	additionalParams: IDataObject = {},
+	apiVersion?: 'v1' | 'v2',
 ): Promise<IDataObject[]> {
 	let responseData: IDataObject[] = [];
 
@@ -166,6 +167,7 @@ export async function handlePagination(
 				itemIndex,
 				undefined,
 				query,
+				apiVersion,
 			);
 
 			const results = Array.isArray(response) ? response : [response];
@@ -194,6 +196,7 @@ export async function handlePagination(
 			itemIndex,
 			undefined,
 			query,
+			apiVersion,
 		);
 
 		responseData = Array.isArray(response) ? response : [response];

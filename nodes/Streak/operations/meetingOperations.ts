@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
+import { makeStreakRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle meeting-related operations for the Streak API
@@ -11,7 +11,51 @@ export async function handleMeetingOperations(
 	itemIndex: number,
 	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
-	if (operation === 'createMeeting') {
+	if (operation === 'listMeetingsInBox') {
+		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
+			| string
+			| { mode: string; value: string };
+		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
+		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
+		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
+
+		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
+
+		if (returnAll) {
+			return await handlePagination.call(
+				this,
+				`/boxes/${boxKey}/meetings`,
+				apiKey,
+				true,
+				itemIndex,
+				100,
+				{},
+			);
+		} else {
+			const response = await makeStreakRequest.call(
+				this,
+				'GET',
+				`/boxes/${boxKey}/meetings`,
+				apiKey,
+				itemIndex,
+				undefined,
+				{ limit },
+			);
+			return Array.isArray(response) ? response : [response];
+		}
+	} else if (operation === 'getMeeting') {
+		const meetingKey = this.getNodeParameter('meetingKey', itemIndex) as string;
+
+		validateParameters.call(this, { meetingKey }, ['meetingKey'], itemIndex);
+
+		return await makeStreakRequest.call(
+			this,
+			'GET',
+			`/meetings/${meetingKey}`,
+			apiKey,
+			itemIndex,
+		);
+	} else if (operation === 'createMeeting') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
 			| { mode: string; value: string };

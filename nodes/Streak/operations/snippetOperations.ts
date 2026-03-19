@@ -66,7 +66,7 @@ export async function handleSnippetOperations(
 			'/snippets',
 			apiKey,
 			itemIndex,
-			{ name: snippetName, body: snippetBody },
+			{ snippetName, snippetText: snippetBody },
 		);
 	} else if (operation === 'editSnippet') {
 		const snippetKey = this.getNodeParameter('snippetKey', itemIndex) as string;
@@ -85,11 +85,11 @@ export async function handleSnippetOperations(
 		const body: IDataObject = {};
 
 		if (updateFields.snippetName) {
-			body.name = updateFields.snippetName;
+			body.snippetName = updateFields.snippetName;
 		}
 
 		if (updateFields.snippetBody) {
-			body.body = updateFields.snippetBody;
+			body.snippetText = updateFields.snippetBody;
 		}
 
 		return await makeStreakRequest.call(

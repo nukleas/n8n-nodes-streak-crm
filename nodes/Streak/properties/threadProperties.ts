@@ -27,6 +27,12 @@ export const threadProperties: INodeProperties[] = [
 				action: 'Get a thread',
 			},
 			{
+				name: 'Get Thread by Gmail ID',
+				value: 'getThreadByGmailId',
+				description: 'Gets thread info by Gmail thread ID',
+				action: 'Get a thread by Gmail ID',
+			},
+			{
 				name: 'List Threads in Box',
 				value: 'listThreadsInBox',
 				description: 'Lists all email threads in a box',
@@ -117,6 +123,22 @@ export const threadProperties: INodeProperties[] = [
 			show: {
 				resource: ['thread'],
 				operation: ['addThreadToBox'],
+			},
+		},
+	},
+
+	// Hex Gmail Thread ID (for lookup by Gmail ID)
+	{
+		displayName: 'Hex Gmail Thread ID',
+		name: 'hexGmailThreadId',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'The hex-encoded Gmail thread ID to look up',
+		displayOptions: {
+			show: {
+				resource: ['thread'],
+				operation: ['getThreadByGmailId'],
 			},
 		},
 	},
