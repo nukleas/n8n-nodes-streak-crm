@@ -18,6 +18,7 @@ import { fileProperties } from './fileProperties';
 import { newsfeedProperties } from './newsfeedProperties';
 import { snippetProperties } from './snippetProperties';
 import { searchProperties } from './searchProperties';
+import { webhookProperties } from './webhookProperties';
 import { sharedProperties } from './sharedProperties';
 
 // Export consolidated properties array
@@ -42,6 +43,7 @@ export const nodeProperties: INodeProperties[] = [
 	...newsfeedProperties,
 	...snippetProperties,
 	...searchProperties,
+	...webhookProperties,
 
 	// Shared properties (returnAll, limit)
 	...sharedProperties,

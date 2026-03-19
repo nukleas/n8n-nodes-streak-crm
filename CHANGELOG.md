@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Snippet resource**: List, get, create, edit, and delete email snippets
 - **Search resource**: Search by query (fuzzy, across boxes/contacts/orgs) and search by exact box name, with pipeline and stage filtering
 - Full pagination support (Return All / Limit) for all new list operations
+- **Webhook resource**: List webhooks (by pipeline or team), get webhook details, create webhooks with event and target URL, delete webhooks
 
 ## [1.1.0]
 ### Added

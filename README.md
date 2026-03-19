@@ -136,6 +136,12 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 - **Create Snippet** - Create a new snippet
 - **Delete Snippet** - Remove a snippet
 
+### Webhook Operations
+- **List Webhooks** - Get all webhooks for a pipeline or team
+- **Get Webhook** - Retrieve a specific webhook by key
+- **Create Webhook** - Create a new webhook for a pipeline or team event
+- **Delete Webhook** - Remove a webhook
+
 ### Search Operations
 - **Search by Query** - Search across Streak using a query string
 - **Search by Name** - Search for boxes by name

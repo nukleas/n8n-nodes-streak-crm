@@ -48,6 +48,8 @@ const ENDPOINT_API_VERSIONS: Record<string, 'v1' | 'v2'> = {
 	'/teams/*/organizations': 'v2', // Create organization uses v2
 	'/boxes/*/comments': 'v2', // Create comment uses v2
 	'/boxes/*/meetings': 'v2', // Create meeting uses v2
+	'/pipelines/*/webhooks': 'v2', // List webhooks for a pipeline
+	'/teams/*/webhooks': 'v2', // List webhooks for a team
 };
 
 /**

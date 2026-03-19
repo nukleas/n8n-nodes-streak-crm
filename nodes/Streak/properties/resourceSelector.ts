@@ -87,5 +87,10 @@ export const resourceSelector: INodeProperties = {
 			value: 'user',
 			description: 'Operate on Streak users',
 		},
+		{
+			name: 'Webhook',
+			value: 'webhook',
+			description: 'Manage Streak webhooks',
+		},
 	],
 };

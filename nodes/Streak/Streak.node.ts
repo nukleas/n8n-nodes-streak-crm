@@ -30,6 +30,7 @@ import { handleFileOperations } from './operations/fileOperations';
 import { handleNewsfeedOperations } from './operations/newsfeedOperations';
 import { handleSnippetOperations } from './operations/snippetOperations';
 import { handleSearchOperations } from './operations/searchOperations';
+import { handleWebhookOperations } from './operations/webhookOperations';
 
 export class Streak implements INodeType {
 	// Define methods required by n8n for resource locators and dynamic data loading
@@ -117,6 +118,8 @@ export class Streak implements INodeType {
 					responseData = await handleSnippetOperations.call(this, operation, itemIndex);
 				} else if (resource === 'search') {
 					responseData = await handleSearchOperations.call(this, operation, itemIndex);
+				} else if (resource === 'webhook') {
+					responseData = await handleWebhookOperations.call(this, operation, itemIndex);
 				} else {
 					throw new NodeOperationError(
 						this.getNode(),
