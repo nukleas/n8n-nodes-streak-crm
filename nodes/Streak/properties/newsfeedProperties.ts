@@ -46,7 +46,7 @@ export const newsfeedProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['newsfeed'],
-				operation: ['getPipelineNewsfeed', 'getBoxNewsfeed'],
+				operation: ['getPipelineNewsfeed'],
 			},
 		},
 	},

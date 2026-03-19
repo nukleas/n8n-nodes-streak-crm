@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters, handlePagination } from './utils';
+import { validateParameters, handlePagination } from './utils';
 
 /**
  * Handle newsfeed-related operations for the Streak API
@@ -19,28 +19,15 @@ export async function handleNewsfeedOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/pipelines/${pipelineKey}/newsfeed`,
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{ detailLevel },
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				`/pipelines/${pipelineKey}/newsfeed`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ detailLevel, limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			`/pipelines/${pipelineKey}/newsfeed`,
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{ detailLevel },
+		);
 	} else if (operation === 'getBoxNewsfeed') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
@@ -52,55 +39,29 @@ export async function handleNewsfeedOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/boxes/${boxKey}/newsfeed`,
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{ detailLevel },
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				`/boxes/${boxKey}/newsfeed`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ detailLevel, limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			`/boxes/${boxKey}/newsfeed`,
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{ detailLevel },
+		);
 	} else if (operation === 'getAllNewsfeed') {
 		const detailLevel = this.getNodeParameter('detailLevel', itemIndex, 'ALL') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				'/newsfeed',
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{ detailLevel },
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				'/newsfeed',
-				apiKey,
-				itemIndex,
-				undefined,
-				{ detailLevel, limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			'/newsfeed',
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{ detailLevel },
+		);
 	}
 
 	throw new NodeOperationError(

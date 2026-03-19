@@ -21,28 +21,15 @@ export async function handleMeetingOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/boxes/${boxKey}/meetings`,
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{},
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				`/boxes/${boxKey}/meetings`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			`/boxes/${boxKey}/meetings`,
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{},
+		);
 	} else if (operation === 'getMeeting') {
 		const meetingKey = this.getNodeParameter('meetingKey', itemIndex) as string;
 
@@ -84,7 +71,7 @@ export async function handleMeetingOperations(
 			body.duration = additionalFields.duration;
 		}
 
-		if (additionalFields.notes) {
+		if (additionalFields.notes !== undefined) {
 			body.notes = additionalFields.notes;
 		}
 
@@ -112,11 +99,11 @@ export async function handleMeetingOperations(
 
 		const body: IDataObject = {};
 
-		if (updateFields.meetingType) {
+		if (updateFields.meetingType !== undefined) {
 			body.meetingType = updateFields.meetingType;
 		}
 
-		if (updateFields.startTimestamp) {
+		if (updateFields.startTimestamp !== undefined) {
 			body.startTimestamp = new Date(updateFields.startTimestamp as string).getTime();
 		}
 
@@ -124,7 +111,7 @@ export async function handleMeetingOperations(
 			body.duration = updateFields.duration;
 		}
 
-		if (updateFields.notes) {
+		if (updateFields.notes !== undefined) {
 			body.notes = updateFields.notes;
 		}
 

@@ -21,28 +21,15 @@ export async function handleCommentOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/boxes/${boxKey}/comments`,
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{},
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				`/boxes/${boxKey}/comments`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			`/boxes/${boxKey}/comments`,
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{},
+		);
 	} else if (operation === 'getComment') {
 		const commentKey = this.getNodeParameter('commentKey', itemIndex) as string;
 

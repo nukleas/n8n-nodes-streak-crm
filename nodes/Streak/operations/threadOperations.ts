@@ -21,28 +21,15 @@ export async function handleThreadOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/boxes/${boxKey}/threads`,
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{},
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				`/boxes/${boxKey}/threads`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			`/boxes/${boxKey}/threads`,
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{},
+		);
 	} else if (operation === 'getThread') {
 		const threadKey = this.getNodeParameter('threadKey', itemIndex) as string;
 
@@ -60,6 +47,8 @@ export async function handleThreadOperations(
 
 		validateParameters.call(this, { hexGmailThreadId }, ['hexGmailThreadId'], itemIndex);
 
+		// Undocumented endpoint that uses POST for a read operation.
+		// Only works when the authenticated user owns the email thread.
 		return await makeStreakRequest.call(
 			this,
 			'POST',

@@ -15,28 +15,15 @@ export async function handleSnippetOperations(
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				'/snippets',
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{},
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				'/snippets',
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			'/snippets',
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{},
+		);
 	} else if (operation === 'getSnippet') {
 		const snippetKey = this.getNodeParameter('snippetKey', itemIndex) as string;
 
@@ -84,11 +71,11 @@ export async function handleSnippetOperations(
 
 		const body: IDataObject = {};
 
-		if (updateFields.snippetName) {
+		if (updateFields.snippetName !== undefined) {
 			body.snippetName = updateFields.snippetName;
 		}
 
-		if (updateFields.snippetBody) {
+		if (updateFields.snippetBody !== undefined) {
 			body.snippetText = updateFields.snippetBody;
 		}
 

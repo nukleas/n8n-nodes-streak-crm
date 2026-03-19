@@ -21,30 +21,16 @@ export async function handleFileOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		if (returnAll) {
-			return await handlePagination.call(
-				this,
-				`/boxes/${boxKey}/files`,
-				apiKey,
-				true,
-				itemIndex,
-				100,
-				{},
-				'v1',
-			);
-		} else {
-			const response = await makeStreakRequest.call(
-				this,
-				'GET',
-				`/boxes/${boxKey}/files`,
-				apiKey,
-				itemIndex,
-				undefined,
-				{ limit },
-				'v1',
-			);
-			return Array.isArray(response) ? response : [response];
-		}
+		return await handlePagination.call(
+			this,
+			`/boxes/${boxKey}/files`,
+			apiKey,
+			returnAll,
+			itemIndex,
+			returnAll ? 100 : limit,
+			{},
+			'v1',
+		);
 	} else if (operation === 'getFile') {
 		const fileKey = this.getNodeParameter('fileKey', itemIndex) as string;
 
