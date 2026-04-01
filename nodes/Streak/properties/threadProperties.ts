@@ -30,7 +30,7 @@ export const threadProperties: INodeProperties[] = [
 				name: 'Get Thread by Gmail ID',
 				value: 'getThreadByGmailId',
 				description: 'Gets thread info by Gmail thread ID',
-				action: 'Get a thread by Gmail ID',
+				action: 'Get a thread by gmail id',
 			},
 			{
 				name: 'List Threads in Box',

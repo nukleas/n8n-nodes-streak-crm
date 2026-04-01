@@ -78,7 +78,7 @@ export const webhookProperties: INodeProperties[] = [
 
 	// Pipeline Key (when scope=pipeline)
 	{
-		displayName: 'Pipeline',
+		displayName: 'Pipeline Name or ID',
 		name: 'pipelineKey',
 		type: 'options',
 		typeOptions: {
@@ -86,7 +86,7 @@ export const webhookProperties: INodeProperties[] = [
 		},
 		default: '',
 		required: true,
-		description: 'The pipeline to scope the webhook to',
+		description: 'The pipeline to scope the webhook to. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ['webhook'],
@@ -98,7 +98,7 @@ export const webhookProperties: INodeProperties[] = [
 
 	// Team Key (when scope=team)
 	{
-		displayName: 'Team',
+		displayName: 'Team Name or ID',
 		name: 'teamKey',
 		type: 'options',
 		typeOptions: {
@@ -106,7 +106,7 @@ export const webhookProperties: INodeProperties[] = [
 		},
 		default: '',
 		required: true,
-		description: 'The team to scope the webhook to',
+		description: 'The team to scope the webhook to. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ['webhook'],

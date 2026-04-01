@@ -7,7 +7,7 @@ import type {
 	IWebhookFunctions,
 	IWebhookResponseData,
 } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
+
 import { streakApiRequest } from './operations/utils';
 
 export class StreakTrigger implements INodeType {
@@ -23,7 +23,7 @@ export class StreakTrigger implements INodeType {
 			name: 'Streak Trigger',
 		},
 		inputs: [],
-		outputs: [NodeConnectionTypes.Main],
+		outputs: ['main'],
 		credentials: [
 			{
 				displayName: 'Streak API Key',
@@ -52,7 +52,7 @@ export class StreakTrigger implements INodeType {
 				description: 'Whether to scope the webhook to a pipeline or a team',
 			},
 			{
-				displayName: 'Pipeline',
+				displayName: 'Pipeline Name or ID',
 				name: 'pipelineKey',
 				type: 'options',
 				typeOptions: {
@@ -65,10 +65,10 @@ export class StreakTrigger implements INodeType {
 						scope: ['pipeline'],
 					},
 				},
-				description: 'The pipeline to listen for events on',
+				description: 'The pipeline to listen for events on. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
-				displayName: 'Team',
+				displayName: 'Team Name or ID',
 				name: 'teamKey',
 				type: 'options',
 				typeOptions: {
@@ -81,7 +81,7 @@ export class StreakTrigger implements INodeType {
 						scope: ['team'],
 					},
 				},
-				description: 'The team to listen for events on',
+				description: 'The team to listen for events on. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Event',
