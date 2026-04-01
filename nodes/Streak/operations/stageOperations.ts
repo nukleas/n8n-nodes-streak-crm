@@ -1,7 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
-import { StreakApiService } from '../services/StreakApiService';
+import { streakApiRequest, streakApiFormRequest, validateParameters } from './utils';
 
 /**
  * Handle stage-related operations for the Streak API
@@ -10,7 +9,6 @@ export async function handleStageOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle stage operations
 	if (operation === 'listStages') {
@@ -23,13 +21,7 @@ export async function handleStageOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/pipelines/${pipelineKey}/stages`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/pipelines/${pipelineKey}/stages`);
 	} else if (operation === 'getStage') {
 		// Get Stage operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
@@ -49,13 +41,7 @@ export async function handleStageOperations(
 			itemIndex,
 		);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/pipelines/${pipelineKey}/stages/${stageKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/pipelines/${pipelineKey}/stages/${stageKey}`);
 	} else if (operation === 'createStage') {
 		// Create Stage operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
@@ -77,7 +63,9 @@ export async function handleStageOperations(
 			itemIndex,
 		);
 
-		const stage = await StreakApiService.createStage(this, apiKey, pipelineKey, stageName);
+		const stage = (await streakApiFormRequest(this, 'PUT', `/pipelines/${pipelineKey}/stages`, {
+			name: stageName,
+		})) as IDataObject;
 
 		if (additionalFields.color) {
 			stage.color = additionalFields.color;
@@ -122,14 +110,7 @@ export async function handleStageOperations(
 			body.color = updateFields.color;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/pipelines/${pipelineKey}/stages/${stageKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/pipelines/${pipelineKey}/stages/${stageKey}`, body);
 	} else if (operation === 'deleteStage') {
 		// Delete Stage operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
@@ -149,13 +130,7 @@ export async function handleStageOperations(
 			itemIndex,
 		);
 
-		return await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/pipelines/${pipelineKey}/stages/${stageKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'DELETE', `/pipelines/${pipelineKey}/stages/${stageKey}`);
 	}
 
 	throw new NodeOperationError(

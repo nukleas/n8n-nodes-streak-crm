@@ -1,7 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { validateParameters } from './utils';
-import { StreakApiService } from '../services/StreakApiService';
+import { streakApiRequest, streakApiFormRequest, validateParameters } from './utils';
 
 /**
  * Handle pipeline-related operations for the Streak API
@@ -10,14 +9,11 @@ export async function handlePipelineOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle pipeline operations
 	if (operation === 'listAllPipelines') {
-		// List All Pipelines operation
-		return await StreakApiService.getPipelines(this, apiKey);
+		return await streakApiRequest(this, 'GET', '/pipelines');
 	} else if (operation === 'getPipeline') {
-		// Get Pipeline operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -26,9 +22,8 @@ export async function handlePipelineOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		return await StreakApiService.getPipeline(this, apiKey, pipelineKey);
+		return await streakApiRequest(this, 'GET', `/pipelines/${pipelineKey}`);
 	} else if (operation === 'createPipeline') {
-		// Create Pipeline operation
 		const pipelineName = this.getNodeParameter('pipelineName', itemIndex) as string;
 		const teamKeyParam = this.getNodeParameter('teamKey', itemIndex) as
 			| string
@@ -57,7 +52,6 @@ export async function handlePipelineOperations(
 		let fieldTypes = '';
 
 		if (additionalOptions.customFields) {
-			// Validate customFields structure before processing
 			if (
 				typeof additionalOptions.customFields === 'object' &&
 				additionalOptions.customFields !== null &&
@@ -68,7 +62,6 @@ export async function handlePipelineOperations(
 					field: Array<{ name: string; type: string }>;
 				};
 
-				// Filter fields with valid names and types
 				const fields = customFieldsInput.field.filter((field) => {
 					return (
 						field &&
@@ -81,11 +74,9 @@ export async function handlePipelineOperations(
 				});
 
 				if (fields.length > 0) {
-					// Extract names and types separately for validation
 					const names = fields.map((field) => field.name);
 					const types = fields.map((field) => field.type);
 
-					// Verify arrays have matching lengths (should always be true after filtering, but safety check)
 					if (names.length === types.length) {
 						fieldNames = names.join(',');
 						fieldTypes = types.join(',');
@@ -101,19 +92,29 @@ export async function handlePipelineOperations(
 			itemIndex,
 		);
 
-		// Create pipeline with all optional parameters
-		return await StreakApiService.createPipeline(
-			this,
-			apiKey,
-			pipelineName,
+		const body: IDataObject = {
+			name: pipelineName,
 			teamKey,
-			stageNames || undefined,
-			teamWide,
-			fieldNames || undefined,
-			fieldTypes || undefined,
-		);
+		};
+
+		if (stageNames) {
+			body.stageNames = stageNames;
+		}
+
+		if (teamWide !== undefined) {
+			body.teamWide = teamWide;
+		}
+
+		if (fieldNames) {
+			body.fieldNames = fieldNames;
+		}
+
+		if (fieldTypes) {
+			body.fieldTypes = fieldTypes;
+		}
+
+		return await streakApiFormRequest(this, 'PUT', '/pipelines', body);
 	} else if (operation === 'updatePipeline') {
-		// Update Pipeline operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -131,16 +132,14 @@ export async function handlePipelineOperations(
 			);
 		}
 
-		// Build update payload from updateFields
 		const updateData: IDataObject = {};
 		if (updateFields.name) updateData.name = updateFields.name;
 		if (updateFields.description) updateData.description = updateFields.description;
 		if (updateFields.orgWide !== undefined) updateData.orgWide = updateFields.orgWide;
 		if (updateFields.teamKey) updateData.teamKey = updateFields.teamKey;
 
-		return await StreakApiService.updatePipelineWithData(this, apiKey, pipelineKey, updateData);
+		return await streakApiRequest(this, 'POST', `/pipelines/${pipelineKey}`, updateData);
 	} else if (operation === 'deletePipeline') {
-		// Delete Pipeline operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
@@ -149,27 +148,22 @@ export async function handlePipelineOperations(
 
 		validateParameters.call(this, { pipelineKey }, ['pipelineKey'], itemIndex);
 
-		return await StreakApiService.deletePipeline(this, apiKey, pipelineKey);
+		return await streakApiRequest(this, 'DELETE', `/pipelines/${pipelineKey}`);
 	} else if (operation === 'moveBoxesBatch') {
-		// Move Boxes (Batch) operation
 		const pipelineKeyParam = this.getNodeParameter('pipelineKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
 		const pipelineKey =
 			typeof pipelineKeyParam === 'string' ? pipelineKeyParam : pipelineKeyParam.value;
-		// Get boxKeys as string or string[] and ensure it's properly formatted as array
 		let boxKeysInput: string[] = [];
 		const rawInput = this.getNodeParameter('boxKeys', itemIndex);
 
-		// Handle different possible formats coming from the n8n interface
 		if (typeof rawInput === 'string') {
-			// If it's a comma-separated string, split it
 			boxKeysInput = rawInput
 				.split(',')
 				.map((key) => key.trim())
 				.filter(Boolean);
 		} else if (Array.isArray(rawInput)) {
-			// If it's already an array, use it directly
 			boxKeysInput = rawInput.map((item) => String(item)).filter(Boolean);
 		}
 		const targetPipelineKeyParam = this.getNodeParameter('targetPipelineKey', itemIndex) as
@@ -187,12 +181,18 @@ export async function handlePipelineOperations(
 			itemIndex,
 		);
 
-		return await StreakApiService.moveBoxesBatch(
+		// Transform to Streak API v2 format: [{ key, boxKey, pipelineKey }, ...]
+		const requestBody = boxKeysInput.map((boxKey) => ({
+			key: boxKey,
+			boxKey: boxKey,
+			pipelineKey: targetPipelineKey,
+		}));
+
+		return await streakApiRequest(
 			this,
-			apiKey,
-			pipelineKey,
-			targetPipelineKey,
-			boxKeysInput,
+			'POST',
+			`/pipelines/${pipelineKey}/boxes/batch`,
+			requestBody,
 		);
 	}
 

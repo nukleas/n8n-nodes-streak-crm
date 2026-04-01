@@ -6,12 +6,13 @@ Streak CRM is a powerful customer relationship management (CRM) tool integrated 
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[Installation](#installation)  
-[Operations](#operations)  
-[Credentials](#credentials)  
-[Compatibility](#compatibility)  
-[Usage](#usage)  
-[Resources](#resources)  
+[Installation](#installation)
+[Operations](#operations)
+[Trigger Events](#trigger-events)
+[Credentials](#credentials)
+[Compatibility](#compatibility)
+[Usage](#usage)
+[Resources](#resources)
 [Version History](#version-history)
 
 ## Installation
@@ -99,6 +100,81 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 - **Update Task** - Update properties of an existing task
 - **Delete Task** - Remove a task
 
+### Comment Operations
+- **List Comments** - Get all comments on a box
+- **Get Comment** - Retrieve a specific comment by key
+- **Create Comment** - Add a comment to a box
+- **Delete Comment** - Remove a comment
+
+### Meeting Operations
+- **List Meetings** - Get all meetings for a box
+- **Get Meeting** - Retrieve a specific meeting by key
+- **Create Meeting** - Create a new meeting for a box
+- **Update Meeting** - Update properties of an existing meeting
+- **Delete Meeting** - Remove a meeting
+
+### Thread Operations
+- **List Threads** - Get all threads for a box
+- **Get Thread** - Retrieve a specific thread by key
+- **Get Thread by Gmail ID** - Retrieve a thread using its Gmail ID
+- **Add Thread to Box** - Link a Gmail thread to a box
+
+### File Operations
+- **List Files** - Get all files attached to a box
+- **Get File** - Retrieve a specific file by key
+- **Upload File** - Upload a file to a box
+- **Delete File** - Remove a file
+
+### Newsfeed Operations
+- **Get Pipeline Newsfeed** - Get recent activity for a pipeline
+- **Get Box Newsfeed** - Get recent activity for a box
+- **Get All Newsfeed** - Get all recent activity
+
+### Snippet Operations
+- **List Snippets** - Get all snippets
+- **Get Snippet** - Retrieve a specific snippet by key
+- **Create Snippet** - Create a new snippet
+- **Delete Snippet** - Remove a snippet
+
+### Webhook Operations
+- **List Webhooks** - Get all webhooks for a pipeline or team
+- **Get Webhook** - Retrieve a specific webhook by key
+- **Create Webhook** - Create a new webhook for a pipeline or team event
+- **Delete Webhook** - Remove a webhook
+
+### Search Operations
+- **Search by Query** - Search across Streak using a query string
+- **Search by Name** - Search for boxes by name
+
+## Trigger Events
+
+The **Streak Trigger** node starts workflows automatically when events occur in Streak. Webhooks can be scoped to a specific pipeline or team.
+
+### Supported Events
+
+| Event | Description |
+|-------|-------------|
+| Box Create | A new box is created |
+| Box Delete | A box is deleted |
+| Box Edit | A box's fields, notes, assignments, or name change |
+| Box Change Stage | A box moves to a different stage |
+| Box Change Pipeline | A box is transferred to a different pipeline |
+| Box New Email Address | A new email address is detected on a box |
+| Stage Create | A new stage is created |
+| Comment Create | A comment is added to a box |
+| Meeting Create | A meeting is created |
+| Meeting Update | A meeting is updated |
+| Task Create | A task is created |
+| Task Complete | A task is marked complete |
+| Task Due | A task reaches its due date |
+| Task Updated | A task is updated |
+| Contact Create | A contact is created |
+| Contact Update | A contact is updated |
+| Contact Delete | A contact is deleted |
+| Org Create | An organization is created |
+| Org Update | An organization is updated |
+| Org Delete | An organization is deleted |
+
 ## Credentials
 
 To use this node, you need an API key from Streak CRM.
@@ -113,7 +189,7 @@ In n8n, create a new credential of type **Streak CRM API** and enter your API ke
 
 ## Compatibility
 
-This node was developed and tested with n8n version 1.0.0 and Streak API v1.
+This node was developed and tested with n8n version 1.0.0 and uses Streak API v1 and v2.
 
 ## Usage
 
@@ -129,6 +205,13 @@ This is a simple workflow to create a pipeline and then add a box to it:
    - Use the pipeline key from the previous node
    - Set name: `Potential Client`
    - Optional: Add stage key and other properties
+
+### Example: Triggering a workflow when a box changes stage
+
+1. Add a **Streak Trigger** node
+   - Set scope to **Pipeline** and select your pipeline
+   - Set event to **Box Change Stage**
+2. Activate the workflow — it will now run automatically whenever a box moves between stages
 
 ### Example: Managing contacts and linking them to boxes
 
@@ -147,6 +230,18 @@ This is a simple workflow to create a pipeline and then add a box to it:
 * [Streak User Guide](https://streak.com/support/articles)
 
 ## Version History
+
+### 1.2.0
+- Added **Streak Trigger** node with webhook support for 20 event types
+- Webhooks can be scoped to a pipeline or team
+- Automatic webhook registration/cleanup on workflow activate/deactivate
+- Added Comment operations (list, get, create, delete)
+- Added Meeting operations (list, get, create, update, delete)
+- Added Thread operations (list, get, get by Gmail ID, add to box)
+- Added File operations (list, get, upload, delete)
+- Added Newsfeed operations (pipeline, box, all)
+- Added Snippet operations (list, get, create, delete)
+- Added Search operations (by query, by name)
 
 ### 1.0.3
 - Added a comprehensive StreakApiService class to centralize API interactions

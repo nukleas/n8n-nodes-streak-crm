@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
+import { streakApiRequest, validateParameters } from './utils';
 
 /**
  * Handle contact-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleContactOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle contact operations
 	if (operation === 'getContact') {
@@ -18,7 +17,7 @@ export async function handleContactOperations(
 
 		validateParameters.call(this, { contactKey }, ['contactKey'], itemIndex);
 
-		return await makeStreakRequest.call(this, 'GET', `/contacts/${contactKey}`, apiKey, itemIndex);
+		return await streakApiRequest(this, 'GET', `/contacts/${contactKey}`);
 	} else if (operation === 'createContact') {
 		// Create Contact operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
@@ -94,14 +93,7 @@ export async function handleContactOperations(
 			body.photoUrl = additionalFields.photoUrl;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/teams/${teamKey}/contacts/`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/teams/${teamKey}/contacts/`, body);
 	} else if (operation === 'updateContact') {
 		// Update Contact operation
 		const contactKey = this.getNodeParameter('contactKey', itemIndex) as string;
@@ -165,27 +157,14 @@ export async function handleContactOperations(
 			body.photoUrl = updateFields.photoUrl;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/contacts/${contactKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/contacts/${contactKey}`, body);
 	} else if (operation === 'deleteContact') {
 		// Delete Contact operation
 		const contactKey = this.getNodeParameter('contactKey', itemIndex) as string;
 
 		validateParameters.call(this, { contactKey }, ['contactKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/contacts/${contactKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'DELETE', `/contacts/${contactKey}`);
 	}
 
 	throw new NodeOperationError(

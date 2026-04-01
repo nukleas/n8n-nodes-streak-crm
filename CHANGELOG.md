@@ -5,7 +5,23 @@ All notable changes to the n8n-nodes-streak-crm project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0]
+### Added
+- **Streak Trigger node**: Webhook-based trigger that starts workflows when Streak events occur
+  - Supports 20 event types: box, stage, contact, organization, task, meeting, and comment events
+  - Webhooks can be scoped to a specific pipeline or team
+  - Automatic webhook registration on workflow activate and cleanup on deactivate
+- **Thread resource**: List threads in a box, get thread details, get thread by Gmail ID, add email threads to boxes, remove threads
+- **File resource**: List files in a box, get file metadata, get file contents, add Google Drive files to boxes
+- **Comment resource**: List comments in a box, get/create/edit/delete comments
+- **Meeting resource**: List meetings in a box, get meeting details, create meetings (meeting notes or call logs), edit and delete meetings
+- **Newsfeed resource**: View activity feeds for pipelines, boxes, or across all pipelines
+- **Snippet resource**: List, get, create, edit, and delete email snippets
+- **Search resource**: Search by query (fuzzy, across boxes/contacts/orgs) and search by exact box name, with pipeline and stage filtering
+- Full pagination support (Return All / Limit) for all new list operations
+- **Webhook resource**: List webhooks (by pipeline or team), get webhook details, create webhooks with event and target URL, delete webhooks
+
+## [1.1.0]
 ### Added
 - Pipeline creation now supports stages - users can add multiple stages with names
 - Added optional pipeline creation parameters: teamWide, custom fields with types

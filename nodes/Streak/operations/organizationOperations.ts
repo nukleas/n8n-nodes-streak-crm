@@ -1,6 +1,6 @@
 import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { makeStreakRequest, validateParameters } from './utils';
+import { streakApiRequest, validateParameters } from './utils';
 
 /**
  * Handle organization-related operations for the Streak API
@@ -9,7 +9,6 @@ export async function handleOrganizationOperations(
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
-	apiKey: string,
 ): Promise<IDataObject | IDataObject[]> {
 	// Handle organization operations
 	if (operation === 'getOrganization') {
@@ -18,13 +17,7 @@ export async function handleOrganizationOperations(
 
 		validateParameters.call(this, { organizationKey }, ['organizationKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'GET',
-			`/organizations/${organizationKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'GET', `/organizations/${organizationKey}`);
 	} else if (operation === 'createOrganization') {
 		// Create Organization operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
@@ -43,8 +36,8 @@ export async function handleOrganizationOperations(
 
 		if (additionalFields.addresses) {
 			// Addresses field must be an array - convert string to array if needed
-			body.addresses = Array.isArray(additionalFields.addresses) 
-				? additionalFields.addresses 
+			body.addresses = Array.isArray(additionalFields.addresses)
+				? additionalFields.addresses
 				: [additionalFields.addresses];
 		}
 
@@ -78,8 +71,8 @@ export async function handleOrganizationOperations(
 
 		if (additionalFields.phoneNumbers) {
 			// phoneNumbers field must be an array - convert string to array if needed
-			body.phoneNumbers = Array.isArray(additionalFields.phoneNumbers) 
-				? additionalFields.phoneNumbers 
+			body.phoneNumbers = Array.isArray(additionalFields.phoneNumbers)
+				? additionalFields.phoneNumbers
 				: [additionalFields.phoneNumbers];
 		}
 
@@ -91,14 +84,7 @@ export async function handleOrganizationOperations(
 			body.twitterHandle = additionalFields.twitterHandle;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/teams/${teamKey}/organizations`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/teams/${teamKey}/organizations`, body);
 	} else if (operation === 'checkExistingOrganizations') {
 		// Check Existing Organizations operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
@@ -118,12 +104,10 @@ export async function handleOrganizationOperations(
 			domains: checkFields.domains,
 		};
 
-		return await makeStreakRequest.call(
+		return await streakApiRequest(
 			this,
 			'POST',
 			`/teams/${teamKey}/organizations?getIfExisting=true`,
-			apiKey,
-			itemIndex,
 			body,
 		);
 	} else if (operation === 'updateOrganization') {
@@ -145,8 +129,8 @@ export async function handleOrganizationOperations(
 
 		if (updateFields.addresses) {
 			// Addresses field must be an array - convert string to array if needed
-			body.addresses = Array.isArray(updateFields.addresses) 
-				? updateFields.addresses 
+			body.addresses = Array.isArray(updateFields.addresses)
+				? updateFields.addresses
 				: [updateFields.addresses];
 		}
 
@@ -184,8 +168,8 @@ export async function handleOrganizationOperations(
 
 		if (updateFields.phoneNumbers) {
 			// phoneNumbers field must be an array - convert string to array if needed
-			body.phoneNumbers = Array.isArray(updateFields.phoneNumbers) 
-				? updateFields.phoneNumbers 
+			body.phoneNumbers = Array.isArray(updateFields.phoneNumbers)
+				? updateFields.phoneNumbers
 				: [updateFields.phoneNumbers];
 		}
 
@@ -197,27 +181,14 @@ export async function handleOrganizationOperations(
 			body.twitterHandle = updateFields.twitterHandle;
 		}
 
-		return await makeStreakRequest.call(
-			this,
-			'POST',
-			`/organizations/${organizationKey}`,
-			apiKey,
-			itemIndex,
-			body,
-		);
+		return await streakApiRequest(this, 'POST', `/organizations/${organizationKey}`, body);
 	} else if (operation === 'deleteOrganization') {
 		// Delete Organization operation
 		const organizationKey = this.getNodeParameter('organizationKey', itemIndex) as string;
 
 		validateParameters.call(this, { organizationKey }, ['organizationKey'], itemIndex);
 
-		return await makeStreakRequest.call(
-			this,
-			'DELETE',
-			`/organizations/${organizationKey}`,
-			apiKey,
-			itemIndex,
-		);
+		return await streakApiRequest(this, 'DELETE', `/organizations/${organizationKey}`);
 	}
 
 	throw new NodeOperationError(
