@@ -1,57 +1,51 @@
 {
-  "name": "n8n-nodes-streak-crm",
-  "version": "1.2.0",
-  "description": "n8n node to connect with Streak CRM API and automate CRM workflows",
-  "keywords": [
-    "n8n-community-node-package"
-  ],
-  "license": "MIT",
-  "homepage": "https://github.com/nukleas/n8n-nodes-streak-crm",
-  "author": {
-    "name": "Nader Heidari",
-    "email": "nader.c.heidari@gmail.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nukleas/n8n-nodes-streak-crm.git"
-  },
-  "engines": {
-    "node": ">=18.10",
-    "pnpm": ">=9.1"
-  },
-  "packageManager": "pnpm@9.1.4",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc && gulp build:icons",
-    "dev": "tsc --watch",
-    "format": "prettier nodes credentials --write",
-    "lint": "eslint nodes credentials package.json",
-    "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
-  },
-  "files": [
-    "dist"
-  ],
-  "n8n": {
-    "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/StreakApi.credentials.js"
-    ],
-    "nodes": [
-      "dist/nodes/Streak/Streak.node.js",
-      "dist/nodes/Streak/StreakTrigger.node.js"
-    ]
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.18",
-    "@typescript-eslint/parser": "^7.15.0",
-    "eslint": "^8.56.0",
-    "eslint-plugin-n8n-nodes-base": "^1.16.1",
-    "gulp": "^4.0.2",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.3"
-  },
-  "peerDependencies": {
-    "n8n-workflow": "*"
-  }
+	"name": "n8n-nodes-streak-crm",
+	"version": "1.2.0",
+	"description": "n8n node to connect with Streak CRM API and automate CRM workflows",
+	"keywords": [
+		"n8n-community-node-package"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/nukleas/n8n-nodes-streak-crm",
+	"author": {
+		"name": "Nader Heidari",
+		"email": "nader.c.heidari@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nukleas/n8n-nodes-streak-crm.git"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/StreakApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Streak/Streak.node.js",
+			"dist/nodes/Streak/StreakTrigger.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.39.4",
+		"prettier": "3.8.1",
+		"release-it": "19.2.4",
+		"typescript": "5.9.3"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
 }

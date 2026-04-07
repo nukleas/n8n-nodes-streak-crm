@@ -22,6 +22,7 @@ export class StreakTrigger implements INodeType {
 		defaults: {
 			name: 'Streak Trigger',
 		},
+		usableAsTool: true,
 		inputs: [],
 		outputs: ['main'],
 		credentials: [

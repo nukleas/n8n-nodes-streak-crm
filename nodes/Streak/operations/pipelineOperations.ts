@@ -1,5 +1,4 @@
-import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
 import { streakApiRequest, streakApiFormRequest, validateParameters } from './utils';
 
 /**
@@ -56,7 +55,7 @@ export async function handlePipelineOperations(
 				typeof additionalOptions.customFields === 'object' &&
 				additionalOptions.customFields !== null &&
 				'field' in additionalOptions.customFields &&
-				Array.isArray((additionalOptions.customFields as any).field)
+				Array.isArray((additionalOptions.customFields as { field: unknown }).field)
 			) {
 				const customFieldsInput = additionalOptions.customFields as {
 					field: Array<{ name: string; type: string }>;

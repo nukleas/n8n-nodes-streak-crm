@@ -9,6 +9,7 @@ export class StreakApi implements ICredentialType {
 	name = 'streakApi';
 	displayName = 'Streak API';
 	documentationUrl = 'https://streak.readme.io/docs/authentication';
+	icon = 'file:../nodes/Streak/streak.svg' as const;
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
