@@ -296,6 +296,67 @@ export const listSearch = {
 		}
 	},
 
+	async getFieldOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		try {
+			// Get boxKey from the current node parameters to look up the pipeline
+			const boxKeyParam = this.getCurrentNodeParameter('boxKey');
+			let boxKey: string;
+			if (typeof boxKeyParam === 'string') {
+				boxKey = boxKeyParam;
+			} else if (boxKeyParam && typeof boxKeyParam === 'object') {
+				boxKey = (boxKeyParam as any).value || (boxKeyParam as any).id;
+			} else {
+				return { results: [] };
+			}
+
+			if (!boxKey) {
+				return { results: [] };
+			}
+
+			// Fetch the box to get its pipelineKey
+			const box = (await streakApiRequest(this, 'GET', `/boxes/${boxKey}`)) as {
+				pipelineKey: string;
+			};
+
+			if (!box?.pipelineKey) {
+				return { results: [] };
+			}
+
+			// Fetch fields for the pipeline
+			const fields = (await streakApiRequest(
+				this,
+				'GET',
+				`/pipelines/${box.pipelineKey}/fields`,
+			)) as Array<{ key: string; name: string; type: string }>;
+
+			let filteredFields = fields;
+			if (filter) {
+				const filterLower = filter.toLowerCase();
+				filteredFields = fields.filter(
+					(field) =>
+						field &&
+						field.key &&
+						((field.name || '').toLowerCase().includes(filterLower) ||
+							field.key.toLowerCase().includes(filterLower)),
+				);
+			}
+
+			const results = filteredFields
+				.filter((field) => field && field.key)
+				.map((field) => ({
+					name: `${field.name || 'Unnamed Field'} (${field.type || 'unknown'})`,
+					value: field.key || '',
+				}));
+
+			return { results };
+		} catch (error) {
+			return { results: [] };
+		}
+	},
+
 	async getTeamSearchOptions(
 		this: ILoadOptionsFunctions,
 		filter?: string,

@@ -196,6 +196,20 @@ export async function handleBoxOperations(
 		if (updateFields.assignedToTeamKeyOrUserKey) {
 			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
 		}
+
+		// Handle custom fields
+		const customFields = updateFields.customFields as IDataObject | undefined;
+		if (customFields?.field) {
+			const fieldEntries = customFields.field as IDataObject[];
+			const fields: IDataObject = {};
+			for (const entry of fieldEntries) {
+				const keyParam = entry.key as string | { mode: string; value: string };
+				const fieldKey = typeof keyParam === 'string' ? keyParam : keyParam.value;
+				fields[fieldKey] = entry.value;
+			}
+			body.fields = fields;
+		}
+
 		return await streakApiRequest(this, 'POST', `/boxes/${boxKey}`, body);
 	} else if (operation === 'deleteBox') {
 		// Delete Box operation
