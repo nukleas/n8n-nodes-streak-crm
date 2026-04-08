@@ -1,5 +1,44 @@
 import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
 import { streakApiRequest, validateParameters, handlePagination } from './utils';
+
+interface StreakFieldDef {
+	key: string;
+	name: string;
+	type: string;
+	dropdownSettings?: { items: Array<{ key: string; name: string }> };
+	tagSettings?: { tags: Array<{ key: string; tag: string }> };
+}
+
+async function getFieldDef(
+	context: IExecuteFunctions,
+	boxKey: string,
+	fieldKey: string,
+): Promise<StreakFieldDef | undefined> {
+	const box = (await streakApiRequest(context, 'GET', `/boxes/${boxKey}`)) as { pipelineKey: string };
+	if (!box?.pipelineKey) return undefined;
+	const fields = (await streakApiRequest(
+		context, 'GET', `/pipelines/${box.pipelineKey}/fields`,
+	)) as unknown as StreakFieldDef[];
+	return fields.find((f) => f.key === fieldKey);
+}
+
+async function resolveDropdownValue(
+	context: IExecuteFunctions,
+	boxKey: string,
+	fieldKey: string,
+	value: string,
+): Promise<string> {
+	const field = await getFieldDef(context, boxKey, fieldKey);
+	const items = field?.dropdownSettings?.items || [];
+	// If value already matches a key, return as-is
+	const byKey = items.find((i) => i.key === value);
+	if (byKey) return value;
+	// Otherwise try to match by display name
+	const byName = items.find((i) => i.name.toLowerCase() === value.toLowerCase());
+	return byName ? byName.key : value;
+}
+
+
 /**
  * Handle box-related operations for the Streak API
  */
@@ -196,6 +235,65 @@ export async function handleBoxOperations(
 		if (updateFields.assignedToTeamKeyOrUserKey) {
 			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
 		}
+
+		// Handle custom fields
+		const customFields = updateFields.customFields as IDataObject | undefined;
+		if (customFields) {
+			const fields: IDataObject = {};
+
+			const extractRlocValue = (param: unknown): string => {
+				if (typeof param === 'string') return param;
+				const obj = param as { mode: string; value: string };
+				return obj.value;
+			};
+
+			// Text / numeric fields
+			if (customFields.field) {
+				for (const entry of customFields.field as IDataObject[]) {
+					fields[extractRlocValue(entry.key)] = entry.value;
+				}
+			}
+
+			// Checkbox fields
+			if (customFields.checkboxField) {
+				for (const entry of customFields.checkboxField as IDataObject[]) {
+					fields[extractRlocValue(entry.key)] = entry.value;
+				}
+			}
+
+			// Date fields
+			if (customFields.dateField) {
+				for (const entry of customFields.dateField as IDataObject[]) {
+					fields[extractRlocValue(entry.key)] = new Date(entry.value as string).getTime();
+				}
+			}
+
+			// Dropdown fields — resolve display name to key if "By Value" mode
+			if (customFields.dropdownField) {
+				for (const entry of customFields.dropdownField as IDataObject[]) {
+					const fieldKey = extractRlocValue(entry.key);
+					let value = extractRlocValue(entry.value);
+
+					const valueParam = entry.value as { mode?: string; value: string } | string;
+					if (typeof valueParam === 'object' && valueParam.mode === 'id') {
+						value = await resolveDropdownValue(this, boxKey, fieldKey, value);
+					}
+
+					fields[fieldKey] = value;
+				}
+			}
+
+			// Tag fields — multiOptions returns an array of selected tag keys
+			if (customFields.tagField) {
+				for (const entry of customFields.tagField as IDataObject[]) {
+					const fieldKey = extractRlocValue(entry.key);
+					fields[fieldKey] = entry.value as string[];
+				}
+			}
+
+			body.fields = fields;
+		}
+
 		return await streakApiRequest(this, 'POST', `/boxes/${boxKey}`, body);
 	} else if (operation === 'deleteBox') {
 		// Delete Box operation
