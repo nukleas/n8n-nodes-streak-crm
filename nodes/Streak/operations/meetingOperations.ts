@@ -1,5 +1,5 @@
-import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
-import { streakApiRequest, validateParameters, handlePagination } from './utils';
+import { IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
+import { streakApiRequest, streakApiFormRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle meeting-related operations for the Streak API
@@ -65,7 +65,7 @@ export async function handleMeetingOperations(
 			body.notes = additionalFields.notes;
 		}
 
-		return await streakApiRequest(this, 'POST', `/boxes/${boxKey}/meetings`, body);
+		return await streakApiFormRequest(this, 'POST', `/boxes/${boxKey}/meetings`, body);
 	} else if (operation === 'editMeeting') {
 		const meetingKey = this.getNodeParameter('meetingKey', itemIndex) as string;
 		const updateFields = this.getNodeParameter('updateFields', itemIndex, {}) as IDataObject;

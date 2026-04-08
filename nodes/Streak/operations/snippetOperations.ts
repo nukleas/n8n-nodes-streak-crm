@@ -1,5 +1,5 @@
-import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
-import { streakApiRequest, validateParameters, handlePagination } from './utils';
+import { IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
+import { streakApiRequest, streakApiFormRequest, validateParameters, handlePagination } from './utils';
 
 /**
  * Handle snippet-related operations for the Streak API
@@ -37,7 +37,7 @@ export async function handleSnippetOperations(
 			itemIndex,
 		);
 
-		return await streakApiRequest(
+		return await streakApiFormRequest(
 			this,
 			'PUT',
 			'/snippets',
