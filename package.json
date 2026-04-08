@@ -13,7 +13,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/nukleas/n8n-nodes-streak-crm.git"
+		"url": "git+https://github.com/nukleas/n8n-nodes-streak-crm.git"
 	},
 	"packageManager": "pnpm@10.6.0",
 	"scripts": {
