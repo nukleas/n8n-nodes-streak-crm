@@ -75,6 +75,71 @@ export const boxProperties: INodeProperties[] = [
 		},
 	},
 
+	// Timeline Filters (for getTimeline)
+	{
+		displayName: 'Filters',
+		name: 'timelineFilters',
+		type: 'multiOptions',
+		default: [],
+		description: 'Entity types to include in the timeline. If none are selected, all types are included.',
+		options: [
+			{ name: 'Box Creation/Move', value: 'NEWSFEED_BOX_CREATION_MOVE' },
+			{ name: 'Box Edit', value: 'NEWSFEED_BOX_EDIT' },
+			{ name: 'Call Logs', value: 'CALL_LOGS' },
+			{ name: 'Comments', value: 'COMMENTS' },
+			{ name: 'Emails', value: 'EMAILS' },
+			{ name: 'Files', value: 'FILES' },
+			{ name: 'Hangouts Chat', value: 'HANGOUTS_CHAT' },
+			{ name: 'Meeting Notes', value: 'MEETING_NOTES' },
+		],
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['getTimeline'],
+			},
+		},
+	},
+
+	// Timeline Start Timestamp (for getTimeline)
+	{
+		displayName: 'Start Timestamp',
+		name: 'startTimestamp',
+		type: 'dateTime',
+		default: '',
+		description: 'Return entries starting from this point. Descending returns entries before this time, Ascending returns entries after. Leave empty for no filter.',
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['getTimeline'],
+			},
+		},
+	},
+
+	// Timeline Direction (for getTimeline)
+	{
+		displayName: 'Direction',
+		name: 'direction',
+		type: 'options',
+		default: 'Descending',
+		description: 'Descending returns newest first (entries before Start Timestamp). Ascending returns oldest first (entries after Start Timestamp).',
+		options: [
+			{
+				name: 'Descending',
+				value: 'Descending',
+			},
+			{
+				name: 'Ascending',
+				value: 'Ascending',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['getTimeline'],
+			},
+		},
+	},
+
 	// Box Keys (for getMultipleBoxes)
 	{
 		displayName: 'Box Keys',
