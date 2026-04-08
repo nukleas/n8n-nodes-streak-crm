@@ -64,6 +64,7 @@ export async function handleBoxOperations(
 				: stageKeyFilterParam?.value || '';
 		const searchQuery = this.getNodeParameter('searchQuery', itemIndex, '') as string;
 		const trimmedSearchQuery = searchQuery?.trim();
+		const sortBy = this.getNodeParameter('sortBy', itemIndex, 'lastUpdatedTimestamp') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
@@ -111,29 +112,23 @@ export async function handleBoxOperations(
 
 			return results;
 		} else {
-			// No search query - use regular list boxes endpoint
-			const queryParams: IDataObject = { limit };
+			// No search query - use regular list boxes endpoint (v1 supports page/limit/sortBy)
+			const queryParams: IDataObject = {};
 			if (stageKeyFilter) {
 				queryParams.stageKey = stageKeyFilter;
 			}
-
-			if (returnAll) {
-				return await handlePagination(
-					this,
-					`/pipelines/${pipelineKey}/boxes`,
-					returnAll,
-					limit,
-					queryParams,
-				);
-			} else {
-				return await streakApiRequest(
-					this,
-					'GET',
-					`/pipelines/${pipelineKey}/boxes`,
-					undefined,
-					queryParams,
-				);
+			if (sortBy) {
+				queryParams.sortBy = sortBy;
 			}
+
+			return await handlePagination(
+				this,
+				`/pipelines/${pipelineKey}/boxes`,
+				returnAll,
+				returnAll ? 100 : limit,
+				queryParams,
+				'v1',
+			);
 		}
 	} else if (operation === 'getBox') {
 		// Get Box operation

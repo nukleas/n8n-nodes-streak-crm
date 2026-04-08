@@ -173,6 +173,31 @@ export const boxProperties: INodeProperties[] = [
 		},
 	},
 
+	// Sort By (for listBoxes)
+	{
+		displayName: 'Sort By',
+		name: 'sortBy',
+		type: 'options',
+		default: 'lastUpdatedTimestamp',
+		description: 'What order to sort the boxes by (descending)',
+		options: [
+			{
+				name: 'Last Updated',
+				value: 'lastUpdatedTimestamp',
+			},
+			{
+				name: 'Creation Date',
+				value: 'creationTimestamp',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['listBoxes'],
+			},
+		},
+	},
+
 	// Box Name (for createBox)
 	{
 		displayName: 'Box Name',
