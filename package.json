@@ -15,6 +15,7 @@
 		"type": "git",
 		"url": "https://github.com/nukleas/n8n-nodes-streak-crm.git"
 	},
+	"packageManager": "pnpm@10.6.0",
 	"scripts": {
 		"build": "n8n-node build",
 		"build:watch": "tsc --watch",
