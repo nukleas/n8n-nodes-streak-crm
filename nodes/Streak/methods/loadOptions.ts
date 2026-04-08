@@ -5,48 +5,96 @@ import type {
 } from 'n8n-workflow';
 import { streakApiRequest } from '../operations/utils';
 
+interface StageRecord {
+	key: string;
+	name?: string;
+}
+
+function isStageRecord(value: unknown): value is StageRecord {
+	return typeof value === 'object' && value !== null && 'key' in value;
+}
+
 // Helper function to parse stages response from Streak API
-function parseStagesResponse(response: any): any[] {
-	let stages: any[] = [];
+function parseStagesResponse(response: unknown): StageRecord[] {
+	let stages: StageRecord[] = [];
 	if (Array.isArray(response)) {
 		if (response.length > 0 && typeof response[0] === 'object') {
-			const firstItem = response[0];
+			const firstItem = response[0] as Record<string, unknown>;
 			const keys = Object.keys(firstItem);
 			if (
 				keys.length > 0 &&
 				firstItem[keys[0]] &&
 				typeof firstItem[keys[0]] === 'object' &&
-				(firstItem[keys[0]] as any).key
+				isStageRecord(firstItem[keys[0]])
 			) {
-				stages = keys.map((key) => firstItem[key] as any);
+				stages = keys
+					.map((key) => firstItem[key])
+					.filter((v): v is StageRecord => isStageRecord(v));
 			} else {
-				stages = response;
+				stages = response.filter((v): v is StageRecord => isStageRecord(v));
 			}
-		} else {
-			stages = response;
 		}
 	} else if (response && typeof response === 'object') {
-		if (response.results && Array.isArray(response.results)) {
-			stages = response.results;
-		} else if (response.data && Array.isArray(response.data)) {
-			stages = response.data;
-		} else if (response.stages && Array.isArray(response.stages)) {
-			stages = response.stages;
+		const resp = response as Record<string, unknown>;
+		if (resp.results && Array.isArray(resp.results)) {
+			stages = (resp.results as unknown[]).filter((v): v is StageRecord => isStageRecord(v));
+		} else if (resp.data && Array.isArray(resp.data)) {
+			stages = (resp.data as unknown[]).filter((v): v is StageRecord => isStageRecord(v));
+		} else if (resp.stages && Array.isArray(resp.stages)) {
+			stages = (resp.stages as unknown[]).filter((v): v is StageRecord => isStageRecord(v));
 		} else {
-			const keys = Object.keys(response);
-			if (
-				keys.length > 0 &&
-				response[keys[0]] &&
-				typeof response[keys[0]] === 'object' &&
-				(response[keys[0]] as any).key
-			) {
-				stages = keys.map((key) => response[key] as any);
-			} else {
+			const keys = Object.keys(resp);
+			if (keys.length > 0 && resp[keys[0]] && isStageRecord(resp[keys[0]])) {
+				stages = keys
+					.map((key) => resp[key])
+					.filter((v): v is StageRecord => isStageRecord(v));
+			} else if (isStageRecord(response)) {
 				stages = [response];
 			}
 		}
 	}
 	return stages;
+}
+
+function extractParamValue(param: unknown): string | undefined {
+	if (typeof param === 'string') return param;
+	if (param && typeof param === 'object') {
+		const obj = param as Record<string, unknown>;
+		if (typeof obj.value === 'string') return obj.value;
+		if (typeof obj.id === 'string') return obj.id;
+	}
+	return undefined;
+}
+
+interface TeamRecord {
+	key: string;
+	name?: string;
+}
+
+function isTeamRecord(value: unknown): value is TeamRecord {
+	return typeof value === 'object' && value !== null && 'key' in value;
+}
+
+function parseTeamsResponse(response: unknown): TeamRecord[] {
+	const teams: TeamRecord[] = [];
+	if (Array.isArray(response)) {
+		for (const item of response) {
+			if (item && typeof item === 'object' && 'results' in item) {
+				const obj = item as Record<string, unknown>;
+				if (Array.isArray(obj.results)) {
+					teams.push(...(obj.results as unknown[]).filter((v): v is TeamRecord => isTeamRecord(v)));
+				}
+			}
+		}
+	} else if (response && typeof response === 'object') {
+		const resp = response as Record<string, unknown>;
+		if (resp.results && Array.isArray(resp.results)) {
+			teams.push(...(resp.results as unknown[]).filter((v): v is TeamRecord => isTeamRecord(v)));
+		} else if (isTeamRecord(response)) {
+			teams.push(response);
+		}
+	}
+	return teams;
 }
 
 export const loadOptions = {
@@ -63,7 +111,7 @@ export const loadOptions = {
 					name: `${pipeline.name || 'Unnamed Pipeline'} (${pipeline.key || 'no-key'})`,
 					value: pipeline.key || '',
 				}));
-		} catch (error) {
+		} catch {
 			return [];
 		}
 	},
@@ -71,21 +119,7 @@ export const loadOptions = {
 	async getTeamOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 		try {
 			const response = await streakApiRequest(this, 'GET', '/users/me/teams');
-
-			let teams: any[] = [];
-			if (Array.isArray(response)) {
-				for (const item of response) {
-					if (item && item.results && Array.isArray(item.results)) {
-						teams.push(...item.results);
-					}
-				}
-			} else if (response && typeof response === 'object') {
-				if (response.results && Array.isArray(response.results)) {
-					teams = response.results;
-				} else {
-					teams = [response];
-				}
-			}
+			const teams = parseTeamsResponse(response);
 
 			return teams
 				.filter((team) => team && team.key)
@@ -93,27 +127,15 @@ export const loadOptions = {
 					name: `${team.name || 'Unnamed Team'} (${team.key || 'no-key'})`,
 					value: team.key || '',
 				}));
-		} catch (error) {
+		} catch {
 			return [];
 		}
 	},
 
 	async getStageOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 		try {
-			let pipelineKey: string;
-			const pipelineParam = this.getCurrentNodeParameter('pipelineKey');
-
-			if (typeof pipelineParam === 'string') {
-				pipelineKey = pipelineParam;
-			} else if (pipelineParam && typeof pipelineParam === 'object') {
-				pipelineKey = (pipelineParam as any).value || (pipelineParam as any).id;
-			} else {
-				return [];
-			}
-
-			if (!pipelineKey) {
-				return [];
-			}
+			const pipelineKey = extractParamValue(this.getCurrentNodeParameter('pipelineKey'));
+			if (!pipelineKey) return [];
 
 			const response = await streakApiRequest(
 				this,
@@ -128,27 +150,15 @@ export const loadOptions = {
 					name: `${stage.name || 'Unnamed Stage'} (${stage.key || 'no-key'})`,
 					value: stage.key || '',
 				}));
-		} catch (error) {
+		} catch {
 			return [];
 		}
 	},
 
 	async getBoxOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 		try {
-			let pipelineKey: string;
-			const pipelineParam = this.getCurrentNodeParameter('pipelineKey');
-
-			if (typeof pipelineParam === 'string') {
-				pipelineKey = pipelineParam;
-			} else if (pipelineParam && typeof pipelineParam === 'object') {
-				pipelineKey = (pipelineParam as any).value || (pipelineParam as any).id;
-			} else {
-				return [];
-			}
-
-			if (!pipelineKey) {
-				return [];
-			}
+			const pipelineKey = extractParamValue(this.getCurrentNodeParameter('pipelineKey'));
+			if (!pipelineKey) return [];
 
 			const boxes = (await streakApiRequest(
 				this,
@@ -162,7 +172,7 @@ export const loadOptions = {
 					name: `${box.name || 'Unnamed Box'} (${box.key || 'no-key'})`,
 					value: box.key || '',
 				}));
-		} catch (error) {
+		} catch {
 			return [];
 		}
 	},
@@ -200,7 +210,7 @@ export const listSearch = {
 				}));
 
 			return { results };
-		} catch (error) {
+		} catch {
 			return { results: [] };
 		}
 	},
@@ -210,20 +220,8 @@ export const listSearch = {
 		filter?: string,
 	): Promise<INodeListSearchResult> {
 		try {
-			let pipelineKey: string;
-			const pipelineParam = this.getCurrentNodeParameter('pipelineKey');
-
-			if (typeof pipelineParam === 'string') {
-				pipelineKey = pipelineParam;
-			} else if (pipelineParam && typeof pipelineParam === 'object') {
-				pipelineKey = (pipelineParam as any).value || (pipelineParam as any).id;
-			} else {
-				return { results: [] };
-			}
-
-			if (!pipelineKey) {
-				return { results: [] };
-			}
+			const pipelineKey = extractParamValue(this.getCurrentNodeParameter('pipelineKey'));
+			if (!pipelineKey) return { results: [] };
 
 			const response = await streakApiRequest(
 				this,
@@ -253,7 +251,7 @@ export const listSearch = {
 				}));
 
 			return { results };
-		} catch (error) {
+		} catch {
 			return { results: [] };
 		}
 	},
@@ -263,20 +261,8 @@ export const listSearch = {
 		filter?: string,
 	): Promise<INodeListSearchResult> {
 		try {
-			let pipelineKey: string;
-			const pipelineParam = this.getCurrentNodeParameter('pipelineKey');
-
-			if (typeof pipelineParam === 'string') {
-				pipelineKey = pipelineParam;
-			} else if (pipelineParam && typeof pipelineParam === 'object') {
-				pipelineKey = (pipelineParam as any).value || (pipelineParam as any).id;
-			} else {
-				return { results: [] };
-			}
-
-			if (!pipelineKey) {
-				return { results: [] };
-			}
+			const pipelineKey = extractParamValue(this.getCurrentNodeParameter('pipelineKey'));
+			if (!pipelineKey) return { results: [] };
 
 			const boxes = (await streakApiRequest(
 				this,
@@ -305,7 +291,7 @@ export const listSearch = {
 				}));
 
 			return { results };
-		} catch (error) {
+		} catch {
 			return { results: [] };
 		}
 	},
@@ -316,21 +302,7 @@ export const listSearch = {
 	): Promise<INodeListSearchResult> {
 		try {
 			const response = await streakApiRequest(this, 'GET', '/users/me/teams');
-
-			let teams: any[] = [];
-			if (Array.isArray(response)) {
-				for (const item of response) {
-					if (item && item.results && Array.isArray(item.results)) {
-						teams.push(...item.results);
-					}
-				}
-			} else if (response && typeof response === 'object') {
-				if (response.results && Array.isArray(response.results)) {
-					teams = response.results;
-				} else {
-					teams = [response];
-				}
-			}
+			const teams = parseTeamsResponse(response);
 
 			let filteredTeams = teams;
 			if (filter) {
@@ -353,7 +325,7 @@ export const listSearch = {
 				}));
 
 			return { results };
-		} catch (error) {
+		} catch {
 			return { results: [] };
 		}
 	},

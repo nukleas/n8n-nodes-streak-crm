@@ -1,5 +1,4 @@
-import { IExecuteFunctions, IDataObject } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
 import { validateParameters, handlePagination } from './utils';
 
 /**
