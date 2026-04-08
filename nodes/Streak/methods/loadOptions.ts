@@ -176,7 +176,106 @@ export const loadOptions = {
 			return [];
 		}
 	},
+
+	async getTagValues(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+		try {
+			const fields = await getFieldsForCurrentBox(this);
+
+			// Read the sibling field key from the full parameter tree
+			let selectedFieldKey: string | undefined;
+			try {
+				const allParams = this.getCurrentNodeParameters() as Record<string, unknown>;
+				const uf = allParams?.updateFields as Record<string, unknown>;
+				const cf = uf?.customFields as Record<string, unknown>;
+				const entries = cf?.tagField as Array<{ key: { value: string } }>;
+				if (entries?.length) {
+					selectedFieldKey = entries[entries.length - 1]?.key?.value;
+				}
+			} catch {
+				// Fall back to showing all tags
+			}
+
+			const tagFields = fields.filter(
+				(f) => f.type === 'TAG' && f.tagSettings?.tags,
+			);
+			const needsPrefix = !selectedFieldKey && tagFields.length > 1;
+			const results: INodePropertyOptions[] = [];
+
+			for (const field of tagFields) {
+				if (selectedFieldKey && field.key !== selectedFieldKey) continue;
+				for (const tag of field.tagSettings!.tags) {
+					if (!tag.key) continue;
+					results.push({
+						name: needsPrefix ? `${field.name} \u2192 ${tag.tag}` : tag.tag,
+						value: tag.key,
+					});
+				}
+			}
+
+			return results;
+		} catch {
+			return [];
+		}
+	},
 };
+
+interface StreakField {
+	key: string;
+	name: string;
+	type: string;
+	dropdownSettings?: { items: Array<{ key: string; name: string }> };
+	tagSettings?: { tags: Array<{ key: string; tag: string }> };
+}
+
+async function getFieldsForCurrentBox(
+	context: ILoadOptionsFunctions,
+): Promise<StreakField[]> {
+	const boxKey = extractParamValue(context.getCurrentNodeParameter('boxKey'));
+	if (!boxKey) return [];
+
+	const box = (await streakApiRequest(context, 'GET', `/boxes/${boxKey}`)) as {
+		pipelineKey: string;
+	};
+	if (!box?.pipelineKey) return [];
+
+	return (await streakApiRequest(
+		context,
+		'GET',
+		`/pipelines/${box.pipelineKey}/fields`,
+	)) as unknown as StreakField[];
+}
+
+function applyFilter<T extends { key: string; name?: string }>(
+	items: T[],
+	filter: string | undefined,
+	getSearchableText: (item: T) => string,
+): T[] {
+	if (!filter) return items;
+	const filterLower = filter.toLowerCase();
+	return items.filter(
+		(item) => item && item.key && getSearchableText(item).toLowerCase().includes(filterLower),
+	);
+}
+
+async function getFieldOptionsByType(
+	this: ILoadOptionsFunctions,
+	fieldType: string,
+	filter?: string,
+): Promise<INodeListSearchResult> {
+	try {
+		const fields = await getFieldsForCurrentBox(this);
+		const typed = fields.filter((f) => f.type === fieldType);
+		const filtered = applyFilter(typed, filter, (f) => `${f.name || ''} ${f.key}`);
+
+		return {
+			results: filtered
+				.filter((f) => f.key)
+				.map((f) => ({ name: f.name || 'Unnamed Field', value: f.key })),
+		};
+	} catch {
+		return { results: [] };
+	}
+}
 
 export const listSearch = {
 	async getPipelineOptions(
@@ -301,55 +400,89 @@ export const listSearch = {
 		filter?: string,
 	): Promise<INodeListSearchResult> {
 		try {
-			// Get boxKey from the current node parameters to look up the pipeline
-			const boxKeyParam = this.getCurrentNodeParameter('boxKey');
-			let boxKey: string;
-			if (typeof boxKeyParam === 'string') {
-				boxKey = boxKeyParam;
-			} else if (boxKeyParam && typeof boxKeyParam === 'object') {
-				boxKey = (boxKeyParam as any).value || (boxKeyParam as any).id;
-			} else {
-				return { results: [] };
-			}
+			const fields = await getFieldsForCurrentBox(this);
+			// Exclude types that have their own dedicated dropdowns
+			const excludeTypes = ['FORMULA', 'CHECKBOX', 'DATE', 'DROPDOWN', 'TAG'];
+			const typed = fields.filter((f) => !excludeTypes.includes(f.type));
+			const filtered = applyFilter(typed, filter, (f) => `${f.name || ''} ${f.key}`);
 
-			if (!boxKey) {
-				return { results: [] };
-			}
-
-			// Fetch the box to get its pipelineKey
-			const box = (await streakApiRequest(this, 'GET', `/boxes/${boxKey}`)) as {
-				pipelineKey: string;
+			return {
+				results: filtered
+					.filter((f) => f.key)
+					.map((f) => ({
+						name: `${f.name || 'Unnamed Field'} (${f.type || 'unknown'})`,
+						value: f.key,
+					})),
 			};
+		} catch {
+			return { results: [] };
+		}
+	},
 
-			if (!box?.pipelineKey) {
-				return { results: [] };
+	async getCheckboxFieldOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		return getFieldOptionsByType.call(this, 'CHECKBOX', filter);
+	},
+
+	async getDateFieldOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		return getFieldOptionsByType.call(this, 'DATE', filter);
+	},
+
+	async getDropdownFieldOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		return getFieldOptionsByType.call(this, 'DROPDOWN', filter);
+	},
+
+	async getTagFieldOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		return getFieldOptionsByType.call(this, 'TAG', filter);
+	},
+
+	async getDropdownValueOptions(
+		this: ILoadOptionsFunctions,
+		filter?: string,
+	): Promise<INodeListSearchResult> {
+		try {
+			const fields = await getFieldsForCurrentBox(this);
+			const results: Array<{ name: string; value: string }> = [];
+
+			// Read the sibling field key from the full parameter tree
+			let selectedFieldKey: string | undefined;
+			try {
+				const allParams = this.getCurrentNodeParameters() as Record<string, unknown>;
+				const uf = allParams?.updateFields as Record<string, unknown>;
+				const cf = uf?.customFields as Record<string, unknown>;
+				const entries = cf?.dropdownField as Array<{ key: { value: string } }>;
+				if (entries?.length) {
+					selectedFieldKey = entries[entries.length - 1]?.key?.value;
+				}
+			} catch {
+				// Fall back to showing all options
 			}
 
-			// Fetch fields for the pipeline
-			const fields = (await streakApiRequest(
-				this,
-				'GET',
-				`/pipelines/${box.pipelineKey}/fields`,
-			)) as Array<{ key: string; name: string; type: string }>;
+			const dropdownFields = fields.filter(
+				(f) => f.type === 'DROPDOWN' && f.dropdownSettings?.items,
+			);
+			const needsPrefix = !selectedFieldKey && dropdownFields.length > 1;
 
-			let filteredFields = fields;
-			if (filter) {
-				const filterLower = filter.toLowerCase();
-				filteredFields = fields.filter(
-					(field) =>
-						field &&
-						field.key &&
-						((field.name || '').toLowerCase().includes(filterLower) ||
-							field.key.toLowerCase().includes(filterLower)),
-				);
+			for (const field of dropdownFields) {
+				if (selectedFieldKey && field.key !== selectedFieldKey) continue;
+				for (const item of field.dropdownSettings!.items) {
+					if (!item.key) continue;
+					const name = needsPrefix ? `${field.name} \u2192 ${item.name}` : item.name;
+					if (filter && !name.toLowerCase().includes(filter.toLowerCase())) continue;
+					results.push({ name, value: item.key });
+				}
 			}
-
-			const results = filteredFields
-				.filter((field) => field && field.key)
-				.map((field) => ({
-					name: `${field.name || 'Unnamed Field'} (${field.type || 'unknown'})`,
-					value: field.key || '',
-				}));
 
 			return { results };
 		} catch (error) {

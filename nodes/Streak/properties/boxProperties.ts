@@ -283,7 +283,7 @@ export const boxProperties: INodeProperties[] = [
 				description: 'Custom field values to update on the box',
 				options: [
 					{
-						displayName: 'Field',
+						displayName: 'Text / Numeric Field',
 						name: 'field',
 						values: [
 							{
@@ -315,6 +315,169 @@ export const boxProperties: INodeProperties[] = [
 								type: 'string',
 								default: '',
 								description: 'The value to set for the custom field',
+							},
+						],
+					},
+					{
+						displayName: 'Checkbox Field',
+						name: 'checkboxField',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'key',
+								type: 'resourceLocator',
+								default: { mode: 'list', value: '' },
+								description: 'The checkbox field to update',
+								modes: [
+									{
+										displayName: 'From List',
+										name: 'list',
+										type: 'list',
+										typeOptions: {
+											searchListMethod: 'getCheckboxFieldOptions',
+										},
+									},
+									{
+										displayName: 'By ID',
+										name: 'id',
+										type: 'string',
+										placeholder: 'e.g. 1007',
+									},
+								],
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'boolean',
+								default: false,
+								description: 'Whether the checkbox field should be checked',
+							},
+						],
+					},
+					{
+						displayName: 'Date Field',
+						name: 'dateField',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'key',
+								type: 'resourceLocator',
+								default: { mode: 'list', value: '' },
+								description: 'The date field to update',
+								modes: [
+									{
+										displayName: 'From List',
+										name: 'list',
+										type: 'list',
+										typeOptions: {
+											searchListMethod: 'getDateFieldOptions',
+										},
+									},
+									{
+										displayName: 'By ID',
+										name: 'id',
+										type: 'string',
+										placeholder: 'e.g. 1007',
+									},
+								],
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'dateTime',
+								default: '',
+								description: 'The value to set for the date field',
+							},
+						],
+					},
+					{
+						displayName: 'Dropdown Field',
+						name: 'dropdownField',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'key',
+								type: 'resourceLocator',
+								default: { mode: 'list', value: '' },
+								description: 'The dropdown field to update',
+								modes: [
+									{
+										displayName: 'From List',
+										name: 'list',
+										type: 'list',
+										typeOptions: {
+											searchListMethod: 'getDropdownFieldOptions',
+										},
+									},
+									{
+										displayName: 'By ID',
+										name: 'id',
+										type: 'string',
+										placeholder: 'e.g. 1007',
+									},
+								],
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'resourceLocator',
+								default: { mode: 'list', value: '' },
+								description: 'The dropdown option to set',
+								modes: [
+									{
+										displayName: 'From List',
+										name: 'list',
+										type: 'list',
+										typeOptions: {
+											searchListMethod: 'getDropdownValueOptions',
+										},
+									},
+									{
+										displayName: 'By Value',
+										name: 'id',
+										type: 'string',
+										placeholder: 'e.g. Option name or key',
+									},
+								],
+							},
+						],
+					},
+					{
+						displayName: 'Tag Field',
+						name: 'tagField',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'key',
+								type: 'resourceLocator',
+								default: { mode: 'list', value: '' },
+								description: 'The tag field to update',
+								modes: [
+									{
+										displayName: 'From List',
+										name: 'list',
+										type: 'list',
+										typeOptions: {
+											searchListMethod: 'getTagFieldOptions',
+										},
+									},
+									{
+										displayName: 'By ID',
+										name: 'id',
+										type: 'string',
+										placeholder: 'e.g. 1007',
+									},
+								],
+							},
+							{
+								displayName: 'Tag Names or IDs',
+								name: 'value',
+								type: 'multiOptions',
+								default: [],
+								description: 'Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+								typeOptions: {
+									loadOptionsMethod: 'getTagValues',
+								},
 							},
 						],
 					},
