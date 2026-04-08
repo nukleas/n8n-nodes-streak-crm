@@ -485,7 +485,7 @@ export const listSearch = {
 			}
 
 			return { results };
-		} catch (error) {
+		} catch {
 			return { results: [] };
 		}
 	},
