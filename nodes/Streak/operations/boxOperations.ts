@@ -191,8 +191,10 @@ export async function handleBoxOperations(
 			body.notes = additionalFields.notes;
 		}
 
-		if (additionalFields.assignedToTeamKeyOrUserKey) {
-			body.assignedToTeamKeyOrUserKey = additionalFields.assignedToTeamKeyOrUserKey;
+		if (additionalFields.assignedToSharingEntries) {
+			const entries = additionalFields.assignedToSharingEntries as string[];
+			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
+			body.assignedToSharingEntries = JSON.stringify(list.map((email) => ({ email })));
 		}
 
 		return await streakApiRequest(this, 'POST', `/pipelines/${pipelineKey}/boxes`, body);
@@ -227,8 +229,10 @@ export async function handleBoxOperations(
 			body.stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		}
 
-		if (updateFields.assignedToTeamKeyOrUserKey) {
-			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
+		if (updateFields.assignedToSharingEntries) {
+			const entries = updateFields.assignedToSharingEntries as string[];
+			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
+			body.assignedToSharingEntries = list.map((email) => ({ email }));
 		}
 
 		// Handle custom fields

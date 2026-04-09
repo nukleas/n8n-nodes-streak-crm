@@ -132,6 +132,46 @@ export const loadOptions = {
 		}
 	},
 
+	async getTeamMemberOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+		try {
+			const response = await streakApiRequest(this, 'GET', '/users/me/teams');
+			const teams = parseTeamsResponse(response);
+
+			const seen = new Set<string>();
+			const members: INodePropertyOptions[] = [];
+
+			for (const team of teams) {
+				if (!team.key) continue;
+				const teamData = (await streakApiRequest(
+					this,
+					'GET',
+					`/teams/${team.key}`,
+				)) as Record<string, unknown>;
+
+				const teamMembers = teamData.members as Array<{
+					email?: string;
+					displayName?: string;
+					fullName?: string;
+				}>;
+				if (!Array.isArray(teamMembers)) continue;
+
+				for (const member of teamMembers) {
+					if (!member.email || seen.has(member.email)) continue;
+					seen.add(member.email);
+					const label = member.fullName || member.displayName || member.email;
+					members.push({
+						name: label === member.email ? label : `${label} (${member.email})`,
+						value: member.email,
+					});
+				}
+			}
+
+			return members;
+		} catch {
+			return [];
+		}
+	},
+
 	async getStageOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 		try {
 			const pipelineKey = extractParamValue(this.getCurrentNodeParameter('pipelineKey'));

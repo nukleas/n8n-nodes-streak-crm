@@ -332,11 +332,15 @@ export const boxProperties: INodeProperties[] = [
 				description: 'Notes to add to the box',
 			},
 			{
-				displayName: 'Assigned To (Team/User Key)',
-				name: 'assignedToTeamKeyOrUserKey',
-				type: 'string',
-				default: '',
-				description: 'Team or user key to assign the box to',
+				displayName: 'Assigned To (Emails)',
+				name: 'assignedToSharingEntries',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically. Assigned users must have access to the pipeline. Replaces all current assignees — include existing ones to keep them.',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamMemberOptions',
+				},
 			},
 		],
 	},
@@ -356,11 +360,15 @@ export const boxProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assigned To (Team/User Key)',
-				name: 'assignedToTeamKeyOrUserKey',
-				type: 'string',
-				default: '',
-				description: 'New team or user key to assign the box to',
+				displayName: 'Assigned To (Emails)',
+				name: 'assignedToSharingEntries',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically. Assigned users must have access to the pipeline. Replaces all current assignees — include existing ones to keep them.',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamMemberOptions',
+				},
 			},
 			{
 				displayName: 'Custom Fields',

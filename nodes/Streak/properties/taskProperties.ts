@@ -164,14 +164,15 @@ export const taskProperties: INodeProperties[] = [
 				description: 'The due date of the task',
 			},
 			{
-				displayName: 'Assignee Emails',
+				displayName: 'Assigned To (Emails)',
 				name: 'assignees',
-				type: 'string',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically',
 				typeOptions: {
-					multipleValues: true,
+					loadOptionsMethod: 'getTeamMemberOptions',
 				},
-				default: '',
-				description: 'Email addresses of assignees',
 			},
 		],
 	},
@@ -191,14 +192,15 @@ export const taskProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assignees',
+				displayName: 'Assigned To (Emails)',
 				name: 'assignees',
-				type: 'string',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically',
 				typeOptions: {
-					multipleValues: true,
+					loadOptionsMethod: 'getTeamMemberOptions',
 				},
-				default: '',
-				description: 'Email addresses of assignees',
 			},
 			{
 				displayName: 'Completed',
