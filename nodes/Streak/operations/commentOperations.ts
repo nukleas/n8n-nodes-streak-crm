@@ -1,5 +1,5 @@
 import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
-import { streakApiRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, validateParameters } from './utils';
 
 /**
  * Handle comment-related operations for the Streak API
@@ -19,13 +19,25 @@ export async function handleCommentOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination(
+		// v2 returns { hasNextPage, results } with no pagination params
+		const response = (await streakApiRequest(
 			this,
+			'GET',
 			`/boxes/${boxKey}/comments`,
-			returnAll,
-			returnAll ? 100 : limit,
-			{},
-		);
+		)) as IDataObject;
+
+		let results: IDataObject[] = [];
+		if (response?.results && Array.isArray(response.results)) {
+			results = response.results as IDataObject[];
+		} else if (Array.isArray(response)) {
+			results = response;
+		}
+
+		if (!returnAll && results.length > limit) {
+			return results.slice(0, limit);
+		}
+
+		return results;
 	} else if (operation === 'getComment') {
 		const commentKey = this.getNodeParameter('commentKey', itemIndex) as string;
 

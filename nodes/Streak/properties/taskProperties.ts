@@ -63,14 +63,29 @@ export const taskProperties: INodeProperties[] = [
 		},
 	},
 
-	// Pipeline Key (required for box dependency)
+	// Pipeline (optional, used to populate the box dropdown)
 	{
-		displayName: 'Pipeline Key',
+		displayName: 'Pipeline',
 		name: 'pipelineKey',
-		type: 'string',
-		default: '',
-		required: true,
-		description: 'The key of the pipeline containing the box',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		description: 'Optional. Select a pipeline to populate the Box dropdown below. Not needed if entering a Box ID directly.',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['task'],
@@ -149,14 +164,15 @@ export const taskProperties: INodeProperties[] = [
 				description: 'The due date of the task',
 			},
 			{
-				displayName: 'Assignee Emails',
+				displayName: 'Assigned To (Emails)',
 				name: 'assignees',
-				type: 'string',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically',
 				typeOptions: {
-					multipleValues: true,
+					loadOptionsMethod: 'getTeamMemberOptions',
 				},
-				default: '',
-				description: 'Email addresses of assignees',
 			},
 		],
 	},
@@ -176,14 +192,15 @@ export const taskProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assignees',
+				displayName: 'Assigned To (Emails)',
 				name: 'assignees',
-				type: 'string',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically',
 				typeOptions: {
-					multipleValues: true,
+					loadOptionsMethod: 'getTeamMemberOptions',
 				},
-				default: '',
-				description: 'Email addresses of assignees',
 			},
 			{
 				displayName: 'Completed',

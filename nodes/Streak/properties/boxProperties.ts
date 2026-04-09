@@ -75,6 +75,71 @@ export const boxProperties: INodeProperties[] = [
 		},
 	},
 
+	// Timeline Filters (for getTimeline)
+	{
+		displayName: 'Filters',
+		name: 'timelineFilters',
+		type: 'multiOptions',
+		default: [],
+		description: 'Entity types to include in the timeline. If none are selected, all types are included.',
+		options: [
+			{ name: 'Box Creation/Move', value: 'NEWSFEED_BOX_CREATION_MOVE' },
+			{ name: 'Box Edit', value: 'NEWSFEED_BOX_EDIT' },
+			{ name: 'Call Logs', value: 'CALL_LOGS' },
+			{ name: 'Comments', value: 'COMMENTS' },
+			{ name: 'Emails', value: 'EMAILS' },
+			{ name: 'Files', value: 'FILES' },
+			{ name: 'Hangouts Chat', value: 'HANGOUTS_CHAT' },
+			{ name: 'Meeting Notes', value: 'MEETING_NOTES' },
+		],
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['getTimeline'],
+			},
+		},
+	},
+
+	// Timeline Start Timestamp (for getTimeline)
+	{
+		displayName: 'Start Timestamp',
+		name: 'startTimestamp',
+		type: 'dateTime',
+		default: '',
+		description: 'Return entries starting from this point. Descending returns entries before this time, Ascending returns entries after. Leave empty for no filter.',
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['getTimeline'],
+			},
+		},
+	},
+
+	// Timeline Direction (for getTimeline)
+	{
+		displayName: 'Direction',
+		name: 'direction',
+		type: 'options',
+		default: 'Descending',
+		description: 'Descending returns newest first (entries before Start Timestamp). Ascending returns oldest first (entries after Start Timestamp).',
+		options: [
+			{
+				name: 'Descending',
+				value: 'Descending',
+			},
+			{
+				name: 'Ascending',
+				value: 'Ascending',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['getTimeline'],
+			},
+		},
+	},
+
 	// Box Keys (for getMultipleBoxes)
 	{
 		displayName: 'Box Keys',
@@ -173,6 +238,31 @@ export const boxProperties: INodeProperties[] = [
 		},
 	},
 
+	// Sort By (for listBoxes)
+	{
+		displayName: 'Sort By',
+		name: 'sortBy',
+		type: 'options',
+		default: 'lastUpdatedTimestamp',
+		description: 'What order to sort the boxes by (descending)',
+		options: [
+			{
+				name: 'Last Updated',
+				value: 'lastUpdatedTimestamp',
+			},
+			{
+				name: 'Creation Date',
+				value: 'creationTimestamp',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['box'],
+				operation: ['listBoxes'],
+			},
+		},
+	},
+
 	// Box Name (for createBox)
 	{
 		displayName: 'Box Name',
@@ -242,11 +332,15 @@ export const boxProperties: INodeProperties[] = [
 				description: 'Notes to add to the box',
 			},
 			{
-				displayName: 'Assigned To (Team/User Key)',
-				name: 'assignedToTeamKeyOrUserKey',
-				type: 'string',
-				default: '',
-				description: 'Team or user key to assign the box to',
+				displayName: 'Assigned To (Emails)',
+				name: 'assignedToSharingEntries',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically. Assigned users must have access to the pipeline. Replaces all current assignees — include existing ones to keep them.',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamMemberOptions',
+				},
 			},
 		],
 	},
@@ -266,11 +360,15 @@ export const boxProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assigned To (Team/User Key)',
-				name: 'assignedToTeamKeyOrUserKey',
-				type: 'string',
-				default: '',
-				description: 'New team or user key to assign the box to',
+				displayName: 'Assigned To (Emails)',
+				name: 'assignedToSharingEntries',
+				type: 'multiOptions',
+				default: [],
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
+				description: 'Select team members or use an expression to set emails programmatically. Assigned users must have access to the pipeline. Replaces all current assignees — include existing ones to keep them.',
+				typeOptions: {
+					loadOptionsMethod: 'getTeamMemberOptions',
+				},
 			},
 			{
 				displayName: 'Custom Fields',

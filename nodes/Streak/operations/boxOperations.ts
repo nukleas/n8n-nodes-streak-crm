@@ -64,6 +64,7 @@ export async function handleBoxOperations(
 				: stageKeyFilterParam?.value || '';
 		const searchQuery = this.getNodeParameter('searchQuery', itemIndex, '') as string;
 		const trimmedSearchQuery = searchQuery?.trim();
+		const sortBy = this.getNodeParameter('sortBy', itemIndex, 'lastUpdatedTimestamp') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
@@ -111,29 +112,23 @@ export async function handleBoxOperations(
 
 			return results;
 		} else {
-			// No search query - use regular list boxes endpoint
-			const queryParams: IDataObject = { limit };
+			// No search query - use regular list boxes endpoint (v1 supports page/limit/sortBy)
+			const queryParams: IDataObject = {};
 			if (stageKeyFilter) {
 				queryParams.stageKey = stageKeyFilter;
 			}
-
-			if (returnAll) {
-				return await handlePagination(
-					this,
-					`/pipelines/${pipelineKey}/boxes`,
-					returnAll,
-					limit,
-					queryParams,
-				);
-			} else {
-				return await streakApiRequest(
-					this,
-					'GET',
-					`/pipelines/${pipelineKey}/boxes`,
-					undefined,
-					queryParams,
-				);
+			if (sortBy) {
+				queryParams.sortBy = sortBy;
 			}
+
+			return await handlePagination(
+				this,
+				`/pipelines/${pipelineKey}/boxes`,
+				returnAll,
+				returnAll ? 100 : limit,
+				queryParams,
+				'v1',
+			);
 		}
 	} else if (operation === 'getBox') {
 		// Get Box operation
@@ -196,8 +191,10 @@ export async function handleBoxOperations(
 			body.notes = additionalFields.notes;
 		}
 
-		if (additionalFields.assignedToTeamKeyOrUserKey) {
-			body.assignedToTeamKeyOrUserKey = additionalFields.assignedToTeamKeyOrUserKey;
+		if (additionalFields.assignedToSharingEntries) {
+			const entries = additionalFields.assignedToSharingEntries as string[];
+			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
+			body.assignedToSharingEntries = JSON.stringify(list.map((email) => ({ email })));
 		}
 
 		return await streakApiRequest(this, 'POST', `/pipelines/${pipelineKey}/boxes`, body);
@@ -232,8 +229,10 @@ export async function handleBoxOperations(
 			body.stageKey = typeof stageKeyParam === 'string' ? stageKeyParam : stageKeyParam.value;
 		}
 
-		if (updateFields.assignedToTeamKeyOrUserKey) {
-			body.assignedToTeamKeyOrUserKey = updateFields.assignedToTeamKeyOrUserKey;
+		if (updateFields.assignedToSharingEntries) {
+			const entries = updateFields.assignedToSharingEntries as string[];
+			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
+			body.assignedToSharingEntries = list.map((email) => ({ email }));
 		}
 
 		// Handle custom fields
@@ -305,26 +304,67 @@ export async function handleBoxOperations(
 	} else if (operation === 'getTimeline') {
 		// Get Timeline operation
 		const boxKey = this.getNodeParameter('boxKey', itemIndex) as string;
+		const direction = this.getNodeParameter('direction', itemIndex, 'Descending') as string;
+		const timelineFilters = this.getNodeParameter('timelineFilters', itemIndex, []) as string[];
+		const startTimestampValue = this.getNodeParameter('startTimestamp', itemIndex, '') as string;
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
 		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
+		// Build query params — filters must be a bracketed string like [CALL_LOGS,COMMENTS]
+		const baseQuery: IDataObject = { direction };
+		if (timelineFilters.length > 0) {
+			baseQuery.filters = '[' + timelineFilters.join(',') + ']';
+		}
+		if (startTimestampValue) {
+			const ts = new Date(startTimestampValue).getTime();
+			if (!isNaN(ts)) {
+				baseQuery.startTimestamp = ts;
+			}
+		}
+
 		if (returnAll) {
-			return await handlePagination(
-				this,
-				`/boxes/${boxKey}/timeline`,
-				returnAll,
-				limit,
-			);
+			let allResults: IDataObject[] = [];
+			let nextPage: string | undefined;
+
+			do {
+				const query: IDataObject = nextPage
+					? { nextPageToken: nextPage }
+					: { ...baseQuery, limit: 100 };
+
+				const response = (await streakApiRequest(
+					this,
+					'GET',
+					`/boxes/${boxKey}/timeline`,
+					undefined,
+					query,
+				)) as IDataObject;
+
+				if (response?.entries && Array.isArray(response.entries)) {
+					allResults = [...allResults, ...(response.entries as IDataObject[])];
+				}
+
+				nextPage = response?.nextPage as string | undefined;
+			} while (nextPage);
+
+			return allResults;
 		} else {
-			return await streakApiRequest(
+			const query: IDataObject = { ...baseQuery, limit };
+
+			const response = (await streakApiRequest(
 				this,
 				'GET',
 				`/boxes/${boxKey}/timeline`,
 				undefined,
-				{ limit },
-			);
+				query,
+			)) as IDataObject;
+
+			if (response?.entries && Array.isArray(response.entries)) {
+				return response.entries as IDataObject[];
+			}
+
+			return Array.isArray(response) ? response : [response];
 		}
 	}
 

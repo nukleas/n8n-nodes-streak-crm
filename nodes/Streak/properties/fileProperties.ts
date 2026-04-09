@@ -58,14 +58,29 @@ export const fileProperties: INodeProperties[] = [
 		},
 	},
 
-	// Pipeline Key (required for box dependency)
+	// Pipeline (optional, used to populate the box dropdown)
 	{
-		displayName: 'Pipeline Key',
+		displayName: 'Pipeline',
 		name: 'pipelineKey',
-		type: 'string',
-		default: '',
-		required: true,
-		description: 'The key of the pipeline containing the box',
+		type: 'resourceLocator',
+		default: { mode: 'list', value: '' },
+		description: 'Optional. Select a pipeline to populate the Box dropdown below. Not needed if entering a Box ID directly.',
+		modes: [
+			{
+				displayName: 'From List',
+				name: 'list',
+				type: 'list',
+				typeOptions: {
+					searchListMethod: 'getPipelineOptions',
+				},
+			},
+			{
+				displayName: 'By ID',
+				name: 'id',
+				type: 'string',
+				placeholder: 'agxzfm1haWw...',
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ['file'],
