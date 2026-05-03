@@ -194,7 +194,7 @@ export async function handleBoxOperations(
 		if (additionalFields.assignedToSharingEntries) {
 			const entries = additionalFields.assignedToSharingEntries as string[];
 			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
-			body.assignedToSharingEntries = JSON.stringify(list.map((email) => ({ email })));
+			body.assignedToSharingEntries = list.map((email) => ({ email }));
 		}
 
 		return await streakApiRequest(this, 'POST', `/pipelines/${pipelineKey}/boxes`, body);
@@ -232,7 +232,7 @@ export async function handleBoxOperations(
 		if (updateFields.assignedToSharingEntries) {
 			const entries = updateFields.assignedToSharingEntries as string[];
 			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
-			body.assignedToSharingEntries = list;
+			body.assignedToSharingEntries = list.map((email) => ({ email }));
 		}
 
 		// Handle custom fields
@@ -314,7 +314,7 @@ export async function handleBoxOperations(
 
 		const baseQuery: IDataObject = { direction };
 		if (timelineFilters.length > 0) {
-			baseQuery.filters = timelineFilters;
+			baseQuery.filters = '[' + timelineFilters.join(',') + ']';
 		}
 		if (startTimestampValue) {
 			const ts = new Date(startTimestampValue).getTime();
@@ -338,8 +338,6 @@ export async function handleBoxOperations(
 					`/boxes/${boxKey}/timeline`,
 					undefined,
 					query,
-					undefined,
-					{ arrayFormat: 'repeat' },
 				)) as IDataObject;
 
 				if (response?.entries && Array.isArray(response.entries)) {
@@ -359,8 +357,6 @@ export async function handleBoxOperations(
 				`/boxes/${boxKey}/timeline`,
 				undefined,
 				query,
-				undefined,
-				{ arrayFormat: 'repeat' },
 			)) as IDataObject;
 
 			if (response?.entries && Array.isArray(response.entries)) {

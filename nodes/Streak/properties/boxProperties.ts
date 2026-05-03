@@ -360,14 +360,14 @@ export const boxProperties: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Assigned To (Users)',
+				displayName: 'Assigned To (Emails)',
 				name: 'assignedToSharingEntries',
 				type: 'multiOptions',
 				default: [],
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
-				description: 'Select team members or use an expression to set Streak user keys programmatically. Assigned users must have access to the pipeline. Replaces all current assignees — include existing ones to keep them.',
+				description: 'Select team members or use an expression to set emails programmatically. Assigned users must have access to the pipeline. Replaces all current assignees — include existing ones to keep them.',
 				typeOptions: {
-					loadOptionsMethod: 'getTeamMemberKeyOptions',
+					loadOptionsMethod: 'getTeamMemberEmailOptions',
 				},
 			},
 			{

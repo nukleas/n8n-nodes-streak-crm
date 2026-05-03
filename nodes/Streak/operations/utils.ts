@@ -7,7 +7,6 @@ import {
 	NodeApiError,
 	NodeOperationError,
 	IHttpRequestMethods,
-	IHttpRequestOptions,
 	JsonObject,
 } from 'n8n-workflow';
 
@@ -19,8 +18,6 @@ export type StreakApiContext =
 	| IHookFunctions
 	| ILoadOptionsFunctions
 	| IWebhookFunctions;
-
-type StreakApiRequestOptions = Pick<IHttpRequestOptions, 'arrayFormat'>;
 
 /**
  * Mapping of endpoint patterns to their correct API versions
@@ -95,7 +92,6 @@ export async function streakApiRequest(
 	body?: IDataObject | IDataObject[],
 	query?: IDataObject,
 	apiVersion?: 'v1' | 'v2',
-	requestOptions: StreakApiRequestOptions = {},
 ): Promise<IDataObject | IDataObject[]> {
 	const version = apiVersion || getApiVersionForEndpoint(endpoint);
 	const url = `https://api.streak.com/api/${version}${endpoint}`;
@@ -113,7 +109,6 @@ export async function streakApiRequest(
 			qs: query,
 			body,
 			json: true,
-			...requestOptions,
 		})) as IDataObject | IDataObject[];
 	} catch (error) {
 		throw new NodeApiError(context.getNode(), error as JsonObject);

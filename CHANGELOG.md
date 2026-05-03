@@ -12,8 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed list-box pagination to flatten Streak paginated responses and follow `hasNextPage`.
-- Fixed timeline filters to send an array query parameter instead of a bracketed string.
-- Fixed update-box assignee payloads to send Streak user keys, while preserving email-object assignment for box creation and tasks.
+- Fixed timeline filters to use Streak's live-accepted bracketed filter query format.
+- Fixed box assignee payloads to send email-object arrays, matching live Streak API behavior for create and update operations.
 
 ## [1.2.0]
 ### Added

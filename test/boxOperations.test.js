@@ -31,7 +31,7 @@ function createContext(parameters, responses) {
 	};
 }
 
-test('createBox sends JSON-stringified email assignment entries', async () => {
+test('createBox sends email-object assignment entries', async () => {
 	const context = createContext(
 		{
 			pipelineKey: { mode: 'list', value: 'pipe_1' },
@@ -50,18 +50,18 @@ test('createBox sends JSON-stringified email assignment entries', async () => {
 	const request = context.calls[0].requestOptions;
 	assert.equal(request.method, 'POST');
 	assert.equal(request.url, 'https://api.streak.com/api/v2/pipelines/pipe_1/boxes');
-	assert.equal(
-		request.body.assignedToSharingEntries,
-		JSON.stringify([{ email: 'ada@example.com' }, { email: 'grace@example.com' }]),
-	);
+	assert.deepEqual(request.body.assignedToSharingEntries, [
+		{ email: 'ada@example.com' },
+		{ email: 'grace@example.com' },
+	]);
 });
 
-test('updateBox sends user-key assignment entries as a string array', async () => {
+test('updateBox sends email-object assignment entries', async () => {
 	const context = createContext(
 		{
 			boxKey: 'box_1',
 			updateFields: {
-				assignedToSharingEntries: ['user_1', 'user_2'],
+				assignedToSharingEntries: ['ada@example.com', 'grace@example.com'],
 			},
 		},
 		[{ key: 'box_1' }],
@@ -73,10 +73,13 @@ test('updateBox sends user-key assignment entries as a string array', async () =
 	const request = context.calls[0].requestOptions;
 	assert.equal(request.method, 'POST');
 	assert.equal(request.url, 'https://api.streak.com/api/v1/boxes/box_1');
-	assert.deepEqual(request.body.assignedToSharingEntries, ['user_1', 'user_2']);
+	assert.deepEqual(request.body.assignedToSharingEntries, [
+		{ email: 'ada@example.com' },
+		{ email: 'grace@example.com' },
+	]);
 });
 
-test('getTimeline sends filters as a repeated array query parameter', async () => {
+test('getTimeline sends filters in Streak bracket format', async () => {
 	const context = createContext(
 		{
 			boxKey: 'box_1',
@@ -94,10 +97,9 @@ test('getTimeline sends filters as a repeated array query parameter', async () =
 	assert.deepEqual(result, [{ key: 'entry_1' }]);
 	assert.equal(context.calls.length, 1);
 	const request = context.calls[0].requestOptions;
-	assert.equal(request.arrayFormat, 'repeat');
 	assert.deepEqual(request.qs, {
 		direction: 'Descending',
-		filters: ['CALL_LOGS', 'COMMENTS'],
+		filters: '[CALL_LOGS,COMMENTS]',
 		limit: 25,
 	});
 });

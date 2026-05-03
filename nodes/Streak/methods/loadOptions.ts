@@ -205,28 +205,6 @@ export const loadOptions = {
 		}
 	},
 
-	async getTeamMemberKeyOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-		try {
-			const seen = new Set<string>();
-			const members: INodePropertyOptions[] = [];
-			const teamMembers = await getTeamMembers(this);
-
-			for (const member of teamMembers) {
-				const key = member.userKey || member.key;
-				if (!key || seen.has(key)) continue;
-				seen.add(key);
-				members.push({
-					name: getTeamMemberLabel(member),
-					value: key,
-				});
-			}
-
-			return members;
-		} catch {
-			return [];
-		}
-	},
-
 	async getTeamMemberOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 		return await loadOptions.getTeamMemberEmailOptions.call(this);
 	},
