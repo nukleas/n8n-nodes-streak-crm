@@ -5,6 +5,16 @@ All notable changes to the n8n-nodes-streak-crm project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0]
+### Added
+- Added dynamic team-member selectors for box and task assignee fields.
+- Added lightweight request-shape tests for box assignment, timeline filters, and list-box pagination.
+
+### Fixed
+- Fixed list-box pagination to flatten Streak paginated responses and follow `hasNextPage`.
+- Fixed timeline filters to send an array query parameter instead of a bracketed string.
+- Fixed update-box assignee payloads to send Streak user keys, while preserving email-object assignment for box creation and tasks.
+
 ## [1.2.0]
 ### Added
 - **Streak Trigger node**: Webhook-based trigger that starts workflows when Streak events occur

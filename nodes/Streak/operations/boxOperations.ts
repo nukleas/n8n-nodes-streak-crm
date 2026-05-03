@@ -232,7 +232,7 @@ export async function handleBoxOperations(
 		if (updateFields.assignedToSharingEntries) {
 			const entries = updateFields.assignedToSharingEntries as string[];
 			const list = (Array.isArray(entries) ? entries : [entries]).filter((e) => !!e);
-			body.assignedToSharingEntries = list.map((email) => ({ email }));
+			body.assignedToSharingEntries = list;
 		}
 
 		// Handle custom fields
@@ -312,10 +312,9 @@ export async function handleBoxOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		// Build query params — filters must be a bracketed string like [CALL_LOGS,COMMENTS]
 		const baseQuery: IDataObject = { direction };
 		if (timelineFilters.length > 0) {
-			baseQuery.filters = '[' + timelineFilters.join(',') + ']';
+			baseQuery.filters = timelineFilters;
 		}
 		if (startTimestampValue) {
 			const ts = new Date(startTimestampValue).getTime();
@@ -339,6 +338,8 @@ export async function handleBoxOperations(
 					`/boxes/${boxKey}/timeline`,
 					undefined,
 					query,
+					undefined,
+					{ arrayFormat: 'repeat' },
 				)) as IDataObject;
 
 				if (response?.entries && Array.isArray(response.entries)) {
@@ -358,6 +359,8 @@ export async function handleBoxOperations(
 				`/boxes/${boxKey}/timeline`,
 				undefined,
 				query,
+				undefined,
+				{ arrayFormat: 'repeat' },
 			)) as IDataObject;
 
 			if (response?.entries && Array.isArray(response.entries)) {

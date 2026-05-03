@@ -171,7 +171,7 @@ export const taskProperties: INodeProperties[] = [
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
 				description: 'Select team members or use an expression to set emails programmatically',
 				typeOptions: {
-					loadOptionsMethod: 'getTeamMemberOptions',
+					loadOptionsMethod: 'getTeamMemberEmailOptions',
 				},
 			},
 		],
@@ -199,7 +199,7 @@ export const taskProperties: INodeProperties[] = [
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
 				description: 'Select team members or use an expression to set emails programmatically',
 				typeOptions: {
-					loadOptionsMethod: 'getTeamMemberOptions',
+					loadOptionsMethod: 'getTeamMemberEmailOptions',
 				},
 			},
 			{

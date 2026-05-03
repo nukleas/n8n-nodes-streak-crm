@@ -71,6 +71,15 @@ interface TeamRecord {
 	name?: string;
 }
 
+interface TeamMemberRecord {
+	key?: string;
+	userKey?: string;
+	email?: string;
+	displayName?: string;
+	fullName?: string;
+	name?: string;
+}
+
 function isTeamRecord(value: unknown): value is TeamRecord {
 	return typeof value === 'object' && value !== null && 'key' in value;
 }
@@ -95,6 +104,49 @@ function parseTeamsResponse(response: unknown): TeamRecord[] {
 		}
 	}
 	return teams;
+}
+
+function parseBoxesResponse(response: unknown): Array<{ key: string; name: string }> {
+	if (Array.isArray(response)) {
+		return response as Array<{ key: string; name: string }>;
+	}
+
+	if (response && typeof response === 'object') {
+		const results = (response as Record<string, unknown>).results;
+		if (Array.isArray(results)) {
+			return results as Array<{ key: string; name: string }>;
+		}
+	}
+
+	return [];
+}
+
+async function getTeamMembers(
+	context: ILoadOptionsFunctions,
+): Promise<TeamMemberRecord[]> {
+	const response = await streakApiRequest(context, 'GET', '/users/me/teams');
+	const teams = parseTeamsResponse(response);
+	const members: TeamMemberRecord[] = [];
+
+	for (const team of teams) {
+		if (!team.key) continue;
+		const teamData = (await streakApiRequest(
+			context,
+			'GET',
+			`/teams/${team.key}`,
+		)) as Record<string, unknown>;
+		const teamMembers = teamData.members as TeamMemberRecord[];
+		if (Array.isArray(teamMembers)) {
+			members.push(...teamMembers);
+		}
+	}
+
+	return members;
+}
+
+function getTeamMemberLabel(member: TeamMemberRecord): string {
+	const label = member.fullName || member.displayName || member.name || member.email || member.key || member.userKey || 'Unnamed User';
+	return member.email && label !== member.email ? `${label} (${member.email})` : label;
 }
 
 export const loadOptions = {
@@ -132,44 +184,51 @@ export const loadOptions = {
 		}
 	},
 
-	async getTeamMemberOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	async getTeamMemberEmailOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 		try {
-			const response = await streakApiRequest(this, 'GET', '/users/me/teams');
-			const teams = parseTeamsResponse(response);
-
 			const seen = new Set<string>();
 			const members: INodePropertyOptions[] = [];
+			const teamMembers = await getTeamMembers(this);
 
-			for (const team of teams) {
-				if (!team.key) continue;
-				const teamData = (await streakApiRequest(
-					this,
-					'GET',
-					`/teams/${team.key}`,
-				)) as Record<string, unknown>;
-
-				const teamMembers = teamData.members as Array<{
-					email?: string;
-					displayName?: string;
-					fullName?: string;
-				}>;
-				if (!Array.isArray(teamMembers)) continue;
-
-				for (const member of teamMembers) {
-					if (!member.email || seen.has(member.email)) continue;
-					seen.add(member.email);
-					const label = member.fullName || member.displayName || member.email;
-					members.push({
-						name: label === member.email ? label : `${label} (${member.email})`,
-						value: member.email,
-					});
-				}
+			for (const member of teamMembers) {
+				if (!member.email || seen.has(member.email)) continue;
+				seen.add(member.email);
+				members.push({
+					name: getTeamMemberLabel(member),
+					value: member.email,
+				});
 			}
 
 			return members;
 		} catch {
 			return [];
 		}
+	},
+
+	async getTeamMemberKeyOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+		try {
+			const seen = new Set<string>();
+			const members: INodePropertyOptions[] = [];
+			const teamMembers = await getTeamMembers(this);
+
+			for (const member of teamMembers) {
+				const key = member.userKey || member.key;
+				if (!key || seen.has(key)) continue;
+				seen.add(key);
+				members.push({
+					name: getTeamMemberLabel(member),
+					value: key,
+				});
+			}
+
+			return members;
+		} catch {
+			return [];
+		}
+	},
+
+	async getTeamMemberOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+		return await loadOptions.getTeamMemberEmailOptions.call(this);
 	},
 
 	async getStageOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -200,11 +259,12 @@ export const loadOptions = {
 			const pipelineKey = extractParamValue(this.getCurrentNodeParameter('pipelineKey'));
 			if (!pipelineKey) return [];
 
-			const boxes = (await streakApiRequest(
+			const response = await streakApiRequest(
 				this,
 				'GET',
 				`/pipelines/${pipelineKey}/boxes`,
-			)) as Array<{ key: string; name: string }>;
+			);
+			const boxes = parseBoxesResponse(response);
 
 			return boxes
 				.filter((box) => box && box.key)

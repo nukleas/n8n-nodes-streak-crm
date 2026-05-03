@@ -7,6 +7,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 	IHttpRequestMethods,
+	IHttpRequestOptions,
 	JsonObject,
 } from 'n8n-workflow';
 
@@ -18,6 +19,8 @@ export type StreakApiContext =
 	| IHookFunctions
 	| ILoadOptionsFunctions
 	| IWebhookFunctions;
+
+type StreakApiRequestOptions = Pick<IHttpRequestOptions, 'arrayFormat'>;
 
 /**
  * Mapping of endpoint patterns to their correct API versions
@@ -92,6 +95,7 @@ export async function streakApiRequest(
 	body?: IDataObject | IDataObject[],
 	query?: IDataObject,
 	apiVersion?: 'v1' | 'v2',
+	requestOptions: StreakApiRequestOptions = {},
 ): Promise<IDataObject | IDataObject[]> {
 	const version = apiVersion || getApiVersionForEndpoint(endpoint);
 	const url = `https://api.streak.com/api/${version}${endpoint}`;
@@ -109,6 +113,7 @@ export async function streakApiRequest(
 			qs: query,
 			body,
 			json: true,
+			...requestOptions,
 		})) as IDataObject | IDataObject[];
 	} catch (error) {
 		throw new NodeApiError(context.getNode(), error as JsonObject);
@@ -191,6 +196,27 @@ export async function handlePagination(
 ): Promise<IDataObject[]> {
 	let responseData: IDataObject[] = [];
 
+	const parsePage = (
+		response: IDataObject | IDataObject[],
+	): { results: IDataObject[]; hasNextPage?: boolean } => {
+		if (Array.isArray(response)) {
+			return { results: response };
+		}
+
+		if (response?.results && Array.isArray(response.results)) {
+			return {
+				results: response.results as IDataObject[],
+				hasNextPage:
+					typeof response.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
+			};
+		}
+
+		return {
+			results: [response],
+			hasNextPage: typeof response?.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
+		};
+	};
+
 	if (returnAll) {
 		let hasMore = true;
 		let page = 0;
@@ -211,12 +237,16 @@ export async function handlePagination(
 				apiVersion,
 			);
 
-			const results = Array.isArray(response) ? response : [response];
+			const { results, hasNextPage } = parsePage(response);
 			responseData = [...responseData, ...results];
 
-			if (results.length < limit) {
+			if (hasNextPage !== undefined) {
+				hasMore = hasNextPage;
+			} else if (results.length < limit) {
 				hasMore = false;
-			} else {
+			}
+
+			if (hasMore) {
 				page++;
 			}
 		}
@@ -236,7 +266,7 @@ export async function handlePagination(
 			apiVersion,
 		);
 
-		responseData = Array.isArray(response) ? response : [response];
+		responseData = parsePage(response).results;
 	}
 
 	return responseData;
