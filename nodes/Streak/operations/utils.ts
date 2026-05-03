@@ -191,6 +191,27 @@ export async function handlePagination(
 ): Promise<IDataObject[]> {
 	let responseData: IDataObject[] = [];
 
+	const parsePage = (
+		response: IDataObject | IDataObject[],
+	): { results: IDataObject[]; hasNextPage?: boolean } => {
+		if (Array.isArray(response)) {
+			return { results: response };
+		}
+
+		if (response?.results && Array.isArray(response.results)) {
+			return {
+				results: response.results as IDataObject[],
+				hasNextPage:
+					typeof response.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
+			};
+		}
+
+		return {
+			results: [response],
+			hasNextPage: typeof response?.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
+		};
+	};
+
 	if (returnAll) {
 		let hasMore = true;
 		let page = 0;
@@ -211,12 +232,16 @@ export async function handlePagination(
 				apiVersion,
 			);
 
-			const results = Array.isArray(response) ? response : [response];
+			const { results, hasNextPage } = parsePage(response);
 			responseData = [...responseData, ...results];
 
-			if (results.length < limit) {
+			if (hasNextPage !== undefined) {
+				hasMore = hasNextPage;
+			} else if (results.length < limit) {
 				hasMore = false;
-			} else {
+			}
+
+			if (hasMore) {
 				page++;
 			}
 		}
@@ -236,7 +261,7 @@ export async function handlePagination(
 			apiVersion,
 		);
 
-		responseData = Array.isArray(response) ? response : [response];
+		responseData = parsePage(response).results;
 	}
 
 	return responseData;

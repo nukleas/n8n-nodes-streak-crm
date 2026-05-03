@@ -1,5 +1,5 @@
 import { IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { streakApiRequest, streakApiFormRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, streakApiFormRequest, validateParameters } from './utils';
 
 /**
  * Handle meeting-related operations for the Streak API
@@ -19,13 +19,25 @@ export async function handleMeetingOperations(
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination(
+		// v2 returns all meetings with no pagination params
+		const response = (await streakApiRequest(
 			this,
+			'GET',
 			`/boxes/${boxKey}/meetings`,
-			returnAll,
-			returnAll ? 100 : limit,
-			{},
-		);
+		)) as IDataObject;
+
+		let results: IDataObject[] = [];
+		if (response?.results && Array.isArray(response.results)) {
+			results = response.results as IDataObject[];
+		} else if (Array.isArray(response)) {
+			results = response;
+		}
+
+		if (!returnAll && results.length > limit) {
+			return results.slice(0, limit);
+		}
+
+		return results;
 	} else if (operation === 'getMeeting') {
 		const meetingKey = this.getNodeParameter('meetingKey', itemIndex) as string;
 

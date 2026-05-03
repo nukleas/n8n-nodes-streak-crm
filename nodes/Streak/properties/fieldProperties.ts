@@ -97,14 +97,13 @@ export const fieldProperties: INodeProperties[] = [
 		},
 	},
 
-	// Pipeline Key (required for box dependency)
+	// Pipeline (optional, used to populate the box dropdown)
 	{
 		displayName: 'Pipeline',
 		name: 'pipelineKey',
 		type: 'resourceLocator',
 		default: { mode: 'list', value: '' },
-		required: true,
-		description: 'The pipeline containing the box',
+		description: 'Optional. Select a pipeline to populate the Box dropdown below. Not needed if entering a Box ID directly.',
 		modes: [
 			{
 				displayName: 'From List',
