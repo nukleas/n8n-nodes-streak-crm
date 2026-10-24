@@ -40,9 +40,7 @@ const ENDPOINT_API_VERSIONS: Record<string, 'v1' | 'v2'> = {
 	'/comments/': 'v2',
 	'/meetings': 'v2',
 	'/meetings/': 'v2',
-	'/timeline': 'v2',
 	'/boxes/*/tasks': 'v2',
-	'/boxes/batch': 'v2',
 	'/boxes/*/timeline': 'v2', // Timeline for boxes uses v2
 	'/pipelines/*/boxes/batch': 'v2',
 	'/pipelines/*/boxes': 'v2', // Create box uses v2
@@ -179,7 +177,66 @@ export function validateParameters(
 }
 
 /**
- * Handle pagination for list operations
+ * Pull the results out of a Streak list response, which is either a bare array
+ * or an object of the form `{ results: [...], hasNextPage }`.
+ */
+function parseListResponse(response: IDataObject | IDataObject[]): {
+	results: IDataObject[];
+	hasNextPage?: boolean;
+} {
+	if (Array.isArray(response)) {
+		return { results: response };
+	}
+
+	if (response?.results && Array.isArray(response.results)) {
+		return {
+			results: response.results as IDataObject[],
+			hasNextPage: typeof response.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
+		};
+	}
+
+	return {
+		results: [response],
+		hasNextPage: typeof response?.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
+	};
+}
+
+/**
+ * Fetch a list endpoint that Streak doesn't page: one request, no page/limit, every result.
+ */
+export async function fetchAllResults(
+	context: StreakApiContext,
+	endpoint: string,
+	query?: IDataObject,
+	apiVersion?: 'v1' | 'v2',
+): Promise<IDataObject[]> {
+	const response = await streakApiRequest(context, 'GET', endpoint, undefined, query, apiVersion);
+
+	return parseListResponse(response).results;
+}
+
+/**
+ * Read the optional "Page" parameter (0-based) and check it is a whole number >= 0.
+ * Returns 0 when the parameter is not set, so existing workflows keep fetching the first page.
+ */
+export function getPageParameter(this: IExecuteFunctions, itemIndex: number): number {
+	const page = Number(this.getNodeParameter('page', itemIndex, 0) ?? 0);
+
+	if (!Number.isInteger(page) || page < 0) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Page must be a whole number of 0 or more (got ${page})`,
+			{ itemIndex },
+		);
+	}
+
+	return page;
+}
+
+/**
+ * Handle pagination for list operations.
+ * With returnAll, fetches every page starting from page 0 and ignores `page`.
+ * Without returnAll, fetches the single page `page` (0-based) of size `limit`.
  */
 export async function handlePagination(
 	context: StreakApiContext,
@@ -188,38 +245,18 @@ export async function handlePagination(
 	limit = 100,
 	additionalParams: IDataObject = {},
 	apiVersion?: 'v1' | 'v2',
+	page = 0,
 ): Promise<IDataObject[]> {
 	let responseData: IDataObject[] = [];
 
-	const parsePage = (
-		response: IDataObject | IDataObject[],
-	): { results: IDataObject[]; hasNextPage?: boolean } => {
-		if (Array.isArray(response)) {
-			return { results: response };
-		}
-
-		if (response?.results && Array.isArray(response.results)) {
-			return {
-				results: response.results as IDataObject[],
-				hasNextPage:
-					typeof response.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
-			};
-		}
-
-		return {
-			results: [response],
-			hasNextPage: typeof response?.hasNextPage === 'boolean' ? response.hasNextPage : undefined,
-		};
-	};
-
 	if (returnAll) {
 		let hasMore = true;
-		let page = 0;
+		let currentPage = 0;
 
 		while (hasMore) {
 			const query: IDataObject = {
 				...additionalParams,
-				page,
+				page: currentPage,
 				limit,
 			};
 
@@ -232,7 +269,7 @@ export async function handlePagination(
 				apiVersion,
 			);
 
-			const { results, hasNextPage } = parsePage(response);
+			const { results, hasNextPage } = parseListResponse(response);
 			responseData = [...responseData, ...results];
 
 			if (hasNextPage !== undefined) {
@@ -242,13 +279,13 @@ export async function handlePagination(
 			}
 
 			if (hasMore) {
-				page++;
+				currentPage++;
 			}
 		}
 	} else {
 		const query: IDataObject = {
 			...additionalParams,
-			page: 0,
+			page,
 			limit,
 		};
 
@@ -261,7 +298,7 @@ export async function handlePagination(
 			apiVersion,
 		);
 
-		responseData = parsePage(response).results;
+		responseData = parseListResponse(response).results;
 	}
 
 	return responseData;
