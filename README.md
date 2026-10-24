@@ -120,10 +120,10 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 - **Add Thread to Box** - Link a Gmail thread to a box
 
 ### File Operations
-- **List Files** - Get all files attached to a box
-- **Get File** - Retrieve a specific file by key
-- **Upload File** - Upload a file to a box
-- **Delete File** - Remove a file
+- **List Files in Box** - Get all files attached to a box
+- **Get File Metadata** - Retrieve a specific file's metadata by key
+- **Get File Contents** - Retrieve a file's contents (only for files of type `GMAIL_API`)
+- **Add File to Box** - Attach one or more Google Drive files to a box in a single request
 
 ### Newsfeed Operations
 - **Get Pipeline Newsfeed** - Get recent activity for a pipeline
@@ -150,30 +150,34 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 
 The **Streak Trigger** node starts workflows automatically when events occur in Streak. Webhooks can be scoped to a specific pipeline or team.
 
+Each event belongs to one scope: Contact and Org events need **Team** scope, and all other events need **Pipeline** scope. The Event list only shows events for the selected scope.
+
+Streak sends events to n8n's webhook URL, so n8n must be reachable from the internet. A trigger on `localhost` won't receive events.
+
 ### Supported Events
 
-| Event | Description |
-|-------|-------------|
-| Box Create | A new box is created |
-| Box Delete | A box is deleted |
-| Box Edit | A box's fields, notes, assignments, or name change |
-| Box Change Stage | A box moves to a different stage |
-| Box Change Pipeline | A box is transferred to a different pipeline |
-| Box New Email Address | A new email address is detected on a box |
-| Stage Create | A new stage is created |
-| Comment Create | A comment is added to a box |
-| Meeting Create | A meeting is created |
-| Meeting Update | A meeting is updated |
-| Task Create | A task is created |
-| Task Complete | A task is marked complete |
-| Task Due | A task reaches its due date |
-| Task Updated | A task is updated |
-| Contact Create | A contact is created |
-| Contact Update | A contact is updated |
-| Contact Delete | A contact is deleted |
-| Org Create | An organization is created |
-| Org Update | An organization is updated |
-| Org Delete | An organization is deleted |
+| Event | Scope | Description |
+|-------|-------|-------------|
+| Box Create | Pipeline | A new box is created |
+| Box Delete | Pipeline | A box is deleted |
+| Box Edit | Pipeline | A box's fields, notes, assignments, or name change |
+| Box Change Stage | Pipeline | A box moves to a different stage |
+| Box Change Pipeline | Pipeline | A box is transferred to a different pipeline |
+| Box New Email Address | Pipeline | A new email address is detected on a box |
+| Stage Create | Pipeline | A new stage is created |
+| Comment Create | Pipeline | A comment is added to a box |
+| Meeting Create | Pipeline | A meeting is created |
+| Meeting Update | Pipeline | A meeting is updated |
+| Task Create | Pipeline | A task is created |
+| Task Complete | Pipeline | A task is marked complete |
+| Task Due | Pipeline | A task reaches its due date |
+| Task Updated | Pipeline | A task is updated |
+| Contact Create | Team | A contact is created |
+| Contact Update | Team | A contact is updated |
+| Contact Delete | Team | A contact is deleted |
+| Org Create | Team | An organization is created |
+| Org Update | Team | An organization is updated |
+| Org Delete | Team | An organization is deleted |
 
 ## Credentials
 
@@ -238,7 +242,7 @@ This is a simple workflow to create a pipeline and then add a box to it:
 - Added Comment operations (list, get, create, delete)
 - Added Meeting operations (list, get, create, update, delete)
 - Added Thread operations (list, get, get by Gmail ID, add to box)
-- Added File operations (list, get, upload, delete)
+- Added File operations (list, get metadata, get contents, add Google Drive file to box)
 - Added Newsfeed operations (pipeline, box, all)
 - Added Snippet operations (list, get, create, delete)
 - Added Search operations (by query, by name)
