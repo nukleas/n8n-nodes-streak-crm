@@ -1,5 +1,5 @@
 import { IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { streakApiRequest, streakApiFormRequest, validateParameters, handlePagination } from './utils';
+import { streakApiRequest, streakApiFormRequest, validateParameters, fetchAllResults } from './utils';
 
 /**
  * Handle thread-related operations for the Streak API
@@ -14,18 +14,21 @@ export async function handleThreadOperations(
 			| string
 			| { mode: string; value: string };
 		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
-		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
-		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
 		validateParameters.call(this, { boxKey }, ['boxKey'], itemIndex);
 
-		return await handlePagination(
-			this,
-			`/boxes/${boxKey}/threads`,
-			returnAll,
-			returnAll ? 100 : limit,
-			{},
-		);
+		const endpoint = `/boxes/${boxKey}/threads`;
+		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
+
+		// Without a limit, Streak returns every thread in one response
+		if (returnAll) {
+			return await fetchAllResults(this, endpoint);
+		}
+
+		// Streak honors limit here, but page 1 comes back empty, so there's no Page option
+		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
+
+		return await streakApiRequest(this, 'GET', endpoint, undefined, { limit });
 	} else if (operation === 'getThread') {
 		const threadKey = this.getNodeParameter('threadKey', itemIndex) as string;
 

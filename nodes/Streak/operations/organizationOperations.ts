@@ -1,5 +1,17 @@
 import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflow';
 import { streakApiRequest, validateParameters } from './utils';
+import { getCustomFieldValues, toLinks } from './directoryHelpers';
+
+/**
+ * Streak needs lists as arrays. A single value from an expression becomes a one-item list,
+ * and an empty string becomes an empty list.
+ */
+function toList(value: unknown): unknown[] {
+	if (Array.isArray(value)) {
+		return value;
+	}
+	return value === '' || value === null ? [] : [value];
+}
 
 /**
  * Handle organization-related operations for the Streak API
@@ -20,18 +32,31 @@ export async function handleOrganizationOperations(
 	} else if (operation === 'createOrganization') {
 		// Create Organization operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
-		const name = this.getNodeParameter('name', itemIndex) as string;
+		const name = this.getNodeParameter('name', itemIndex, '') as string;
+		const getIfExisting = this.getNodeParameter('getIfExisting', itemIndex, false) as boolean;
 		const additionalFields = this.getNodeParameter(
 			'additionalFields',
 			itemIndex,
 			{},
 		) as IDataObject;
 
-		validateParameters.call(this, { teamKey, name }, ['teamKey', 'name'], itemIndex);
+		validateParameters.call(this, { teamKey }, ['teamKey'], itemIndex);
 
-		const body: IDataObject = {
-			name,
-		};
+		// Streak creates an organization from a name or a domain; without a name it names it itself
+		const hasDomains = Array.isArray(additionalFields.domains) && additionalFields.domains.length > 0;
+		if (!name && !hasDomains) {
+			throw new NodeOperationError(
+				this.getNode(),
+				'Set a Name or at least one Domain to create an organization',
+				{ itemIndex },
+			);
+		}
+
+		const body: IDataObject = {};
+
+		if (name) {
+			body.name = name;
+		}
 
 		if (additionalFields.addresses) {
 			// Addresses field must be an array - convert string to array if needed
@@ -56,12 +81,17 @@ export async function handleOrganizationOperations(
 			body.industry = additionalFields.industry;
 		}
 
+		if (additionalFields.instagramHandle) {
+			body.instagramHandle = additionalFields.instagramHandle;
+		}
+
+		// Streak spells these linkedinHandle and logoURL, and silently drops other spellings
 		if (additionalFields.linkedInHandle) {
-			body.linkedInHandle = additionalFields.linkedInHandle;
+			body.linkedinHandle = additionalFields.linkedInHandle;
 		}
 
 		if (additionalFields.logoUrl) {
-			body.logoUrl = additionalFields.logoUrl;
+			body.logoURL = additionalFields.logoUrl;
 		}
 
 		if (additionalFields.other) {
@@ -75,15 +105,15 @@ export async function handleOrganizationOperations(
 				: [additionalFields.phoneNumbers];
 		}
 
-		if (additionalFields.relationships) {
-			body.relationships = additionalFields.relationships;
-		}
-
 		if (additionalFields.twitterHandle) {
 			body.twitterHandle = additionalFields.twitterHandle;
 		}
 
-		return await streakApiRequest(this, 'POST', `/teams/${teamKey}/organizations`, body);
+		// With getIfExisting, Streak returns an organization that has one of the domains instead of
+		// creating a duplicate. Without it, Streak always creates, even if the domain is taken.
+		const query = getIfExisting ? { getIfExisting: true } : undefined;
+
+		return await streakApiRequest(this, 'POST', `/teams/${teamKey}/organizations`, body, query);
 	} else if (operation === 'checkExistingOrganizations') {
 		// Check Existing Organizations operation
 		const teamKey = this.getNodeParameter('teamKey', itemIndex) as string;
@@ -116,68 +146,80 @@ export async function handleOrganizationOperations(
 
 		validateParameters.call(this, { organizationKey }, ['organizationKey'], itemIndex);
 
-		if (Object.keys(updateFields).length === 0) {
+		const body: IDataObject = {};
+
+		// Send every option that was added, even when empty. Streak keeps values that are left
+		// out, clears text sent as an empty string and empties lists sent as an empty list.
+		if (updateFields.addresses !== undefined) {
+			body.addresses = toList(updateFields.addresses);
+		}
+
+		if (updateFields.domains !== undefined) {
+			body.domains = toList(updateFields.domains);
+		}
+
+		if (updateFields.employeeCount !== undefined) {
+			body.employeeCount = updateFields.employeeCount;
+		}
+
+		if (updateFields.facebookHandle !== undefined) {
+			body.facebookHandle = updateFields.facebookHandle;
+		}
+
+		if (updateFields.industry !== undefined) {
+			body.industry = updateFields.industry;
+		}
+
+		if (updateFields.instagramHandle !== undefined) {
+			body.instagramHandle = updateFields.instagramHandle;
+		}
+
+		// Streak spells these linkedinHandle and logoURL, and silently drops other spellings
+		if (updateFields.linkedInHandle !== undefined) {
+			body.linkedinHandle = updateFields.linkedInHandle;
+		}
+
+		if (updateFields.logoUrl !== undefined) {
+			body.logoURL = updateFields.logoUrl;
+		}
+
+		if (updateFields.name !== undefined) {
+			body.name = updateFields.name;
+		}
+
+		if (updateFields.other !== undefined) {
+			body.other = updateFields.other;
+		}
+
+		if (updateFields.phoneNumbers !== undefined) {
+			body.phoneNumbers = toList(updateFields.phoneNumbers);
+		}
+
+		if (updateFields.twitterHandle !== undefined) {
+			body.twitterHandle = updateFields.twitterHandle;
+		}
+
+		// Streak replaces all links of each kind with the ones sent, and an empty list removes them
+		if (updateFields.contactLinks !== undefined) {
+			body.contactLinks = toLinks(updateFields.contactLinks);
+		}
+
+		if (updateFields.orgLinks !== undefined) {
+			body.orgLinks = toLinks(updateFields.orgLinks);
+		}
+
+		// Streak merges custom field values, so fields left out keep their values
+		const fields = getCustomFieldValues.call(this, updateFields.customFields, itemIndex);
+		if (fields) {
+			body.fields = fields;
+		}
+
+		if (Object.keys(body).length === 0) {
 			throw new NodeOperationError(
 				this.getNode(),
 				'At least one field to update must be specified',
 				{ itemIndex },
 			);
-		}
-
-		const body: IDataObject = {};
-
-		if (updateFields.addresses) {
-			// Addresses field must be an array - convert string to array if needed
-			body.addresses = Array.isArray(updateFields.addresses)
-				? updateFields.addresses
-				: [updateFields.addresses];
-		}
-
-		if (updateFields.domains && (updateFields.domains as string[]).length > 0) {
-			body.domains = updateFields.domains;
-		}
-
-		if (updateFields.employeeCount) {
-			body.employeeCount = updateFields.employeeCount;
-		}
-
-		if (updateFields.facebookHandle) {
-			body.facebookHandle = updateFields.facebookHandle;
-		}
-
-		if (updateFields.industry) {
-			body.industry = updateFields.industry;
-		}
-
-		if (updateFields.linkedInHandle) {
-			body.linkedInHandle = updateFields.linkedInHandle;
-		}
-
-		if (updateFields.logoUrl) {
-			body.logoUrl = updateFields.logoUrl;
-		}
-
-		if (updateFields.name) {
-			body.name = updateFields.name;
-		}
-
-		if (updateFields.other) {
-			body.other = updateFields.other;
-		}
-
-		if (updateFields.phoneNumbers) {
-			// phoneNumbers field must be an array - convert string to array if needed
-			body.phoneNumbers = Array.isArray(updateFields.phoneNumbers)
-				? updateFields.phoneNumbers
-				: [updateFields.phoneNumbers];
-		}
-
-		if (updateFields.relationships) {
-			body.relationships = updateFields.relationships;
-		}
-
-		if (updateFields.twitterHandle) {
-			body.twitterHandle = updateFields.twitterHandle;
 		}
 
 		return await streakApiRequest(this, 'POST', `/organizations/${organizationKey}`, body);

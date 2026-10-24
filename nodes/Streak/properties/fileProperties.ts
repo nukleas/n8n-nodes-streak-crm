@@ -24,7 +24,7 @@ export const fileProperties: INodeProperties[] = [
 				name: 'Get File Contents',
 				value: 'getFileContents',
 				description:
-					'Gets the contents of a file (only works for GMAIL_API file types)',
+					'Downloads a file as binary data (only works for GMAIL_API file types)',
 				action: 'Get file contents',
 			},
 			{
@@ -54,6 +54,22 @@ export const fileProperties: INodeProperties[] = [
 			show: {
 				resource: ['file'],
 				operation: ['getFile', 'getFileContents'],
+			},
+		},
+	},
+
+	// Binary output field (for getFileContents)
+	{
+		displayName: 'Put Output File in Field',
+		name: 'binaryPropertyName',
+		type: 'string',
+		default: 'data',
+		required: true,
+		hint: 'The name of the output binary field to put the file in',
+		displayOptions: {
+			show: {
+				resource: ['file'],
+				operation: ['getFileContents'],
 			},
 		},
 	},
@@ -121,14 +137,16 @@ export const fileProperties: INodeProperties[] = [
 		},
 	},
 
-	// Drive File ID (for add)
+	// Drive File IDs (for add)
 	{
-		displayName: 'Google Drive File ID',
+		displayName: 'Google Drive File IDs',
 		name: 'driveFileId',
 		type: 'string',
 		default: '',
 		required: true,
-		description: 'The Google Drive file ID to add to the box',
+		placeholder: 'e.g. 1AbC..., 1DeF...',
+		description:
+			'One or more Google Drive file IDs to add to the box, separated by commas or new lines. All of them are added in a single request.',
 		displayOptions: {
 			show: {
 				resource: ['file'],
