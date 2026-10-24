@@ -2,6 +2,24 @@ import { IExecuteFunctions, IDataObject, NodeOperationError  } from 'n8n-workflo
 import { streakApiRequest, validateParameters, handlePagination } from './utils';
 
 /**
+ * Read Drive file IDs from text separated by commas or new lines, or from an array
+ * passed in by an expression. Blank entries and repeats are dropped.
+ */
+function parseDriveFileIds(value: unknown): string[] {
+	const parts = Array.isArray(value) ? value : String(value ?? '').split(/[\s,]+/);
+	const ids: string[] = [];
+
+	for (const part of parts) {
+		const id = String(part ?? '').trim();
+		if (id && !ids.includes(id)) {
+			ids.push(id);
+		}
+	}
+
+	return ids;
+}
+
+/**
  * Handle file-related operations for the Streak API
  */
 export async function handleFileOperations(
@@ -33,31 +51,27 @@ export async function handleFileOperations(
 		validateParameters.call(this, { fileKey }, ['fileKey'], itemIndex);
 
 		return await streakApiRequest(this, 'GET', `/files/${fileKey}`, undefined, undefined, 'v1');
-	} else if (operation === 'getFileContents') {
-		const fileKey = this.getNodeParameter('fileKey', itemIndex) as string;
-
-		validateParameters.call(this, { fileKey }, ['fileKey'], itemIndex);
-
-		return await streakApiRequest(this, 'GET', `/files/${fileKey}/contents`, undefined, undefined, 'v1');
 	} else if (operation === 'addFileToBox') {
 		const boxKeyParam = this.getNodeParameter('boxKey', itemIndex) as
 			| string
 			| { mode: string; value: string };
 		const boxKey = typeof boxKeyParam === 'string' ? boxKeyParam : boxKeyParam.value;
-		const driveFileId = this.getNodeParameter('driveFileId', itemIndex) as string;
+		const driveFileIds = parseDriveFileIds(this.getNodeParameter('driveFileId', itemIndex));
 
 		validateParameters.call(
 			this,
-			{ boxKey, driveFileId },
+			{ boxKey, driveFileId: driveFileIds.join(',') },
 			['boxKey', 'driveFileId'],
 			itemIndex,
 		);
 
+		// Streak takes an array with one entry per file, even for a single file;
+		// a bare object makes it return HTTP 500. Every entry names the same box.
 		return await streakApiRequest(
 			this,
 			'POST',
 			'/files/',
-			{ driveFileId, driveBoxKey: boxKey },
+			driveFileIds.map((driveFileId) => ({ driveFileId, driveBoxKey: boxKey })),
 			undefined,
 			'v2',
 		);

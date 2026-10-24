@@ -52,7 +52,7 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 - **Create Pipeline** - Create a new pipeline with customizable properties
 - **Update Pipeline** - Update properties of an existing pipeline
 - **Delete Pipeline** - Remove a pipeline
-- **Move Boxes Between Pipelines** - Move multiple boxes (deals) between pipelines in batch
+- **Move Boxes Between Pipelines** - Move multiple boxes (deals) between pipelines in batch. Streak gives each moved box a new key, and the old key stops working, so use the keys in the output
 
 ### Box Operations
 - **List Boxes in Pipeline** - Get all boxes (deals) in a specific pipeline
@@ -78,7 +78,7 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 - **Delete Field** - Remove a field from a pipeline
 - **List Field Values** - Get all field values for a box
 - **Get Field Value** - Retrieve a specific field value
-- **Update Field Value** - Update a field value for a box
+- **Update Field Value** - Update a field value for a box. Text is converted to what the field needs: true or false for a checkbox, tag names or keys (separated by commas) for a tag field, an option name or key for a dropdown, and a date or epoch milliseconds for a date
 
 ### Contact Operations
 - **Get Contact** - Retrieve a specific contact by key
@@ -88,8 +88,8 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 
 ### Organization Operations
 - **Get Organization** - Retrieve a specific organization by key
-- **Create Organization** - Create a new organization
-- **Check Existing Organizations** - Search for existing organizations by name or domain
+- **Create Organization** - Create a new organization. Turn on **Return Existing If Found** to get the organization that already has one of the domains instead of a duplicate
+- **Check Existing Organizations** - Find an organization by domain. If none matches, Streak creates one with those domains
 - **Update Organization** - Update properties of an existing organization
 - **Delete Organization** - Remove an organization
 
@@ -120,10 +120,10 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 - **Add Thread to Box** - Link a Gmail thread to a box
 
 ### File Operations
-- **List Files** - Get all files attached to a box
-- **Get File** - Retrieve a specific file by key
-- **Upload File** - Upload a file to a box
-- **Delete File** - Remove a file
+- **List Files in Box** - Get all files attached to a box
+- **Get File Metadata** - Retrieve a specific file's metadata by key
+- **Get File Contents** - Download a file as binary data, in the field set by **Put Output File in Field** (default `data`). Only for files of type `GMAIL_API`
+- **Add File to Box** - Attach one or more Google Drive files to a box in a single request
 
 ### Newsfeed Operations
 - **Get Pipeline Newsfeed** - Get recent activity for a pipeline
@@ -150,30 +150,34 @@ The node now features a dedicated `StreakApiService` class that centralizes all 
 
 The **Streak Trigger** node starts workflows automatically when events occur in Streak. Webhooks can be scoped to a specific pipeline or team.
 
+Each event belongs to one scope: Contact and Org events need **Team** scope, and all other events need **Pipeline** scope. The Event list only shows events for the selected scope.
+
+Streak sends events to n8n's webhook URL, so n8n must be reachable from the internet. A trigger on `localhost` won't receive events.
+
 ### Supported Events
 
-| Event | Description |
-|-------|-------------|
-| Box Create | A new box is created |
-| Box Delete | A box is deleted |
-| Box Edit | A box's fields, notes, assignments, or name change |
-| Box Change Stage | A box moves to a different stage |
-| Box Change Pipeline | A box is transferred to a different pipeline |
-| Box New Email Address | A new email address is detected on a box |
-| Stage Create | A new stage is created |
-| Comment Create | A comment is added to a box |
-| Meeting Create | A meeting is created |
-| Meeting Update | A meeting is updated |
-| Task Create | A task is created |
-| Task Complete | A task is marked complete |
-| Task Due | A task reaches its due date |
-| Task Updated | A task is updated |
-| Contact Create | A contact is created |
-| Contact Update | A contact is updated |
-| Contact Delete | A contact is deleted |
-| Org Create | An organization is created |
-| Org Update | An organization is updated |
-| Org Delete | An organization is deleted |
+| Event | Scope | Description |
+|-------|-------|-------------|
+| Box Create | Pipeline | A new box is created |
+| Box Delete | Pipeline | A box is deleted |
+| Box Edit | Pipeline | A box's fields, notes, assignments, or name change |
+| Box Change Stage | Pipeline | A box moves to a different stage |
+| Box Change Pipeline | Pipeline | A box is transferred to a different pipeline |
+| Box New Email Address | Pipeline | A new email address is detected on a box |
+| Stage Create | Pipeline | A new stage is created |
+| Comment Create | Pipeline | A comment is added to a box |
+| Meeting Create | Pipeline | A meeting is created |
+| Meeting Update | Pipeline | A meeting is updated |
+| Task Create | Pipeline | A task is created |
+| Task Complete | Pipeline | A task is marked complete |
+| Task Due | Pipeline | A task reaches its due date |
+| Task Updated | Pipeline | A task is updated |
+| Contact Create | Team | A contact is created |
+| Contact Update | Team | A contact is updated |
+| Contact Delete | Team | A contact is deleted |
+| Org Create | Team | An organization is created |
+| Org Update | Team | An organization is updated |
+| Org Delete | Team | An organization is deleted |
 
 ## Credentials
 
@@ -238,7 +242,7 @@ This is a simple workflow to create a pipeline and then add a box to it:
 - Added Comment operations (list, get, create, delete)
 - Added Meeting operations (list, get, create, update, delete)
 - Added Thread operations (list, get, get by Gmail ID, add to box)
-- Added File operations (list, get, upload, delete)
+- Added File operations (list, get metadata, get contents, add Google Drive file to box)
 - Added Newsfeed operations (pipeline, box, all)
 - Added Snippet operations (list, get, create, delete)
 - Added Search operations (by query, by name)
