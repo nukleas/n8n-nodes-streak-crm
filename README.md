@@ -227,6 +227,45 @@ This is a simple workflow to create a pipeline and then add a box to it:
    - Use an existing box key
    - Link the contact by updating field values
 
+### Fetching one page at a time
+
+**List All Pipelines**, **List Boxes in Pipeline**, **List Field Values**, **Get Tasks in Box**, **List Meetings in Box**, **List Snippets**, **List Files in Box** and the three **Newsfeed** operations have a **Page** option, shown when **Return All** is off. Pages start at 0: page 0 is the first **Limit** results, page 1 the next **Limit**, and so on. Page defaults to 0, so existing workflows keep fetching the first page.
+
+- Streak returns at most 1000 boxes or tasks per page, so keep **Limit** at 1000 or below for those. Streak doesn't document a maximum for the others.
+- On List Boxes, **Sort By** and **Stage** apply to every page. Both sort orders are newest first.
+- On List Boxes, Page only works without a **Search Query**. With a search query, any page other than 0 is rejected.
+- Streak removes items you can't access after it builds each page, so a page can come back short, or even empty, before the end.
+
+**Get Box Timeline** has Return All and Limit but no Page, because Streak pages the timeline by time rather than page number. To step back through it, set **Start Timestamp** to the oldest entry you've already fetched.
+
+**List Threads in Box** also has Return All and Limit but no Page, because Streak returns an empty page 1 for threads.
+
+**Get All Newsfeed** returns at most the 100 newest events, even with Return All on, and pages past the first 100 come back empty, because Streak keeps only 100 events for that feed.
+
+The other list operations have no Return All, Limit or Page. Streak returns all of their results in one response, so they always output everything.
+
+### Example: Looping through boxes newest first until a cutoff date
+
+This fetches boxes created in the last 90 days, 100 at a time, without loading the whole pipeline:
+
+1. **Streak CRM node** with operation **List Boxes in Pipeline**
+   - Sort By: **Creation Date**
+   - Return All: off
+   - Limit: `100`
+   - Page: `{{ $runIndex }}` (0 on the first pass, 1 on the next, and so on)
+   - In the node's **Settings**, turn on **Always Output Data** so an empty page still reaches the next node
+2. Process the boxes on a branch from the Streak CRM node. The last page can include boxes older than the cutoff, so filter on `creationTimestamp` there.
+3. **Code node** (Run Once for All Items) that decides whether to fetch another page. It returns a single item, so the Streak CRM node runs once per page rather than once per box:
+
+   ```js
+   const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+   const boxes = $input.all().map((item) => item.json).filter((box) => box.boxKey);
+   const oldest = Math.min(...boxes.map((box) => box.creationTimestamp));
+   return [{ json: { more: boxes.length > 0 && oldest >= cutoff } }];
+   ```
+
+4. **If node** that checks `{{ $json.more }}` is true, with its true output connected back to the Streak CRM node.
+
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)

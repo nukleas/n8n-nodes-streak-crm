@@ -1,5 +1,12 @@
 import { IExecuteFunctions, IDataObject, NodeOperationError } from 'n8n-workflow';
-import { streakApiRequest, streakApiFormRequest, validateParameters, handlePagination } from './utils';
+import {
+	streakApiRequest,
+	streakApiFormRequest,
+	validateParameters,
+	fetchAllResults,
+	getPageParameter,
+	handlePagination,
+} from './utils';
 
 /**
  * Handle snippet-related operations for the Streak API
@@ -11,15 +18,17 @@ export async function handleSnippetOperations(
 ): Promise<IDataObject | IDataObject[]> {
 	if (operation === 'listSnippets') {
 		const returnAll = this.getNodeParameter('returnAll', itemIndex, false) as boolean;
-		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
 
-		return await handlePagination(
-			this,
-			'/snippets',
-			returnAll,
-			returnAll ? 100 : limit,
-			{},
-		);
+		// Without page or limit, Streak returns every snippet in one response
+		if (returnAll) {
+			return await fetchAllResults(this, '/snippets');
+		}
+
+		// v1 accepts page and limit, but its response is a bare array with no hasNextPage
+		const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
+		const page = getPageParameter.call(this, itemIndex);
+
+		return await handlePagination(this, '/snippets', false, limit, {}, 'v1', page);
 	} else if (operation === 'getSnippet') {
 		const snippetKey = this.getNodeParameter('snippetKey', itemIndex) as string;
 
